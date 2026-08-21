@@ -1,0 +1,72 @@
+# Staging stack — do not use local .env defaults.
+# Usage:
+#   cp apps/api/.env.staging.example apps/api/.env.staging
+#   docker compose -f docker-compose.staging.yml --env-file apps/api/.env.staging up -d --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pooja-store-staging-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pooja
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: pooja_store
+    volumes:
+      - staging_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pooja -d pooja_store"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - staging
+
+  redis:
+    image: redis:7-alpine
+    container_name: pooja-store-staging-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - staging_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - staging
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: pooja-store-staging-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./apps/api/.env.staging
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://pooja:${POSTGRES_PASSWORD}@postgres:5432/pooja_store?schema=public
+      REDIS_URL: redis://redis:6379
+      PAYMENT_MODE: live
+      SMS_PROVIDER: twilio
+      OTP_RETURN_IN_RESPONSE: "false"
+      SWAGGER_ENABLED: "false"
+    ports:
+      - "${STAGING_API_PORT:-3000}:3000"
+    networks:
+      - staging
+
+volumes:
+  staging_postgres_data:
+  staging_redis_data:
+
+networks:
+  staging:
+    name: pooja-store-staging

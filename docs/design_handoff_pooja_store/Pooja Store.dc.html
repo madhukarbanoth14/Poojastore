@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<template id="__bundler_thumbnail" data-bg-color="#4E1119">
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#4E1119"/>
+<circle cx="600" cy="400" r="130" fill="#D4AF37"/>
+<path d="M600 340 C630 340 655 365 655 400 C655 435 630 460 600 460 C570 460 545 435 545 400 C545 365 570 340 600 340 Z" fill="#4E1119"/>
+</svg>
+</template>
+<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="pooja-store-app" content="1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+@keyframes floatIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+body{margin:0;-webkit-font-smoothing:antialiased}
+* {box-sizing:border-box;}
+::-webkit-scrollbar{width:0;height:0}
+a{color:inherit;text-decoration:none}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:{{outerBg}};padding:48px 20px;font-family:'Inter',sans-serif;transition:background .3s;">
+
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:13px;letter-spacing:.4px;color:{{outerText}};opacity:.6;">POOJA STORE — CUSTOMER APP PROTOTYPE</div>
+    <button onClick="{{toggleTheme}}" style="{{themeBtnStyle}}">{{themeToggleLabel}}</button>
+  </div>
+
+  <div style="width:402px;height:874px;max-width:96vw;max-height:86vh;border-radius:44px;overflow:hidden;position:relative;background:{{t.bg}};box-shadow:0 40px 90px -20px rgba(0,0,0,.45),0 0 0 8px {{frameRing}};transition:background .3s;">
+    <div style="position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;">
+
+      <!-- SPLASH -->
+      <sc-if value="{{is.splash}}" hint-placeholder-val="{{true}}">
+        <div style="width:100%;height:874px;background:linear-gradient(180deg,{{t.maroon}} 0%,{{t.maroonDeep}} 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:center;">
+            <div style="display:flex;">
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid {{t.saffron}};margin:0 1px;animation:sway 2.4s ease-in-out infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid {{t.gold}};margin:0 1px;animation:sway 2.4s ease-in-out .15s infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid #FBF3E3;margin:0 1px;animation:sway 2.4s ease-in-out .3s infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid {{t.saffron}};margin:0 1px;animation:sway 2.4s ease-in-out .45s infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid {{t.gold}};margin:0 1px;animation:sway 2.4s ease-in-out .6s infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid #FBF3E3;margin:0 1px;animation:sway 2.4s ease-in-out .75s infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid {{t.saffron}};margin:0 1px;animation:sway 2.4s ease-in-out .9s infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid {{t.gold}};margin:0 1px;animation:sway 2.4s ease-in-out 1.05s infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid #FBF3E3;margin:0 1px;animation:sway 2.4s ease-in-out 1.2s infinite;"></div>
+              <div style="width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid {{t.saffron}};margin:0 1px;animation:sway 2.4s ease-in-out 1.35s infinite;"></div>
+            </div>
+          </div>
+          <div style="position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;">
+            <div style="position:absolute;width:220px;height:220px;border-radius:50%;border:1px dashed rgba(212,175,55,.35);"></div>
+            <div style="position:absolute;width:178px;height:178px;border-radius:50%;border:1px dashed rgba(212,175,55,.5);"></div>
+            <div style="position:absolute;top:6px;left:50%;width:5px;height:5px;border-radius:50%;background:{{t.gold}};animation:twinkle 1.8s ease-in-out infinite;"></div>
+            <div style="position:absolute;bottom:10px;left:20%;width:4px;height:4px;border-radius:50%;background:#FBF3E3;animation:twinkle 1.8s ease-in-out .5s infinite;"></div>
+            <div style="position:absolute;top:24px;right:14%;width:4px;height:4px;border-radius:50%;background:{{t.saffron}};animation:twinkle 1.8s ease-in-out 1s infinite;"></div>
+            <div style="position:absolute;bottom:30px;right:10%;width:5px;height:5px;border-radius:50%;background:{{t.gold}};animation:twinkle 1.8s ease-in-out 1.3s infinite;"></div>
+            <div style="width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 35% 30%,{{t.gold}},{{t.saffron}} 75%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 60px rgba(212,175,55,.5);">
+              <div style="width:26px;height:38px;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;background:{{t.maroonDeep}};transform:rotate(180deg);"></div>
+            </div>
+          </div>
+          <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:30px;color:#FBF3E3;letter-spacing:.5px;">Pooja Store</div>
+          <div style="font-size:14px;color:rgba(251,243,227,.75);letter-spacing:1.5px;text-transform:uppercase;">Divine essentials, delivered</div>
+          <div style="display:flex;gap:7px;margin-top:14px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:{{t.gold}};animation:pulseDot 1.2s ease-in-out infinite;"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:{{t.gold}};animation:pulseDot 1.2s ease-in-out .2s infinite;"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:{{t.gold}};animation:pulseDot 1.2s ease-in-out .4s infinite;"></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ONBOARDING -->
+      <sc-if value="{{is.onboarding}}">
+        <div style="width:100%;height:874px;background:{{t.bg}};display:flex;flex-direction:column;">
+          <div style="display:flex;justify-content:center;gap:2px;padding-top:14px;">
+            <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid {{t.saffron}};"></div>
+            <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid {{t.gold}};"></div>
+            <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid {{t.maroon}};"></div>
+            <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid {{t.saffron}};"></div>
+            <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid {{t.gold}};"></div>
+            <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid {{t.maroon}};"></div>
+            <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid {{t.saffron}};"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;padding:14px 22px 0;">
+            <button onClick="{{skipOnboarding}}" style="background:none;border:none;font-size:14px;font-weight:600;color:{{t.textMuted}};cursor:pointer;">Skip</button>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 34px;text-align:center;gap:22px;">
+            <div style="width:100%;aspect-ratio:1.3;border-radius:24px;background:{{onboardSlide.stripe}};display:flex;align-items:center;justify-content:center;">
+              <span style="font-family:ui-monospace,monospace;font-size:12px;letter-spacing:1px;color:{{t.maroon}};opacity:.55;">{{onboardSlide.label}}</span>
+            </div>
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:23px;color:{{t.text}};line-height:1.3;">{{onboardSlide.title}}</div>
+            <div style="font-size:15px;color:{{t.textMuted}};line-height:1.55;">{{onboardSlide.desc}}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding:0 30px 40px;">
+            <div style="display:flex;gap:7px;">
+              <sc-for list="{{onboardDots}}" as="d" hint-placeholder-count="4">
+                <div style="width:{{d.w}};height:7px;border-radius:4px;background:{{d.color}};transition:all .25s;"></div>
+              </sc-for>
+            </div>
+            <button onClick="{{onboardNext}}" style="width:100%;padding:16px;border:none;border-radius:16px;background:{{t.saffron}};color:#fff;font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 10px 24px -8px {{t.saffron}};">{{onboardBtnLabel}}</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- LOGIN -->
+      <sc-if value="{{is.login}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};display:flex;flex-direction:column;padding:56px 28px 40px;">
+          <div style="width:56px;height:56px;border-radius:16px;background:{{t.maroon}};display:flex;align-items:center;justify-content:center;margin-bottom:26px;box-shadow:0 0 26px rgba(212,175,55,.3);">
+            <div style="width:16px;height:24px;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;background:{{t.gold}};transform:rotate(180deg);"></div>
+          </div>
+          <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:26px;color:{{t.text}};margin-bottom:8px;">Welcome back</div>
+          <div style="font-size:14.5px;color:{{t.textMuted}};margin-bottom:32px;">Sign in to continue your seva</div>
+
+          <div style="font-size:12.5px;font-weight:600;color:{{t.textMuted}};margin-bottom:8px;letter-spacing:.3px;">MOBILE NUMBER</div>
+          <div style="display:flex;align-items:center;gap:10px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:15px 16px;margin-bottom:20px;">
+            <span style="font-weight:600;color:{{t.text}};">+91</span>
+            <div style="width:1px;height:18px;background:{{t.border}};"></div>
+            <input value="{{mobile}}" onChange="{{onMobileChange}}" placeholder="98765 43210" style="border:none;outline:none;background:transparent;font-size:15.5px;color:{{t.text}};flex:1;font-family:'Inter',sans-serif;"/>
+          </div>
+          <button onClick="{{sendOtp}}" style="width:100%;padding:16px;border:none;border-radius:14px;background:{{t.saffron}};color:#fff;font-family:'Poppins',sans-serif;font-weight:600;font-size:15.5px;cursor:pointer;margin-bottom:26px;">Send OTP</button>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:26px;">
+            <div style="flex:1;height:1px;background:{{t.border}};"></div>
+            <span style="font-size:12.5px;color:{{t.textMuted}};">or continue with</span>
+            <div style="flex:1;height:1px;background:{{t.border}};"></div>
+          </div>
+
+          <button onClick="{{socialLogin}}" style="width:100%;padding:15px;border:1px solid {{t.border}};border-radius:14px;background:{{t.surface}};color:{{t.text}};font-weight:600;font-size:15px;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;">
+            <div style="width:18px;height:18px;border-radius:50%;background:conic-gradient(from 0deg,#4285F4,#EA4335,#FBBC05,#34A853,#4285F4);"></div>
+            Continue with Google
+          </button>
+          <button onClick="{{socialLogin}}" style="width:100%;padding:15px;border:1px solid {{t.border}};border-radius:14px;background:{{t.textDark}};color:#fff;font-weight:600;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;">
+            <div style="width:15px;height:18px;border-radius:40% 40% 45% 45%;background:#fff;"></div>
+            Continue with Apple
+          </button>
+
+          <div style="margin-top:auto;padding-top:30px;font-size:12px;color:{{t.textMuted}};text-align:center;line-height:1.6;">By continuing you agree to our Terms of Service and Privacy Policy</div>
+        </div>
+      </sc-if>
+
+      <!-- OTP -->
+      <sc-if value="{{is.otp}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};display:flex;flex-direction:column;padding:56px 28px 40px;">
+          <button onClick="{{back}}" style="align-self:flex-start;background:none;border:none;font-size:22px;color:{{t.text}};cursor:pointer;margin-bottom:24px;">←</button>
+          <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:24px;color:{{t.text}};margin-bottom:8px;">Verify your number</div>
+          <div style="font-size:14.5px;color:{{t.textMuted}};margin-bottom:34px;">Code sent to +91 {{mobileDisplay}}</div>
+          <div style="display:flex;gap:12px;justify-content:center;margin-bottom:22px;">
+            <sc-for list="{{otpBoxes}}" as="box" hint-placeholder-count="4">
+              <input value="{{box.val}}" onChange="{{box.onChange}}" maxlength="1" style="width:56px;height:64px;text-align:center;font-size:24px;font-weight:700;font-family:'Poppins',sans-serif;border-radius:14px;border:1.5px solid {{t.border}};background:{{t.surface}};color:{{t.text}};outline:none;"/>
+            </sc-for>
+          </div>
+          <div style="text-align:center;font-size:13.5px;color:{{t.textMuted}};margin-bottom:30px;">{{otpTimerText}}</div>
+          <button onClick="{{verifyOtp}}" style="width:100%;padding:16px;border:none;border-radius:14px;background:{{t.saffron}};color:#fff;font-family:'Poppins',sans-serif;font-weight:600;font-size:15.5px;cursor:pointer;">Verify &amp; Continue</button>
+        </div>
+      </sc-if>
+
+      <!-- STANDARD HEADER for interior screens -->
+      <sc-if value="{{showStdHeader}}">
+        <div style="position:sticky;top:0;z-index:5;background:{{t.bg}};display:flex;align-items:center;gap:12px;padding:20px 20px 12px;">
+          <sc-if value="{{showBack}}"><button onClick="{{back}}" style="background:{{t.surface}};border:1px solid {{t.border}};width:36px;height:36px;border-radius:11px;font-size:17px;color:{{t.text}};cursor:pointer;">←</button></sc-if>
+          <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;color:{{t.text}};">{{headerTitle}}</div>
+          <sc-if value="{{is.cartLike}}"><div style="margin-left:auto;font-size:13px;color:{{t.textMuted}};">{{headerRight}}</div></sc-if>
+        </div>
+      </sc-if>
+
+      <!-- HOME -->
+      <sc-if value="{{is.home}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:96px;">
+          <div style="padding:22px 20px 14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:13px;color:{{t.textMuted}};">Namaste,</div>
+                <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:19px;color:{{t.text}};">Aarav Sharma</div>
+              </div>
+              <button onClick="{{go_notifications}}" style="width:40px;height:40px;border-radius:13px;background:{{t.surface}};border:1px solid {{t.border}};position:relative;cursor:pointer;">
+                <div style="width:14px;height:14px;border:2px solid {{t.text}};border-radius:50% 50% 0 0;margin:0 auto;"></div>
+                <div style="position:absolute;top:7px;right:9px;width:8px;height:8px;background:{{t.saffron}};border-radius:50%;border:2px solid {{t.bg}};"></div>
+              </button>
+            </div>
+            <button onClick="{{go_profile}}" style="margin-top:12px;display:flex;align-items:center;gap:6px;background:none;border:none;padding:0;cursor:pointer;">
+              <span style="width:7px;height:7px;border-radius:50%;background:{{t.saffron}};display:inline-block;"></span>
+              <span style="font-size:13.5px;color:{{t.text}};font-weight:500;">Deliver to: Home, 4th Cross, Malleshwaram</span>
+              <span style="font-size:13px;color:{{t.textMuted}};">›</span>
+            </button>
+          </div>
+
+          <div style="padding:6px 20px 14px;">
+            <button onClick="{{go_categories}}" style="width:100%;display:flex;align-items:center;gap:10px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:16px;padding:14px 16px;cursor:pointer;text-align:left;">
+              <div style="width:16px;height:16px;border:2px solid {{t.textMuted}};border-radius:50%;flex-shrink:0;position:relative;"><div style="position:absolute;width:6px;height:2px;background:{{t.textMuted}};bottom:-3px;right:-4px;transform:rotate(45deg);"></div></div>
+              <span style="font-size:14.5px;color:{{t.textMuted}};">Search pooja kits, items, priests…</span>
+            </button>
+          </div>
+
+          <div style="padding:0 20px 20px;">
+            <div style="border-radius:20px;padding:20px;background:linear-gradient(135deg,{{t.maroon}},{{t.maroonDeep}});position:relative;overflow:hidden;">
+              <div style="position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(212,175,55,.18);"></div>
+              <div style="position:absolute;right:20px;bottom:-40px;width:90px;height:90px;border-radius:50%;background:rgba(255,107,0,.15);"></div>
+              <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:0 2px;">
+                <div style="width:9px;height:9px;border-radius:50%;background:{{t.gold}};opacity:.8;"></div>
+                <div style="width:9px;height:9px;border-radius:50%;background:{{t.saffron}};opacity:.8;"></div>
+                <div style="width:9px;height:9px;border-radius:50%;background:{{t.gold}};opacity:.8;"></div>
+                <div style="width:9px;height:9px;border-radius:50%;background:{{t.saffron}};opacity:.8;"></div>
+                <div style="width:9px;height:9px;border-radius:50%;background:{{t.gold}};opacity:.8;"></div>
+                <div style="width:9px;height:9px;border-radius:50%;background:{{t.saffron}};opacity:.8;"></div>
+                <div style="width:9px;height:9px;border-radius:50%;background:{{t.gold}};opacity:.8;"></div>
+                <div style="width:9px;height:9px;border-radius:50%;background:{{t.saffron}};opacity:.8;"></div>
+              </div>
+              <div style="position:absolute;top:16px;right:18px;width:5px;height:5px;border-radius:50%;background:{{t.gold}};animation:twinkle 2s ease-in-out infinite;"></div>
+              <div style="position:absolute;top:34px;right:40px;width:4px;height:4px;border-radius:50%;background:#FBF3E3;animation:twinkle 2s ease-in-out .6s infinite;"></div>
+              <div style="position:relative;">
+                <div style="font-size:11.5px;font-weight:700;letter-spacing:1px;color:{{t.gold}};text-transform:uppercase;">Upcoming Festival</div>
+                <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:21px;color:#FBF3E3;margin:6px 0 4px;">Ganesh Chaturthi</div>
+                <div style="font-size:13px;color:rgba(251,243,227,.8);margin-bottom:16px;">Sept 6, 2026 · 36 days to go</div>
+                <button onClick="{{go_festival}}" style="background:{{t.gold}};border:none;padding:10px 18px;border-radius:11px;font-weight:700;font-size:13.5px;color:{{t.maroonDeep}};cursor:pointer;">Shop Festival Kits</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:0 0 8px;">
+            <div style="padding:0 20px 12px;font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;color:{{t.text}};">Categories</div>
+            <div style="display:flex;gap:14px;overflow-x:auto;padding:0 20px 6px;">
+              <sc-for list="{{homeCategories}}" as="c" hint-placeholder-count="6">
+                <button onClick="{{c.onClick}}" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:none;cursor:pointer;flex-shrink:0;width:64px;">
+                  <div style="width:56px;height:56px;border-radius:18px;background:{{c.bg}};display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;color:{{c.fg}};">{{c.mono}}</div>
+                  <span style="font-size:11.5px;color:{{t.textMuted}};text-align:center;line-height:1.2;">{{c.name}}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:20px 0 8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px 12px;">
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;color:{{t.text}};">Popular Pooja Kits</div>
+              <button onClick="{{go_categories}}" style="background:none;border:none;font-size:13px;color:{{t.saffron}};font-weight:600;cursor:pointer;">See all</button>
+            </div>
+            <div style="display:flex;gap:14px;overflow-x:auto;padding:0 20px 6px;">
+              <sc-for list="{{kitCards}}" as="k" hint-placeholder-count="4">
+                <button onClick="{{k.onClick}}" style="width:168px;flex-shrink:0;background:{{t.surface}};border:1px solid {{t.border}};border-radius:18px;overflow:hidden;text-align:left;cursor:pointer;padding:0;">
+                  <div style="height:110px;background:{{k.stripe}};"></div>
+                  <div style="padding:12px;">
+                    <div style="font-size:13.5px;font-weight:600;color:{{t.text}};line-height:1.3;margin-bottom:4px;">{{k.name}}</div>
+                    <div style="font-size:11.5px;color:{{t.gold}};margin-bottom:6px;">{{k.stars}} <span style="color:{{t.textMuted}};">({{k.reviews}})</span></div>
+                    <div style="display:flex;align-items:baseline;gap:6px;">
+                      <span style="font-weight:700;font-size:14.5px;color:{{t.text}};">₹{{k.price}}</span>
+                      <span style="font-size:12px;color:{{t.textMuted}};text-decoration:line-through;">₹{{k.mrp}}</span>
+                    </div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:20px 20px 8px;">
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;color:{{t.text}};margin-bottom:12px;">Daily Essentials</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <sc-for list="{{essentialCards}}" as="e" hint-placeholder-count="4">
+                <button onClick="{{e.onClick}}" style="display:flex;align-items:center;gap:10px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:16px;padding:10px;cursor:pointer;text-align:left;">
+                  <div style="width:44px;height:44px;border-radius:12px;background:{{e.stripe}};flex-shrink:0;"></div>
+                  <div style="min-width:0;">
+                    <div style="font-size:12.5px;font-weight:600;color:{{t.text}};line-height:1.25;">{{e.name}}</div>
+                    <div style="font-size:12.5px;font-weight:700;color:{{t.saffron}};margin-top:3px;">₹{{e.price}}</div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:24px 0 8px;">
+            <div style="padding:0 20px 12px;font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;color:{{t.text}};">Nearby Pooja Stores</div>
+            <div style="display:flex;flex-direction:column;gap:10px;padding:0 20px;">
+              <sc-for list="{{storeCards}}" as="s" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:12px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:16px;padding:12px 14px;">
+                  <div style="width:46px;height:46px;border-radius:13px;background:{{s.stripe}};flex-shrink:0;"></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13.5px;font-weight:600;color:{{t.text}};">{{s.name}}</div>
+                    <div style="font-size:12px;color:{{t.textMuted}};margin-top:3px;">{{s.distance}} · {{s.stars}} · {{s.eta}} delivery</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:24px 0 8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px 12px;">
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;color:{{t.text}};">Featured Poojaris</div>
+              <button onClick="{{go_priests}}" style="background:none;border:none;font-size:13px;color:{{t.saffron}};font-weight:600;cursor:pointer;">See all</button>
+            </div>
+            <div style="display:flex;gap:14px;overflow-x:auto;padding:0 20px 6px;">
+              <sc-for list="{{priestCards}}" as="p" hint-placeholder-count="4">
+                <button onClick="{{p.onClick}}" style="width:150px;flex-shrink:0;background:{{t.surface}};border:1px solid {{t.border}};border-radius:18px;padding:14px 12px;text-align:center;cursor:pointer;">
+                  <div style="width:56px;height:56px;border-radius:50%;background:{{p.mono_bg}};margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:700;color:#fff;font-size:15px;">{{p.initials}}</div>
+                  <div style="font-size:12.5px;font-weight:600;color:{{t.text}};line-height:1.25;margin-bottom:3px;">{{p.name}}</div>
+                  <div style="font-size:11px;color:{{t.gold}};margin-bottom:6px;">{{p.stars}}</div>
+                  <div style="font-size:12px;font-weight:700;color:{{t.saffron}};">₹{{p.fee}}</div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:24px 20px 4px;display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{offerCards}}" as="o" hint-placeholder-count="2">
+              <div style="border-radius:18px;padding:16px 18px;background:{{o.bg}};backdrop-filter:blur(6px);border:1px solid {{o.border}};display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};">{{o.title}}</div>
+                  <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:3px;">{{o.desc}}</div>
+                </div>
+                <div style="font-family:ui-monospace,monospace;font-weight:700;font-size:12px;color:{{t.maroon}};background:rgba(255,255,255,.5);padding:6px 10px;border-radius:9px;">{{o.code}}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CATEGORIES -->
+      <sc-if value="{{is.categories}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:96px;">
+          <div style="padding:0 20px 14px;">
+            <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;">
+              <sc-for list="{{catChips}}" as="c" hint-placeholder-count="6">
+                <button onClick="{{c.onClick}}" style="flex-shrink:0;padding:9px 16px;border-radius:20px;border:1px solid {{c.borderColor}};background:{{c.bg}};color:{{c.fg}};font-size:13px;font-weight:600;cursor:pointer;">{{c.name}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:6px 20px;">
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;color:{{t.text}};margin-bottom:14px;">{{activeCategoryName}}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <sc-for list="{{categoryProducts}}" as="p" hint-placeholder-count="6">
+                <button onClick="{{p.onClick}}" style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:18px;overflow:hidden;cursor:pointer;text-align:left;padding:0;">
+                  <div style="height:100px;background:{{p.stripe}};"></div>
+                  <div style="padding:11px;">
+                    <div style="font-size:13px;font-weight:600;color:{{t.text}};line-height:1.3;min-height:34px;">{{p.name}}</div>
+                    <div style="font-weight:700;font-size:14px;color:{{t.text}};margin-top:6px;">₹{{p.price}}</div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- FESTIVAL DETAIL -->
+      <sc-if value="{{is.festival}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:40px;">
+          <div style="height:190px;background:linear-gradient(135deg,{{t.maroon}},{{t.maroonDeep}});position:relative;">
+            <div style="position:absolute;right:-20px;top:-20px;width:130px;height:130px;border-radius:50%;background:rgba(212,175,55,.15);"></div>
+          </div>
+          <div style="padding:18px 20px 0;">
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:24px;color:{{t.text}};">Ganesh Chaturthi</div>
+            <div style="font-size:13.5px;color:{{t.textMuted}};margin-top:6px;">Sept 6, 2026 · 10 days of celebration</div>
+            <div style="font-size:14px;color:{{t.text}};line-height:1.6;margin-top:14px;">Welcome Lord Ganesha home with a complete, temple-verified set of ritual items — sourced fresh and delivered same day.</div>
+
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;color:{{t.text}};margin:22px 0 12px;">Required Items</div>
+            <div style="display:flex;flex-wrap:wrap;gap:9px;">
+              <sc-for list="{{requiredItems}}" as="item" hint-placeholder-count="8">
+                <div style="padding:8px 13px;border-radius:11px;background:{{t.chipBg}};font-size:12.5px;color:{{t.text}};">{{item}}</div>
+              </sc-for>
+            </div>
+
+            <div style="margin-top:22px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:18px;padding:16px;display:flex;gap:14px;align-items:center;">
+              <div style="width:64px;height:64px;border-radius:14px;background:{{festivalKitStripe}};flex-shrink:0;"></div>
+              <div style="flex:1;">
+                <div style="font-weight:700;font-size:14.5px;color:{{t.text}};">Complete Ganesh Chaturthi Kit</div>
+                <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:3px;">Idol, modak, durva &amp; 14 more items</div>
+                <div style="font-weight:700;font-size:15.5px;color:{{t.text}};margin-top:6px;">₹899</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:16px;">
+              <button onClick="{{go_priests}}" style="flex:1;padding:15px;border-radius:14px;border:1.5px solid {{t.maroon}};background:transparent;color:{{t.maroon}};font-weight:700;font-size:14px;cursor:pointer;">Book Priest</button>
+              <button onClick="{{addFestivalKitToCart}}" style="flex:1;padding:15px;border-radius:14px;border:none;background:{{t.saffron}};color:#fff;font-weight:700;font-size:14px;cursor:pointer;">Add Kit to Cart</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- PRODUCT DETAIL -->
+      <sc-if value="{{is.product}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:100px;">
+          <div style="height:230px;background:{{selectedProduct.stripe}};position:relative;">
+            <div style="position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:6px;">
+              <sc-for list="{{productDots}}" as="d" hint-placeholder-count="3"><div style="width:6px;height:6px;border-radius:50%;background:{{d.color}};"></div></sc-for>
+            </div>
+          </div>
+          <div style="padding:20px;">
+            <div style="font-size:12px;color:{{t.saffron}};font-weight:700;letter-spacing:.3px;">{{selectedProduct.storeName}}</div>
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:21px;color:{{t.text}};margin:6px 0;">{{selectedProduct.name}}</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <span style="font-size:13px;color:{{t.gold}};">{{selectedProduct.stars}}</span>
+              <span style="font-size:12.5px;color:{{t.textMuted}};">{{selectedProduct.reviews}} reviews</span>
+              <span style="font-size:12px;color:{{t.textMuted}};">·</span>
+              <span style="font-size:12.5px;color:{{t.textMuted}};">Delivery in {{selectedProduct.eta}}</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:16px;">
+              <span style="font-family:'Poppins',sans-serif;font-weight:700;font-size:23px;color:{{t.text}};">₹{{selectedProduct.price}}</span>
+              <sc-if value="{{selectedProduct.hasMrp}}"><span style="font-size:14px;color:{{t.textMuted}};text-decoration:line-through;">₹{{selectedProduct.mrp}}</span></sc-if>
+            </div>
+            <div style="font-size:14px;color:{{t.text}};line-height:1.6;margin-bottom:18px;">{{selectedProduct.desc}}</div>
+
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;">
+              <div style="font-size:13px;font-weight:600;color:{{t.text}};">Quantity</div>
+              <div style="display:flex;align-items:center;gap:14px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:12px;padding:6px 14px;">
+                <button onClick="{{decQty}}" style="background:none;border:none;font-size:18px;color:{{t.text}};cursor:pointer;">−</button>
+                <span style="min-width:14px;text-align:center;font-weight:600;color:{{t.text}};">{{productQty}}</span>
+                <button onClick="{{incQty}}" style="background:none;border:none;font-size:18px;color:{{t.text}};cursor:pointer;">+</button>
+              </div>
+            </div>
+
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;color:{{t.text}};margin-bottom:12px;">You may also like</div>
+            <div style="display:flex;gap:12px;overflow-x:auto;">
+              <sc-for list="{{relatedProducts}}" as="r" hint-placeholder-count="3">
+                <button onClick="{{r.onClick}}" style="width:120px;flex-shrink:0;background:{{t.surface}};border:1px solid {{t.border}};border-radius:15px;overflow:hidden;cursor:pointer;padding:0;text-align:left;">
+                  <div style="height:80px;background:{{r.stripe}};"></div>
+                  <div style="padding:9px;">
+                    <div style="font-size:11.5px;font-weight:600;color:{{t.text}};line-height:1.25;">{{r.name}}</div>
+                    <div style="font-size:12px;font-weight:700;color:{{t.text}};margin-top:4px;">₹{{r.price}}</div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:0;background:{{t.bg}};padding:14px 20px 22px;border-top:1px solid {{t.border}};">
+            <button onClick="{{addProductToCart}}" style="width:100%;padding:16px;border:none;border-radius:14px;background:{{t.saffron}};color:#fff;font-weight:700;font-size:15px;cursor:pointer;">Add to Cart — ₹{{productTotalPrice}}</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CART -->
+      <sc-if value="{{is.cart}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:40px;">
+          <div style="padding:0 20px;display:flex;flex-direction:column;gap:12px;">
+            <sc-if value="{{cartEmpty}}">
+              <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:80px 20px;gap:14px;">
+                <div style="width:80px;height:80px;border-radius:50%;background:{{t.chipBg}};"></div>
+                <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;color:{{t.text}};">Your cart is empty</div>
+                <div style="font-size:13.5px;color:{{t.textMuted}};">Add pooja kits or daily essentials to get started</div>
+                <button onClick="{{go_home}}" style="margin-top:6px;padding:13px 26px;border-radius:13px;border:none;background:{{t.saffron}};color:#fff;font-weight:700;cursor:pointer;">Browse Home</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{cartNotEmpty}}">
+              <sc-for list="{{cart}}" as="item" hint-placeholder-count="2">
+                <div style="display:flex;gap:12px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:16px;padding:12px;align-items:center;">
+                  <div style="width:56px;height:56px;border-radius:12px;background:{{item.stripe}};flex-shrink:0;"></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13.5px;font-weight:600;color:{{t.text}};">{{item.name}}</div>
+                    <div style="font-size:11.5px;color:{{t.textMuted}};margin-top:2px;">{{item.typeLabel}}</div>
+                    <div style="font-weight:700;font-size:13.5px;color:{{t.text}};margin-top:4px;">₹{{item.price}}</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;background:{{t.bg}};border-radius:10px;padding:5px 10px;">
+                    <button onClick="{{item.dec}}" style="background:none;border:none;font-size:15px;color:{{t.text}};cursor:pointer;">−</button>
+                    <span style="font-size:13px;font-weight:600;color:{{t.text}};">{{item.qty}}</span>
+                    <button onClick="{{item.inc}}" style="background:none;border:none;font-size:15px;color:{{t.text}};cursor:pointer;">+</button>
+                  </div>
+                </div>
+              </sc-for>
+
+              <div style="display:flex;gap:10px;margin-top:6px;">
+                <input value="{{couponCode}}" onChange="{{onCouponChange}}" placeholder="Enter coupon code" style="flex:1;padding:13px 14px;border-radius:12px;border:1px solid {{t.border}};background:{{t.surface}};color:{{t.text}};font-size:13.5px;outline:none;"/>
+                <button onClick="{{applyCoupon}}" style="padding:13px 18px;border-radius:12px;border:1.5px solid {{t.maroon}};background:transparent;color:{{t.maroon}};font-weight:700;font-size:13px;cursor:pointer;">{{couponBtnLabel}}</button>
+              </div>
+
+              <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:16px;padding:16px;margin-top:6px;display:flex;flex-direction:column;gap:9px;">
+                <div style="display:flex;justify-content:space-between;font-size:13.5px;color:{{t.textMuted}};"><span>Subtotal</span><span style="color:{{t.text}};">₹{{cartSubtotal}}</span></div>
+                <sc-if value="{{couponApplied}}"><div style="display:flex;justify-content:space-between;font-size:13.5px;color:{{t.success}};"><span>Coupon discount</span><span>−₹{{cartDiscount}}</span></div></sc-if>
+                <div style="display:flex;justify-content:space-between;font-size:13.5px;color:{{t.textMuted}};"><span>Delivery charge</span><span style="color:{{t.text}};">{{cartDeliveryLabel}}</span></div>
+                <div style="height:1px;background:{{t.border}};margin:4px 0;"></div>
+                <div style="display:flex;justify-content:space-between;font-family:'Poppins',sans-serif;font-weight:700;font-size:15.5px;color:{{t.text}};"><span>Total</span><span>₹{{cartTotal}}</span></div>
+              </div>
+              <button onClick="{{go_checkout}}" style="width:100%;padding:16px;border:none;border-radius:14px;background:{{t.saffron}};color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px;">Proceed to Checkout</button>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CHECKOUT -->
+      <sc-if value="{{is.checkout}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:40px;">
+          <div style="padding:0 20px;display:flex;flex-direction:column;gap:20px;">
+            <div>
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Delivery Address</div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{addressCards}}" as="a" hint-placeholder-count="2">
+                  <button onClick="{{a.onClick}}" style="text-align:left;display:flex;gap:12px;padding:14px;border-radius:14px;border:1.5px solid {{a.borderColor}};background:{{t.surface}};cursor:pointer;">
+                    <div style="width:18px;height:18px;border-radius:50%;border:2px solid {{a.dotColor}};flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;"><sc-if value="{{a.selected}}"><div style="width:9px;height:9px;border-radius:50%;background:{{a.dotColor}};"></div></sc-if></div>
+                    <div>
+                      <div style="font-size:13.5px;font-weight:700;color:{{t.text}};">{{a.label}}</div>
+                      <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:3px;">{{a.detail}}</div>
+                    </div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Delivery Slot</div>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{slotCards}}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{s.onClick}}" style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-radius:13px;border:1.5px solid {{s.borderColor}};background:{{t.surface}};cursor:pointer;text-align:left;">
+                    <span style="font-size:13.5px;color:{{t.text}};font-weight:600;">{{s.label}}</span>
+                    <sc-if value="{{s.selected}}"><span style="font-size:12px;color:{{t.saffron}};font-weight:700;">Selected</span></sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Payment Method</div>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{paymentCards}}" as="p" hint-placeholder-count="3">
+                  <button onClick="{{p.onClick}}" style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-radius:13px;border:1.5px solid {{p.borderColor}};background:{{t.surface}};cursor:pointer;text-align:left;">
+                    <span style="font-size:13.5px;color:{{t.text}};font-weight:600;">{{p.label}}</span>
+                    <sc-if value="{{p.selected}}"><span style="font-size:12px;color:{{t.saffron}};font-weight:700;">Selected</span></sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:{{t.textMuted}};"><span>Order total</span><span style="color:{{t.text}};font-weight:700;">₹{{cartTotal}}</span></div>
+            </div>
+            <button onClick="{{placeOrder}}" style="width:100%;padding:16px;border:none;border-radius:14px;background:{{t.saffron}};color:#fff;font-weight:700;font-size:15px;cursor:pointer;">Place Order</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ORDER TRACKING -->
+      <sc-if value="{{is.tracking}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:40px;">
+          <div style="margin:0 20px;height:170px;border-radius:18px;position:relative;overflow:hidden;background-image:linear-gradient(rgba(122,31,43,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(122,31,43,.06) 1px,transparent 1px);background-size:18px 18px;background-color:{{t.chipBg}};border:1px solid {{t.border}};">
+            <div style="position:absolute;left:30%;top:60%;width:12px;height:12px;border-radius:50%;background:{{t.saffron}};box-shadow:0 0 0 6px rgba(255,107,0,.2);animation:pulseDot 1.4s infinite;"></div>
+            <div style="position:absolute;left:70%;top:30%;width:10px;height:10px;border-radius:50%;background:{{t.maroon}};"></div>
+            <div style="position:absolute;left:8px;top:8px;font-family:ui-monospace,monospace;font-size:10.5px;color:{{t.textMuted}};letter-spacing:.5px;">LIVE MAP</div>
+          </div>
+          <div style="padding:18px 20px;display:flex;gap:12px;align-items:center;background:{{t.surface}};margin:14px 20px 0;border-radius:16px;border:1px solid {{t.border}};">
+            <div style="width:44px;height:44px;border-radius:50%;background:{{t.maroon}};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Poppins',sans-serif;">RK</div>
+            <div style="flex:1;">
+              <div style="font-size:13.5px;font-weight:700;color:{{t.text}};">Ravi Kumar</div>
+              <div style="font-size:12px;color:{{t.textMuted}};">Delivery partner · Arriving in {{trackingEta}}</div>
+            </div>
+            <div style="width:36px;height:36px;border-radius:10px;background:{{t.chipBg}};display:flex;align-items:center;justify-content:center;font-size:14px;">☎</div>
+          </div>
+          <div style="padding:24px 20px;">
+            <sc-for list="{{trackingSteps}}" as="step" hint-placeholder-count="5">
+              <div style="display:flex;gap:14px;">
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                  <div style="width:16px;height:16px;border-radius:50%;background:{{step.dotColor}};flex-shrink:0;"></div>
+                  <sc-if value="{{step.showLine}}"><div style="width:2px;flex:1;background:{{step.lineColor}};min-height:34px;"></div></sc-if>
+                </div>
+                <div style="padding-bottom:30px;">
+                  <div style="font-size:14px;font-weight:600;color:{{step.textColor}};">{{step.label}}</div>
+                  <div style="font-size:12px;color:{{t.textMuted}};margin-top:2px;">{{step.time}}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- PRIEST LISTING -->
+      <sc-if value="{{is.priests}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:96px;">
+          <div style="padding:0 20px 16px;display:flex;flex-direction:column;gap:14px;">
+            <sc-for list="{{priestListCards}}" as="p" hint-placeholder-count="4">
+              <button onClick="{{p.onClick}}" style="display:flex;gap:14px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:18px;padding:14px;cursor:pointer;text-align:left;">
+                <div style="width:64px;height:64px;border-radius:16px;background:{{p.mono_bg}};display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:700;color:#fff;font-size:18px;flex-shrink:0;">{{p.initials}}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:14.5px;font-weight:700;color:{{t.text}};">{{p.name}}</div>
+                  <div style="font-size:12px;color:{{t.textMuted}};margin-top:2px;">{{p.exp}} experience · {{p.languages}}</div>
+                  <div style="font-size:12px;color:{{t.text}};margin-top:4px;">{{p.specialization}}</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                    <span style="font-size:12px;color:{{t.gold}};">{{p.stars}} ({{p.reviews}})</span>
+                    <span style="font-size:13px;font-weight:700;color:{{t.saffron}};">₹{{p.fee}}</span>
+                  </div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- PRIEST PROFILE -->
+      <sc-if value="{{is.priestProfile}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:110px;">
+          <div style="padding:8px 20px 0;display:flex;flex-direction:column;align-items:center;text-align:center;">
+            <div style="width:96px;height:96px;border-radius:50%;background:{{selectedPriest.mono_bg}};display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:700;color:#fff;font-size:28px;margin-bottom:14px;">{{selectedPriest.initials}}</div>
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;color:{{t.text}};">{{selectedPriest.name}}</div>
+            <div style="font-size:13px;color:{{t.textMuted}};margin-top:4px;">{{selectedPriest.exp}} experience · {{selectedPriest.languages}}</div>
+            <div style="font-size:13.5px;color:{{t.gold}};margin-top:8px;">{{selectedPriest.stars}} · {{selectedPriest.reviews}} reviews</div>
+          </div>
+          <div style="padding:20px 20px 0;">
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:8px;">Biography</div>
+            <div style="font-size:13.5px;color:{{t.text}};line-height:1.6;margin-bottom:18px;">{{selectedPriest.bio}}</div>
+
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Ritual Expertise</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">
+              <sc-for list="{{selectedPriest.expertiseList}}" as="e" hint-placeholder-count="3">
+                <div style="padding:7px 12px;border-radius:10px;background:{{t.chipBg}};font-size:12px;color:{{t.text}};">{{e}}</div>
+              </sc-for>
+            </div>
+
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Availability</div>
+            <div style="font-size:13.5px;color:{{t.textMuted}};margin-bottom:18px;">Mon–Sat, 6:00 AM – 8:00 PM · Next slot in 2 hours</div>
+
+            <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Reviews</div>
+            <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:13px;margin-bottom:10px;">
+              <div style="font-size:12.5px;color:{{t.gold}};margin-bottom:5px;">★★★★★</div>
+              <div style="font-size:13px;color:{{t.text}};line-height:1.5;">Very punctual and performed the Satyanarayan puja with complete authenticity. Highly recommend.</div>
+            </div>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:0;background:{{t.bg}};padding:14px 20px 22px;border-top:1px solid {{t.border}};display:flex;gap:12px;">
+            <button onClick="{{go_bookOnline}}" style="flex:1;padding:15px;border-radius:14px;border:1.5px solid {{t.maroon}};background:transparent;color:{{t.maroon}};font-weight:700;font-size:13.5px;cursor:pointer;">Book Online</button>
+            <button onClick="{{go_bookHome}}" style="flex:1;padding:15px;border-radius:14px;border:none;background:{{t.saffron}};color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;">Book Home Visit</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- BOOKING -->
+      <sc-if value="{{is.booking}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:40px;">
+          <div style="padding:0 20px;display:flex;flex-direction:column;gap:20px;">
+            <div style="background:{{t.chipBg}};border-radius:14px;padding:13px 16px;font-size:13px;color:{{t.text}};">
+              Booking <b>{{selectedPriest.name}}</b> for a <b>{{bookingModeLabel}}</b>
+            </div>
+            <div>
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Select Date</div>
+              <div style="display:flex;gap:10px;overflow-x:auto;">
+                <sc-for list="{{bookingDates}}" as="d" hint-placeholder-count="6">
+                  <button onClick="{{d.onClick}}" style="flex-shrink:0;width:56px;padding:10px 0;border-radius:14px;border:1.5px solid {{d.borderColor}};background:{{d.bg}};cursor:pointer;text-align:center;">
+                    <div style="font-size:11px;color:{{d.subColor}};">{{d.day}}</div>
+                    <div style="font-size:15px;font-weight:700;color:{{d.numColor}};margin-top:2px;">{{d.date}}</div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Select Time</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;">
+                <sc-for list="{{bookingTimes}}" as="tm" hint-placeholder-count="6">
+                  <button onClick="{{tm.onClick}}" style="padding:11px 0;border-radius:11px;border:1.5px solid {{tm.borderColor}};background:{{tm.bg}};color:{{tm.color}};font-size:12.5px;font-weight:600;cursor:pointer;">{{tm.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Ritual Type</div>
+              <div style="display:flex;flex-wrap:wrap;gap:9px;">
+                <sc-for list="{{ritualOptions}}" as="r" hint-placeholder-count="4">
+                  <button onClick="{{r.onClick}}" style="padding:9px 14px;border-radius:11px;border:1.5px solid {{r.borderColor}};background:{{r.bg}};color:{{r.color}};font-size:12.5px;font-weight:600;cursor:pointer;">{{r.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+            <sc-if value="{{isHomeVisit}}">
+              <div>
+                <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:14.5px;color:{{t.text}};margin-bottom:10px;">Address</div>
+                <div style="background:{{t.surface}};border:1.5px solid {{t.maroon}};border-radius:14px;padding:13px 14px;font-size:13px;color:{{t.text}};">Home · 4th Cross, Malleshwaram, Bengaluru</div>
+              </div>
+            </sc-if>
+            <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:16px;padding:16px;display:flex;justify-content:space-between;">
+              <span style="font-size:13.5px;color:{{t.textMuted}};">Consultation Fee</span>
+              <span style="font-weight:700;font-size:15px;color:{{t.text}};">₹{{selectedPriest.fee}}</span>
+            </div>
+            <button onClick="{{confirmBooking}}" style="width:100%;padding:16px;border:none;border-radius:14px;background:{{t.saffron}};color:#fff;font-weight:700;font-size:15px;cursor:pointer;">{{bookingConfirmLabel}}</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- VIDEO CONSULTATION -->
+      <sc-if value="{{is.video}}">
+        <div style="width:100%;height:874px;background:#12100f;position:relative;">
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg,#241a16,#0e0b0a);display:flex;align-items:center;justify-content:center;">
+            <div style="width:120px;height:120px;border-radius:50%;background:{{selectedPriest.mono_bg}};display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:700;color:#fff;font-size:36px;">{{selectedPriest.initials}}</div>
+          </div>
+          <div style="position:absolute;top:50px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="color:#fff;font-family:'Poppins',sans-serif;font-weight:600;font-size:15px;">{{selectedPriest.name}}</div>
+            <div style="color:rgba(255,255,255,.7);font-size:12.5px;font-family:ui-monospace,monospace;">{{callDuration}}</div>
+          </div>
+          <div style="position:absolute;top:90px;right:20px;width:78px;height:110px;border-radius:14px;background:#3a2a22;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:10px;font-family:ui-monospace,monospace;">YOU</div>
+          <sc-if value="{{chatOpen}}">
+            <div style="position:absolute;left:16px;right:16px;bottom:150px;top:230px;background:rgba(20,15,13,.85);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
+              <div style="align-self:flex-start;background:rgba(255,255,255,.12);color:#fff;font-size:12.5px;padding:9px 12px;border-radius:11px;max-width:80%;">Namaste! Please keep the Panchamrit ready before we begin.</div>
+              <div style="align-self:flex-end;background:{{t.saffron}};color:#fff;font-size:12.5px;padding:9px 12px;border-radius:11px;max-width:80%;">Sure, it's ready. Thank you Panditji.</div>
+            </div>
+          </sc-if>
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:22px 24px 34px;display:flex;justify-content:center;gap:16px;">
+            <button onClick="{{toggleMute}}" style="width:56px;height:56px;border-radius:50%;background:{{muteBg}};border:none;color:{{muteFg}};font-size:11.5px;font-weight:700;cursor:pointer;">{{muteLabel}}</button>
+            <button onClick="{{toggleVideoOff}}" style="width:56px;height:56px;border-radius:50%;background:{{videoBg}};border:none;color:{{videoFg}};font-size:11.5px;font-weight:700;cursor:pointer;">{{videoLabel}}</button>
+            <button onClick="{{toggleChat}}" style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;">Chat</button>
+            <button onClick="{{endCall}}" style="width:56px;height:56px;border-radius:50%;background:#D64545;border:none;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;">End</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- PROFILE -->
+      <sc-if value="{{is.profile}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:96px;">
+          <div style="padding:22px 20px 18px;display:flex;align-items:center;gap:14px;">
+            <div style="width:60px;height:60px;border-radius:50%;background:{{t.maroon}};display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;">AS</div>
+            <div style="flex:1;">
+              <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;color:{{t.text}};">Aarav Sharma</div>
+              <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:2px;">+91 98765 43210</div>
+            </div>
+            <button style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:11px;padding:8px 14px;font-size:12px;font-weight:600;color:{{t.text}};cursor:pointer;">Edit</button>
+          </div>
+          <div style="padding:0 20px;display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{profileRows}}" as="row" hint-placeholder-count="8">
+              <button onClick="{{row.onClick}}" style="display:flex;align-items:center;justify-content:space-between;padding:15px 16px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:15px;cursor:pointer;text-align:left;">
+                <span style="font-size:13.5px;font-weight:500;color:{{t.text}};">{{row.label}}</span>
+                <span style="font-size:14px;color:{{t.textMuted}};">›</span>
+              </button>
+            </sc-for>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 16px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:15px;margin-top:4px;">
+              <span style="font-size:13.5px;font-weight:500;color:{{t.text}};">Dark Mode</span>
+              <button onClick="{{toggleTheme}}" style="{{darkSwitchStyle}}"><div style="{{darkKnobStyle}}"></div></button>
+            </div>
+            <button onClick="{{logout}}" style="margin-top:10px;padding:15px;border-radius:15px;border:1.5px solid {{t.maroon}};background:transparent;color:{{t.maroon}};font-weight:700;font-size:13.5px;cursor:pointer;">Log Out</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- PROFILE DETAIL (generic sections) -->
+      <sc-if value="{{is.profileDetail}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:40px;">
+          <div style="padding:0 20px;">
+            <sc-if value="{{is.personalDetails}}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:14px;"><div style="font-size:11.5px;color:{{t.textMuted}};">Full Name</div><div style="font-size:14px;color:{{t.text}};font-weight:600;margin-top:4px;">Aarav Sharma</div></div>
+                <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:14px;"><div style="font-size:11.5px;color:{{t.textMuted}};">Email</div><div style="font-size:14px;color:{{t.text}};font-weight:600;margin-top:4px;">aarav.sharma@gmail.com</div></div>
+                <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:14px;"><div style="font-size:11.5px;color:{{t.textMuted}};">Date of Birth</div><div style="font-size:14px;color:{{t.text}};font-weight:600;margin-top:4px;">14 March 1990</div></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{is.addresses}}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <sc-for list="{{addressCards}}" as="a" hint-placeholder-count="2">
+                  <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:14px;">
+                    <div style="font-size:13.5px;font-weight:700;color:{{t.text}};">{{a.label}}</div>
+                    <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:4px;">{{a.detail}}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{is.family}}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <sc-for list="{{familyMembers}}" as="f" hint-placeholder-count="2">
+                  <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:14px;">
+                    <div style="font-size:13.5px;font-weight:700;color:{{t.text}};">{{f.name}} <span style="font-weight:400;color:{{t.textMuted}};font-size:12px;">· {{f.relation}}</span></div>
+                    <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:6px;">Gotram: {{f.gotram}} · Nakshatram: {{f.nakshatram}}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{is.orderHistory}}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <sc-for list="{{orderHistory}}" as="o" hint-placeholder-count="3">
+                  <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;">
+                    <div><div style="font-size:13.5px;font-weight:700;color:{{t.text}};">{{o.name}}</div><div style="font-size:12px;color:{{t.textMuted}};margin-top:3px;">{{o.date}}</div></div>
+                    <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:{{t.text}};">₹{{o.amount}}</div><div style="font-size:11.5px;color:{{t.success}};margin-top:3px;">{{o.status}}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{is.priestHistory}}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <sc-for list="{{priestHistory}}" as="b" hint-placeholder-count="2">
+                  <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:14px;">
+                    <div style="font-size:13.5px;font-weight:700;color:{{t.text}};">{{b.priest}}</div>
+                    <div style="font-size:12px;color:{{t.textMuted}};margin-top:3px;">{{b.ritual}} · {{b.date}}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{is.support}}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:16px;">
+                  <div style="font-size:13.5px;font-weight:700;color:{{t.text}};">Chat with Support</div>
+                  <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:4px;">Avg response time: 5 minutes</div>
+                </div>
+                <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:14px;padding:16px;">
+                  <div style="font-size:13.5px;font-weight:700;color:{{t.text}};">Call Us</div>
+                  <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:4px;">1800-123-4567 (Toll Free)</div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- NOTIFICATIONS -->
+      <sc-if value="{{is.notifications}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:40px;">
+          <div style="padding:0 20px;display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{notificationItems}}" as="n" hint-placeholder-count="5">
+              <div style="display:flex;gap:12px;background:{{t.surface}};border:1px solid {{t.border}};border-radius:15px;padding:13px 14px;">
+                <div style="width:38px;height:38px;border-radius:11px;background:{{n.iconBg}};flex-shrink:0;"></div>
+                <div style="flex:1;">
+                  <div style="font-size:13.5px;font-weight:600;color:{{t.text}};">{{n.title}}</div>
+                  <div style="font-size:12.5px;color:{{t.textMuted}};margin-top:3px;line-height:1.4;">{{n.body}}</div>
+                  <div style="font-size:11px;color:{{t.textMuted}};margin-top:6px;">{{n.time}}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- WISHLIST -->
+      <sc-if value="{{is.wishlist}}">
+        <div style="width:100%;min-height:874px;background:{{t.bg}};padding-bottom:40px;">
+          <div style="padding:0 20px;">
+            <sc-if value="{{wishlistEmpty}}">
+              <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:80px 20px;gap:14px;">
+                <div style="width:80px;height:80px;border-radius:50%;background:{{t.chipBg}};"></div>
+                <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;color:{{t.text}};">No items saved yet</div>
+                <div style="font-size:13.5px;color:{{t.textMuted}};">Tap the heart on any item to save it here</div>
+              </div>
+            </sc-if>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <sc-for list="{{wishlistCards}}" as="w" hint-placeholder-count="2">
+                <div style="background:{{t.surface}};border:1px solid {{t.border}};border-radius:18px;overflow:hidden;">
+                  <div style="height:100px;background:{{w.stripe}};position:relative;">
+                    <button onClick="{{w.remove}}" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.85);border:none;color:{{t.maroon}};font-size:14px;cursor:pointer;">×</button>
+                  </div>
+                  <div style="padding:11px;">
+                    <div style="font-size:13px;font-weight:600;color:{{t.text}};line-height:1.3;">{{w.name}}</div>
+                    <div style="font-weight:700;font-size:14px;color:{{t.text}};margin-top:6px;">₹{{w.price}}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <sc-if value="{{showBottomNav}}">
+      <div style="position:absolute;left:0;right:0;bottom:0;background:{{t.surface}};border-top:1px solid {{t.border}};display:flex;padding:10px 6px 14px;">
+        <sc-for list="{{navItems}}" as="n" hint-placeholder-count="4">
+          <button onClick="{{n.onClick}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;cursor:pointer;">
+            <div style="{{n.iconStyle}}"></div>
+            <span style="font-size:10.5px;font-weight:600;color:{{n.color}};">{{n.label}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+const CATEGORY_DEFS = [
+  {id:'festival-kits', name:'Festival Kits', mono:'FK'},
+  {id:'function-kits', name:'Function Kits', mono:'FN'},
+  {id:'daily-pooja', name:'Daily Pooja', mono:'DP'},
+  {id:'flowers', name:'Flowers', mono:'FL'},
+  {id:'agarbatti', name:'Agarbatti', mono:'AG'},
+  {id:'diyas', name:'Diyas', mono:'DY'},
+  {id:'oils', name:'Oils', mono:'OL'},
+  {id:'kumkum', name:'Kumkum', mono:'KK'},
+  {id:'camphor', name:'Camphor', mono:'CM'},
+  {id:'books', name:'Books', mono:'BK'},
+  {id:'brass', name:'Brass Items', mono:'BR'},
+];
+
+const KITS = [
+  {id:'k1', name:'Ganesh Chaturthi Kit', price:899, mrp:1199, rating:4.8, reviews:342, cat:'festival-kits'},
+  {id:'k2', name:'Satyanarayan Puja Kit', price:749, mrp:999, rating:4.7, reviews:210, cat:'function-kits'},
+  {id:'k3', name:'Griha Pravesh Kit', price:1499, mrp:1899, rating:4.9, reviews:128, cat:'function-kits'},
+  {id:'k4', name:'Navratri Kit — 9 Days', price:1299, mrp:1599, rating:4.8, reviews:276, cat:'festival-kits'},
+];
+
+const ESSENTIALS = [
+  {id:'d1', name:'Sandalwood Agarbatti', price:89, cat:'agarbatti'},
+  {id:'d2', name:'Cow Ghee Diya Wicks', price:45, cat:'diyas'},
+  {id:'d3', name:'Kumkum (Pure)', price:35, cat:'kumkum'},
+  {id:'d4', name:'Camphor Tablets', price:60, cat:'camphor'},
+  {id:'d5', name:'Fresh Marigold Garland', price:120, cat:'flowers'},
+  {id:'d6', name:'Panchapatra Set (Brass)', price:650, cat:'brass'},
+  {id:'d7', name:'Chandan Oil, 50ml', price:150, cat:'oils'},
+  {id:'d8', name:'Bhagavad Gita (Hindi)', price:199, cat:'books'},
+];
+
+const STORES = [
+  {id:'s1', name:'Sri Ganesha Pooja Store', distance:'1.2 km', rating:4.6, eta:'25 min'},
+  {id:'s2', name:'Annapurna Pooja Samagri', distance:'2.0 km', rating:4.8, eta:'35 min'},
+  {id:'s3', name:'Shree Devi Traders', distance:'3.4 km', rating:4.5, eta:'45 min'},
+];
+
+const PRIESTS = [
+  {id:'p1', name:'Pandit Raghunath Sharma', exp:'22 yrs', languages:'Hindi, Sanskrit, English', rating:4.9, reviews:412, specialization:'Griha Pravesh, Satyanarayan Puja', fee:1100,
+    bio:'A third-generation priest trained at Kashi, Pandit Raghunath has performed over 4,000 ceremonies across Griha Pravesh, Satyanarayan Puja and Navagraha Shanti rituals.',
+    expertise:['Griha Pravesh','Satyanarayan Puja','Navagraha Shanti']},
+  {id:'p2', name:'Pandit Venkatesh Iyer', exp:'15 yrs', languages:'Tamil, Telugu, English', rating:4.8, reviews:298, specialization:'Vratams, Navagraha Shanti', fee:900,
+    bio:'Specializes in South Indian Vratams and monthly poojas, known for his calm, detailed explanations of each ritual step for families new to tradition.',
+    expertise:['Vratams','Navagraha Shanti','Sathyanarayana Vratam']},
+  {id:'p3', name:'Pandit Anil Trivedi', exp:'30 yrs', languages:'Hindi, Gujarati, Sanskrit', rating:5.0, reviews:520, specialization:'Vastu Shanti, Rudrabhishek', fee:1500,
+    bio:'One of the most senior priests on the platform, Pandit Anil is renowned for elaborate Rudrabhishek and Vastu Shanti ceremonies performed with full Vedic rigor.',
+    expertise:['Vastu Shanti','Rudrabhishek','Homam']},
+  {id:'p4', name:'Pandit Suresh Bhatt', exp:'10 yrs', languages:'Marathi, Hindi', rating:4.7, reviews:156, specialization:'Ganesh Puja, Satyanarayan Puja', fee:800,
+    bio:'A warm, patient priest popular for festival poojas and first-time home ceremonies, especially Ganesh Chaturthi installations.',
+    expertise:['Ganesh Puja','Satyanarayan Puja','Griha Pravesh']},
+];
+
+const STRIPES_LIGHT = ['#FFE8D1','#F6E3B4','#F3D9DC','#E7E2D6'];
+const STRIPES_DARK = ['#3A2A18','#3C331A','#3A2226','#332C22'];
+
+function monoBg(seed, t){
+  const palette = [t.saffron, t.maroon, t.gold];
+  return palette[seed % palette.length];
+}
+function stars(rating){
+  const full = Math.round(rating);
+  return '★'.repeat(full) + '☆'.repeat(5-full);
+}
+function initials(name){
+  const parts = name.replace('Pandit ','').split(' ');
+  return (parts[0][0]+(parts[1]?parts[1][0]:'')).toUpperCase();
+}
+function stripe(idx, isDark){
+  const arr = isDark ? STRIPES_DARK : STRIPES_LIGHT;
+  const c = arr[idx % arr.length];
+  return `repeating-linear-gradient(45deg, ${c} 0px, ${c} 14px, transparent 14px, transparent 28px), ${isDark ? '#241A16' : '#FBF3E3'}`;
+}
+
+const THEMES = {
+  light: {bg:'#FBF7F2', surface:'#FFFFFF', text:'#2A1810', textMuted:'#8A7568', textDark:'#000000', border:'rgba(122,31,43,0.10)', saffron:'#FF6B00', gold:'#B8912A', maroon:'#7A1F2B', maroonDeep:'#4E1119', chipBg:'#F5EBDD', success:'#2E7D46'},
+  dark: {bg:'#1B1310', surface:'#241A16', text:'#F5EBE2', textMuted:'#B39A8C', textDark:'#000000', border:'rgba(212,175,55,0.18)', saffron:'#FF8A47', gold:'#E3C46B', maroon:'#D97583', maroonDeep:'#5A171F', chipBg:'#2E211B', success:'#4CAF6D'},
+};
+
+const ONBOARD_SLIDES = [
+  {title:'Complete Pooja Kits', desc:'Order curated kits for every festival and family function — nothing missing, nothing extra.', label:'FESTIVAL KIT'},
+  {title:'Verified Poojaris', desc:'Book experienced, background-verified priests for home visits or online consultations.', label:'POOJARI PORTRAIT'},
+  {title:'Same-Day Delivery', desc:'Fresh flowers, agarbatti and ritual items from nearby pooja stores, delivered fast.', label:'DELIVERY VAN'},
+  {title:'Never Miss a Festival', desc:'Personalized reminders for every festival and auspicious date, right on time.', label:'CALENDAR'},
+];
+
+const NOTIFICATIONS = [
+  {title:'Ganesh Chaturthi in 36 days', body:'Shop the complete kit now for guaranteed same-day delivery.', time:'2 hours ago'},
+  {title:'Order delivered', body:'Your Satyanarayan Puja Kit was delivered by Sri Ganesha Pooja Store.', time:'Yesterday'},
+  {title:'Booking confirmed', body:'Pandit Anil Trivedi will visit on Aug 4, 10:00 AM for Vastu Shanti.', time:'2 days ago'},
+  {title:'Flat 20% off Festival Kits', body:'Use code FEST20 at checkout, valid till Sept 6.', time:'3 days ago'},
+];
+
+const ORDER_HISTORY = [
+  {name:'Satyanarayan Puja Kit', date:'22 Jul 2026', amount:749, status:'Delivered'},
+  {name:'Daily Essentials (4 items)', date:'10 Jul 2026', amount:210, status:'Delivered'},
+  {name:'Griha Pravesh Kit', date:'02 Jun 2026', amount:1499, status:'Delivered'},
+];
+
+const PRIEST_HISTORY = [
+  {priest:'Pandit Anil Trivedi', ritual:'Vastu Shanti (Home Visit)', date:'02 Jun 2026'},
+  {priest:'Pandit Venkatesh Iyer', ritual:'Sathyanarayana Vratam (Online)', date:'14 Apr 2026'},
+];
+
+const FAMILY = [
+  {name:'Aarav Sharma', relation:'Self', gotram:'Bharadwaj', nakshatram:'Rohini'},
+  {name:'Meera Sharma', relation:'Spouse', gotram:'Kashyap', nakshatram:'Ashwini'},
+];
+
+class Component extends DCLogic {
+  state = {
+    screen: 'splash',
+    history: [],
+    theme: 'light',
+    onboardIdx: 0,
+    mobile: '',
+    otpDigits: ['','','',''],
+    otpTimer: 30,
+    selectedCategory: 'festival-kits',
+    selectedProductId: 'k1',
+    productSourceList: KITS,
+    selectedPriestId: 'p1',
+    bookingMode: 'home',
+    bookingDateIdx: 0,
+    bookingTimeIdx: null,
+    bookingRitualIdx: null,
+    cart: [],
+    couponCode: '',
+    couponApplied: false,
+    addressIdx: 0,
+    slotIdx: 0,
+    paymentIdx: 0,
+    trackingStep: 0,
+    wishlist: ['k1','d5'],
+    profileSection: null,
+    muted: false,
+    videoOff: false,
+    chatOpen: false,
+    callSeconds: 0,
+  };
+
+  componentDidMount(){
+    setTimeout(()=>{ if(this.state.screen==='splash') this.setState({screen:'onboarding'}); }, 2400);
+  }
+
+  go(screen, extra){
+    this.setState(s=>({ screen, history:[...s.history, s.screen], ...(extra||{}) }));
+    if(screen==='otp') this.startOtpTimer();
+    if(screen==='tracking') this.startTracking();
+    if(screen==='video') this.startCall();
+  }
+  back = () => {
+    this.setState(s=>{
+      const h=[...s.history]; const prev=h.pop();
+      return { screen: prev || 'home', history: h };
+    });
+  };
+  goTab = (tab) => this.setState({ screen: tab, history: [] });
+
+  toggleTheme = () => this.setState(s=>({ theme: s.theme==='light'?'dark':'light' }));
+
+  skipOnboarding = () => this.go('login');
+  onboardNext = () => {
+    if(this.state.onboardIdx >= ONBOARD_SLIDES.length-1) this.go('login');
+    else this.setState(s=>({ onboardIdx: s.onboardIdx+1 }));
+  };
+
+  onMobileChange = (e) => this.setState({ mobile: e.target.value.replace(/\D/g,'').slice(0,10) });
+  sendOtp = () => this.go('otp');
+  socialLogin = () => this.go('home', {history:[]});
+
+  startOtpTimer(){
+    clearInterval(this._otpInt);
+    this.setState({ otpTimer: 30 });
+    this._otpInt = setInterval(()=>{
+      this.setState(s=>{
+        if(s.otpTimer<=1){ clearInterval(this._otpInt); return {otpTimer:0}; }
+        return { otpTimer: s.otpTimer-1 };
+      });
+    }, 1000);
+  }
+  setOtpDigit(idx, val){
+    const v = val.replace(/\D/g,'').slice(-1);
+    this.setState(s=>{ const d=[...s.otpDigits]; d[idx]=v; return {otpDigits:d}; });
+  }
+  verifyOtp = () => { clearInterval(this._otpInt); this.go('home', {history:[]}); };
+
+  go_home = () => this.goTab('home');
+  go_categories = () => this.goTab('categories');
+  go_priests = () => this.goTab('priests');
+  go_profile = () => this.goTab('profile');
+  go_notifications = () => this.go('notifications');
+  go_festival = () => this.go('festival');
+  go_checkout = () => this.go('checkout');
+
+  selectCategory(id){ this.setState({ selectedCategory: id }); }
+
+  openProduct(id, list){ this.setState({ selectedProductId:id, productSourceList:list||KITS, productQty:1 }, ); this.go('product'); }
+  openPriest(id){ this.setState({ selectedPriestId:id }); this.go('priestProfile'); }
+
+  addFestivalKitToCart = () => {
+    this.addToCartItem({ id:'ganesh-kit', name:'Complete Ganesh Chaturthi Kit', price:899, type:'kit', stripe: stripe(0, this.state.theme==='dark') });
+  };
+  addProductToCart = () => {
+    const p = this.currentProduct();
+    this.addToCartItem({ id:p.id, name:p.name, price:p.price, type:'product', stripe:p.stripe, qty:this.state.productQty||1 });
+  };
+  addToCartItem(item){
+    this.setState(s=>{
+      const cart=[...s.cart];
+      const existing = cart.find(c=>c.id===item.id);
+      if(existing){ existing.qty += (item.qty||1); }
+      else cart.push({ ...item, qty: item.qty||1 });
+      return {cart};
+    });
+  }
+  incQty = () => this.setState(s=>({ productQty: (s.productQty||1)+1 }));
+  decQty = () => this.setState(s=>({ productQty: Math.max(1,(s.productQty||1)-1) }));
+
+  incCartItem(id){ this.setState(s=>({cart: s.cart.map(c=>c.id===id?{...c,qty:c.qty+1}:c)})); }
+  decCartItem(id){ this.setState(s=>({cart: s.cart.map(c=>c.id===id?{...c,qty:Math.max(1,c.qty-1)}:c).filter(c=>true)})); }
+
+  onCouponChange = (e) => this.setState({ couponCode: e.target.value });
+  applyCoupon = () => this.setState(s=>({ couponApplied: s.couponCode.trim().length>0 ? !s.couponApplied : s.couponApplied }));
+
+  placeOrder = () => { this.setState({ cart: [], couponApplied:false, trackingStep:0 }); this.go('tracking'); };
+
+  startTracking(){
+    clearInterval(this._trackInt);
+    this.setState({trackingStep:0});
+    this._trackInt = setInterval(()=>{
+      this.setState(s=>{
+        if(s.trackingStep>=4){ clearInterval(this._trackInt); return {}; }
+        return { trackingStep: s.trackingStep+1 };
+      });
+    }, 2800);
+  }
+
+  go_bookOnline = () => { this.setState({bookingMode:'online'}); this.go('booking'); };
+  go_bookHome = () => { this.setState({bookingMode:'home'}); this.go('booking'); };
+  selectBookingDate(i){ this.setState({bookingDateIdx:i}); }
+  selectBookingTime(i){ this.setState({bookingTimeIdx:i}); }
+  selectRitual(i){ this.setState({bookingRitualIdx:i}); }
+  confirmBooking = () => {
+    if(this.state.bookingMode==='online') this.go('video');
+    else this.go('tracking');
+  };
+
+  startCall(){
+    clearInterval(this._callInt);
+    this.setState({callSeconds:0, muted:false, videoOff:false, chatOpen:false});
+    this._callInt = setInterval(()=> this.setState(s=>({callSeconds:s.callSeconds+1})), 1000);
+  }
+  toggleMute = () => this.setState(s=>({muted:!s.muted}));
+  toggleVideoOff = () => this.setState(s=>({videoOff:!s.videoOff}));
+  toggleChat = () => this.setState(s=>({chatOpen:!s.chatOpen}));
+  endCall = () => { clearInterval(this._callInt); this.go('priestProfile'); };
+
+  openProfileSection(section){ this.setState({profileSection:section}); this.go('profileDetail'); }
+  logout = () => this.setState({ screen:'login', history:[], cart:[] });
+  toggleWishlist(id){ this.setState(s=>({ wishlist: s.wishlist.includes(id) ? s.wishlist.filter(w=>w!==id) : [...s.wishlist, id] })); }
+
+  currentProduct(){
+    const isDark = this.state.theme==='dark';
+    const list = this.state.productSourceList || KITS;
+    let p = list.find(x=>x.id===this.state.selectedProductId) || KITS.find(x=>x.id===this.state.selectedProductId) || ESSENTIALS.find(x=>x.id===this.state.selectedProductId);
+    if(!p) p = KITS[0];
+    const idx = KITS.findIndex(k=>k.id===p.id) >=0 ? KITS.findIndex(k=>k.id===p.id) : ESSENTIALS.findIndex(k=>k.id===p.id)+4;
+    return {
+      ...p,
+      stripe: stripe(idx<0?0:idx, isDark),
+      storeName: STORES[idx%STORES.length].name,
+      stars: stars(p.rating||4.7),
+      reviews: p.reviews || (80+idx*13),
+      eta: '35 min',
+      hasMrp: !!p.mrp,
+      desc: p.mrp ? 'A thoughtfully curated, temple-verified set of items — fresh, complete and ready to use for your ceremony.' : 'Sourced fresh daily from verified local pooja stores, hygienically packed for same-day delivery.',
+    };
+  }
+
+  renderVals(){
+    const isDark = this.state.theme==='dark';
+    const t = THEMES[this.state.theme];
+    const s = this.state;
+
+    const screens = ['splash','onboarding','login','otp','home','categories','festival','product','cart','checkout','tracking','priests','priestProfile','booking','video','profile','profileDetail','notifications','wishlist'];
+    const is = {}; screens.forEach(sc=> is[sc]=s.screen===sc);
+    is.cartLike = false;
+
+    const tabScreens = ['home','categories','priests','profile'];
+    const showBottomNav = tabScreens.includes(s.screen);
+    const showStdHeader = ['categories','festival','product','cart','checkout','tracking','priests','priestProfile','booking','profile','profileDetail','notifications','wishlist'].includes(s.screen) && !tabScreens.includes(s.screen) || s.screen==='categories';
+    const showBack = !tabScreens.includes(s.screen) && !['splash','onboarding','login','otp','video'].includes(s.screen);
+
+    const titles = { categories:'Categories', festival:'Festival', product: (this.currentProduct()||{}).name || 'Product', cart:'My Cart', checkout:'Checkout', tracking:'Track Order', priests:'Poojaris', priestProfile:'Priest Profile', booking:'Book Priest', profile:'Profile', profileDetail: this.profileSectionTitle(s.profileSection), notifications:'Notifications', wishlist:'Wishlist' };
+
+    // onboarding
+    const onboardSlide = { ...ONBOARD_SLIDES[s.onboardIdx], stripe: stripe(s.onboardIdx, isDark) };
+    const onboardDots = ONBOARD_SLIDES.map((_,i)=>({ w: i===s.onboardIdx?'22px':'7px', color: i===s.onboardIdx? t.saffron : t.border }));
+    const onboardBtnLabel = s.onboardIdx>=ONBOARD_SLIDES.length-1 ? 'Get Started' : 'Next';
+
+    // otp
+    const otpBoxes = s.otpDigits.map((v,i)=>({ val:v, onChange:(e)=>this.setOtpDigit(i,e.target.value) }));
+    const otpTimerText = s.otpTimer>0 ? `Resend OTP in 00:${String(s.otpTimer).padStart(2,'0')}` : 'Didn\'t receive code? Resend';
+
+    // home categories row
+    const homeCategories = CATEGORY_DEFS.slice(0,7).map((c,i)=>({ ...c, bg: i%2===0? t.chipBg : 'transparent', fg: i%3===0? t.maroon : t.saffron, onClick: ()=>{ this.selectCategory(c.id); this.go('categories'); } }));
+
+    const kitCards = KITS.map((k,i)=>({ ...k, stripe:stripe(i,isDark), stars:stars(k.rating), onClick: ()=>this.openProduct(k.id, KITS) }));
+    const essentialCards = ESSENTIALS.slice(0,4).map((e,i)=>({ ...e, stripe:stripe(i+4,isDark), onClick: ()=>this.openProduct(e.id, ESSENTIALS) }));
+    const storeCards = STORES.map((st,i)=>({ ...st, stripe:stripe(i+2,isDark), stars: stars(st.rating) }));
+    const priestCards = PRIESTS.map((p,i)=>({ ...p, initials:initials(p.name), mono_bg: monoBg(i,t), stars: stars(p.rating), onClick: ()=>this.openPriest(p.id) }));
+    const offerCards = [
+      { title:'Festival Special', desc:'Flat 20% off on all Festival Kits', code:'FEST20', bg: isDark?'rgba(212,175,55,.10)':'rgba(212,175,55,.14)', border: t.border },
+      { title:'First Booking', desc:'₹100 off your first Poojari booking', code:'PRIEST100', bg: isDark?'rgba(255,107,0,.10)':'rgba(255,107,0,.10)', border: t.border },
+    ];
+
+    // categories screen
+    const catChips = CATEGORY_DEFS.map(c=>({ ...c, onClick:()=>this.selectCategory(c.id), bg: s.selectedCategory===c.id ? t.maroon : t.surface, fg: s.selectedCategory===c.id ? '#fff' : t.text, borderColor: s.selectedCategory===c.id ? t.maroon : t.border }));
+    const activeCategoryName = (CATEGORY_DEFS.find(c=>c.id===s.selectedCategory)||{}).name || '';
+    const allProducts = [...KITS, ...ESSENTIALS];
+    const categoryProducts = allProducts.filter(p=>p.cat===s.selectedCategory).map((p,i)=>({ ...p, stripe: stripe(i, isDark), onClick: ()=>this.openProduct(p.id, allProducts) }));
+
+    // festival
+    const requiredItems = ['Clay Ganesh Idol','Modak','Durva Grass','Red Hibiscus','Coconut','Banana Leaves','Agarbatti','Camphor','Kumkum','Panchamrit'];
+    const festivalKitStripe = stripe(0, isDark);
+
+    // product
+    const selectedProduct = this.currentProduct();
+    const productQty = s.productQty || 1;
+    const productDots = [0,1,2].map(i=>({ color: i===0? t.gold : (isDark?'rgba(255,255,255,.3)':'rgba(0,0,0,.15)') }));
+    const productTotalPrice = selectedProduct.price * productQty;
+    const relatedList = allProducts.filter(p=>p.id!==selectedProduct.id).slice(0,4);
+    const relatedProducts = relatedList.map((p,i)=>({ ...p, stripe: stripe(i+1, isDark), onClick: ()=>this.openProduct(p.id, allProducts) }));
+
+    // cart
+    const cart = s.cart.map(item=>({ ...item, typeLabel: item.type==='kit'?'Pooja Kit': item.type==='priest'?'Priest Booking':'Product', inc:()=>this.incCartItem(item.id), dec:()=>this.decCartItem(item.id) }));
+    const cartEmpty = cart.length===0; const cartNotEmpty = !cartEmpty;
+    const cartSubtotal = cart.reduce((sum,i)=>sum+i.price*i.qty,0);
+    const cartDiscount = s.couponApplied ? Math.round(cartSubtotal*0.15) : 0;
+    const afterDiscount = cartSubtotal - cartDiscount;
+    const deliveryCharge = cart.length===0 ? 0 : (afterDiscount>999 ? 0 : 49);
+    const cartDeliveryLabel = deliveryCharge===0 ? 'FREE' : `₹${deliveryCharge}`;
+    const cartTotal = afterDiscount + deliveryCharge;
+    const couponBtnLabel = s.couponApplied ? 'Remove' : 'Apply';
+
+    // checkout
+    const addressList = [ {label:'Home', detail:'4th Cross, Malleshwaram, Bengaluru 560003'}, {label:'Office', detail:'Tech Park, Whitefield, Bengaluru 560066'} ];
+    const addressCards = addressList.map((a,i)=>({ ...a, selected: s.addressIdx===i, borderColor: s.addressIdx===i? t.maroon : t.border, dotColor: s.addressIdx===i? t.maroon : t.textMuted, onClick: ()=>this.setState({addressIdx:i}) }));
+    const slotList = ['Today, 4:00 PM – 6:00 PM','Today, 6:00 PM – 8:00 PM','Tomorrow, 10:00 AM – 12:00 PM'];
+    const slotCards = slotList.map((label,i)=>({ label, selected: s.slotIdx===i, borderColor: s.slotIdx===i? t.saffron : t.border, onClick: ()=>this.setState({slotIdx:i}) }));
+    const paymentList = ['UPI', 'Credit / Debit Card', 'Cash on Delivery'];
+    const paymentCards = paymentList.map((label,i)=>({ label, selected: s.paymentIdx===i, borderColor: s.paymentIdx===i? t.saffron : t.border, onClick: ()=>this.setState({paymentIdx:i}) }));
+
+    // tracking
+    const stepDefs = [ {label:'Order Placed', time:'12:04 PM'}, {label:'Store Accepted', time:'12:08 PM'}, {label:'Packed', time:'12:20 PM'}, {label:'Out for Delivery', time:'12:35 PM'}, {label:'Delivered', time:'Est. 1:10 PM'} ];
+    const trackingSteps = stepDefs.map((d,i)=>({ ...d, showLine: i<stepDefs.length-1, dotColor: i<=s.trackingStep? t.saffron : t.border, lineColor: i<s.trackingStep? t.saffron : t.border, textColor: i<=s.trackingStep? t.text : t.textMuted }));
+    const trackingEta = s.trackingStep>=4 ? 'Delivered' : `${(4-s.trackingStep)*8} min`;
+
+    // priests
+    const priestListCards = PRIESTS.map(p=>({ ...p, initials:initials(p.name), mono_bg: monoBg(PRIESTS.indexOf(p), t), stars: stars(p.rating), onClick: ()=>this.openPriest(p.id) }));
+    const selPriestRaw = PRIESTS.find(p=>p.id===s.selectedPriestId) || PRIESTS[0];
+    const selectedPriest = { ...selPriestRaw, initials: initials(selPriestRaw.name), mono_bg: monoBg(PRIESTS.indexOf(selPriestRaw), t), stars: stars(selPriestRaw.rating), expertiseList: selPriestRaw.expertise };
+
+    // booking
+    const bookingModeLabel = s.bookingMode==='online' ? 'Online Consultation' : 'Home Visit';
+    const today = new Date(2026,7,1);
+    const bookingDates = Array.from({length:6}).map((_,i)=>{ const d=new Date(today); d.setDate(d.getDate()+i); const sel = s.bookingDateIdx===i; return { day: d.toLocaleDateString('en-US',{weekday:'short'}), date: d.getDate(), onClick: ()=>this.selectBookingDate(i), borderColor: sel? t.saffron: t.border, bg: sel? t.chipBg : t.surface, subColor: sel? t.saffron : t.textMuted, numColor: sel? t.text : t.text }; });
+    const timeList = ['7:00 AM','9:00 AM','11:00 AM','4:00 PM','6:00 PM','8:00 PM'];
+    const bookingTimes = timeList.map((label,i)=>({ label, onClick:()=>this.selectBookingTime(i), borderColor: s.bookingTimeIdx===i? t.saffron: t.border, bg: s.bookingTimeIdx===i? t.chipBg: t.surface, color: t.text }));
+    const ritualList = ['Ganesh Puja','Satyanarayan Puja','Griha Pravesh','Vastu Shanti'];
+    const ritualOptions = ritualList.map((label,i)=>({ label, onClick:()=>this.selectRitual(i), borderColor: s.bookingRitualIdx===i? t.saffron: t.border, bg: s.bookingRitualIdx===i? t.chipBg: t.surface, color: t.text }));
+    const isHomeVisit = s.bookingMode==='home';
+    const bookingConfirmLabel = s.bookingMode==='online' ? 'Confirm & Join Call' : 'Confirm Booking';
+
+    // video
+    const mm = String(Math.floor(s.callSeconds/60)).padStart(2,'0');
+    const ss = String(s.callSeconds%60).padStart(2,'0');
+    const callDuration = `${mm}:${ss}`;
+    const muteBg = s.muted ? '#fff' : 'rgba(255,255,255,.15)';
+    const muteFg = s.muted ? '#12100f' : '#fff';
+    const muteLabel = s.muted ? 'Unmute' : 'Mute';
+    const videoBg = s.videoOff ? '#fff' : 'rgba(255,255,255,.15)';
+    const videoFg = s.videoOff ? '#12100f' : '#fff';
+    const videoLabel = s.videoOff ? 'Cam On' : 'Cam Off';
+
+    // profile
+    const profileRows = [
+      {label:'Personal Details', onClick:()=>this.openProfileSection('personalDetails')},
+      {label:'Saved Addresses', onClick:()=>this.openProfileSection('addresses')},
+      {label:'Family Members', onClick:()=>this.openProfileSection('family')},
+      {label:'Order History', onClick:()=>this.openProfileSection('orderHistory')},
+      {label:'Priest Booking History', onClick:()=>this.openProfileSection('priestHistory')},
+      {label:'Notifications', onClick:()=>this.go('notifications')},
+      {label:'Wishlist', onClick:()=>this.go('wishlist')},
+      {label:'Support', onClick:()=>this.openProfileSection('support')},
+    ];
+    const darkSwitchStyle = `width:46px;height:26px;border-radius:13px;border:none;cursor:pointer;padding:3px;background:${isDark? t.saffron : t.border};display:flex;justify-content:${isDark?'flex-end':'flex-start'};`;
+    const darkKnobStyle = `width:20px;height:20px;border-radius:50%;background:#fff;`;
+
+    const isProf = { personalDetails: s.profileSection==='personalDetails', addresses: s.profileSection==='addresses', family: s.profileSection==='family', orderHistory: s.profileSection==='orderHistory', priestHistory: s.profileSection==='priestHistory', support: s.profileSection==='support' };
+    Object.assign(is, isProf);
+
+    const familyMembers = FAMILY;
+    const orderHistory = ORDER_HISTORY;
+    const priestHistory = PRIEST_HISTORY;
+
+    // notifications
+    const notificationItems = NOTIFICATIONS.map((n,i)=>({ ...n, iconBg: i%2===0? t.chipBg : (isDark?'rgba(255,107,0,.15)':'rgba(255,107,0,.12)') }));
+
+    // wishlist
+    const wishItems = [...KITS, ...ESSENTIALS].filter(p=>s.wishlist.includes(p.id));
+    const wishlistEmpty = wishItems.length===0;
+    const wishlistCards = wishItems.map((w,i)=>({ ...w, stripe: stripe(i,isDark), remove: ()=>this.toggleWishlist(w.id) }));
+
+    // nav
+    const navDefs = [
+      {key:'home', label:'Home'},
+      {key:'categories', label:'Categories'},
+      {key:'priests', label:'Poojaris'},
+      {key:'profile', label:'Profile'},
+    ];
+    const navItems = navDefs.map(n=>{
+      const active = s.screen===n.key;
+      const color = active ? t.saffron : t.textMuted;
+      const shape = n.key==='home' ? `width:20px;height:20px;border-radius:6px;background:${color};`
+        : n.key==='categories' ? `width:20px;height:20px;display:grid;grid-template-columns:1fr 1fr;gap:3px;` 
+        : n.key==='priests' ? `width:20px;height:20px;border-radius:50%;border:2.5px solid ${color};`
+        : `width:20px;height:20px;border-radius:50%;background:${color};`;
+      return { ...n, onClick: ()=>this.goTab(n.key), color, iconStyle: shape };
+    });
+
+    const themeToggleLabel = isDark ? '☀ Light' : '🌙 Dark';
+    const themeBtnStyle = `padding:7px 13px;border-radius:9px;border:1px solid rgba(0,0,0,.15);background:transparent;font-size:12px;font-weight:600;color:inherit;cursor:pointer;`;
+    const outerBg = isDark ? '#0d0a09' : '#EDE7DD';
+    const outerText = isDark ? '#fff' : '#000';
+    const frameRing = isDark ? '#000' : 'rgba(0,0,0,.06)';
+
+    return {
+      t, is, showBottomNav, showStdHeader, showBack,
+      headerTitle: titles[s.screen] || '', headerRight:'',
+      onboardSlide, onboardDots, onboardBtnLabel, skipOnboarding: this.skipOnboarding, onboardNext: this.onboardNext,
+      mobile: s.mobile, mobileDisplay: s.mobile || '98765 43210', onMobileChange: this.onMobileChange, sendOtp: this.sendOtp, socialLogin: this.socialLogin,
+      otpBoxes, otpTimerText, verifyOtp: this.verifyOtp, back: this.back,
+      toggleTheme: this.toggleTheme, themeToggleLabel, themeBtnStyle, outerBg, outerText, frameRing,
+      homeCategories, kitCards, essentialCards, storeCards, priestCards, offerCards,
+      go_home: this.go_home, go_categories: this.go_categories, go_priests: this.go_priests, go_profile: this.go_profile, go_notifications: this.go_notifications, go_festival: this.go_festival, go_checkout: this.go_checkout,
+      catChips, activeCategoryName, categoryProducts,
+      requiredItems, festivalKitStripe, addFestivalKitToCart: this.addFestivalKitToCart,
+      selectedProduct, productQty, productDots, productTotalPrice, relatedProducts, incQty: this.incQty, decQty: this.decQty, addProductToCart: this.addProductToCart,
+      cart, cartEmpty, cartNotEmpty, cartSubtotal, cartDiscount, cartDeliveryLabel, cartTotal, couponApplied: s.couponApplied, couponCode: s.couponCode, onCouponChange: this.onCouponChange, applyCoupon: this.applyCoupon, couponBtnLabel,
+      addressCards, slotCards, paymentCards, placeOrder: this.placeOrder,
+      trackingSteps, trackingEta,
+      priestListCards, selectedPriest, go_bookOnline: this.go_bookOnline, go_bookHome: this.go_bookHome,
+      bookingModeLabel, bookingDates, bookingTimes, ritualOptions, isHomeVisit, bookingConfirmLabel, confirmBooking: this.confirmBooking,
+      callDuration, muteBg, muteFg, muteLabel, videoBg, videoFg, videoLabel, chatOpen: s.chatOpen, toggleMute: this.toggleMute, toggleVideoOff: this.toggleVideoOff, toggleChat: this.toggleChat, endCall: this.endCall,
+      profileRows, darkSwitchStyle, darkKnobStyle, logout: this.logout,
+      familyMembers, orderHistory, priestHistory,
+      notificationItems, wishlistEmpty, wishlistCards,
+      navItems,
+    };
+  }
+
+  profileSectionTitle(section){
+    const map = { personalDetails:'Personal Details', addresses:'Saved Addresses', family:'Family Members', orderHistory:'Order History', priestHistory:'Priest Booking History', support:'Support' };
+    return map[section] || 'Profile';
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+name: Mobile CI
+
+on:
+  push:
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/mobile-ci.yml'
+      - 'scripts/build-mobile-release.sh'
+  pull_request:
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/mobile-ci.yml'
+      - 'scripts/build-mobile-release.sh'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  release-apk:
+    needs: analyze
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Build release APK (mock pay disabled)
+        env:
+          API_BASE_URL: ${{ vars.MOBILE_API_BASE_URL }}
+        run: |
+          export API_BASE_URL="${API_BASE_URL:-https://api.poojastore.example/api/v1}"
+          chmod +x scripts/build-mobile-release.sh
+          ./scripts/build-mobile-release.sh apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pooja-store-release-apk
+          path: apps/mobile/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error

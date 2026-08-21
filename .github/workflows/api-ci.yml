@@ -1,0 +1,72 @@
+name: API CI
+
+on:
+  push:
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/api-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/api-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pooja
+          POSTGRES_PASSWORD: pooja_dev_password
+          POSTGRES_DB: pooja_store
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pooja -d pooja_store"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: apps/api
+
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgresql://pooja:pooja_dev_password@localhost:5432/pooja_store?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-access-secret-pooja-store-32chars
+      JWT_REFRESH_SECRET: ci-refresh-secret-pooja-store-32char
+      JWT_ACCESS_TTL_SECONDS: 900
+      JWT_REFRESH_TTL_SECONDS: 2592000
+      OTP_LENGTH: 6
+      OTP_TTL_SECONDS: 300
+      OTP_MAX_ATTEMPTS: 5
+      OTP_MAX_REQUESTS_PER_HOUR: 20
+      OTP_RETURN_IN_RESPONSE: "true"
+      SMS_PROVIDER: console
+      SWAGGER_ENABLED: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run test
+      - run: npm run test:e2e
+      - run: npm run build

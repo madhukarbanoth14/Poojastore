@@ -31,7 +31,16 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+!.env.example
+
+# Nest / Flutter
+apps/api/dist/
+apps/api/coverage/
+apps/mobile/.dart_tool/
+apps/mobile/build/
+apps/mobile/.flutter-plugins-dependencies
 
 # typescript
 *.tsbuildinfo
