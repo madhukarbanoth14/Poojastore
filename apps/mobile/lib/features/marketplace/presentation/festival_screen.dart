@@ -202,7 +202,10 @@ class FestivalScreen extends ConsumerWidget {
                         child: Row(
                           children: [
                             CatalogImage(
-                              asset: CatalogImages.kitAsset(name: f.kitName),
+                              asset: CatalogImages.kitAsset(
+                                slug: f.kitSlug,
+                                name: f.kitName,
+                              ),
                               width: 56,
                               height: 56,
                               radius: 14,
@@ -290,16 +293,22 @@ class FestivalScreen extends ConsumerWidget {
 
   Future<void> _addKit(BuildContext context, WidgetRef ref) async {
     try {
+      final guide = festivalById(festivalId);
       final kits = await ref.read(marketplaceApiProvider).listKits();
       if (kits.isEmpty) {
-        if (context.mounted) context.push('/shop');
+        if (context.mounted) {
+          final slug = guide.kitSlug;
+          context.push(slug != null ? '/kits/$slug' : '/shop');
+        }
         return;
       }
+      final slug = guide.kitSlug;
       final match = kits.cast<Map<String, dynamic>>().firstWhere(
             (k) {
+              if (slug != null && k['slug'] == slug) return true;
               final n = (k['name'] as String).toLowerCase();
               return n.contains(festivalId) ||
-                  n.contains(festivalById(festivalId).name.split(' ').first.toLowerCase());
+                  n.contains(guide.name.split(' ').first.toLowerCase());
             },
             orElse: () => kits.first,
           );

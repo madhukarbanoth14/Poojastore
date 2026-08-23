@@ -51,21 +51,22 @@ class SamagriFestivalList {
   String subtitle(bool te) => te ? subtitleTe : subtitleEn;
 }
 
+/// From `docs/pooja_samagri.xlsx` → section "గణేష్ పూజ హోమం సామాగ్రి" (18 items).
 const ganeshHomamList = SamagriFestivalList(
   id: 'ganesh',
   kitSlug: 'ganesh-puja-homam-samagri',
-  titleEn: 'Ganesh Homam',
-  titleTe: 'గణేష్ హోమం',
-  subtitleEn: 'Ganesh puja homam samagri from the store list.',
-  subtitleTe: 'గణేష్ పూజ హోమం సామాగ్రి జాబితా.',
+  titleEn: 'Ganesh Puja Homam',
+  titleTe: 'గణేష్ పూజ హోమం',
+  subtitleEn: 'Complete Ganesh puja / homam samagri from the Pooja Store Excel list.',
+  subtitleTe: 'docs/pooja_samagri.xlsx లోని గణేష్ పూజ హోమం సామాగ్రి జాబితా.',
   kitPriceMinor: 199900,
   items: [
     SamagriLine(slug: 'samagri-homa-powder', nameEn: 'Homa powder', nameTe: 'హోమం పొడి', priceMinor: 14900, packEn: '1 kg', packTe: '1కిలో'),
-    SamagriLine(slug: 'samagri-poha', nameEn: 'Poha (Atukulu)', nameTe: 'అటుకులు', priceMinor: 8000, packEn: '500g', packTe: '1/2కిలో'),
+    SamagriLine(slug: 'samagri-poha', nameEn: 'Poha (Atukulu)', nameTe: 'అటుకులు', priceMinor: 8000, packEn: '1/2 kg', packTe: '1/2కిలో'),
     SamagriLine(slug: 'samagri-jaggery', nameEn: 'Jaggery', nameTe: 'బెల్లం', priceMinor: 8000),
     SamagriLine(slug: 'samagri-navadhanyalu', nameEn: 'Navadhanyalu', nameTe: 'నవధాన్యాలు', priceMinor: 9000),
     SamagriLine(slug: 'samagri-rice-flour', nameEn: 'Rice flour', nameTe: 'బియ్యం పిండి', priceMinor: 6000),
-    SamagriLine(slug: 'samagri-purnahuti', nameEn: 'Purnahuti pack', nameTe: 'పూర్ణాహుతి', priceMinor: 12000),
+    SamagriLine(slug: 'samagri-purnahuti', nameEn: 'Purnahuti', nameTe: 'పూర్ణాహుతి', priceMinor: 12000),
     SamagriLine(slug: 'samagri-betel-leaves', nameEn: 'Betel leaves', nameTe: 'తామలపాకులు', priceMinor: 3000),
     SamagriLine(slug: 'samagri-fruits', nameEn: 'Fruits', nameTe: 'పండ్లు', priceMinor: 12000),
     SamagriLine(slug: 'samagri-flowers', nameEn: 'Flowers', nameTe: 'పువ్వులు', priceMinor: 8000),
@@ -73,10 +74,10 @@ const ganeshHomamList = SamagriFestivalList(
     SamagriLine(slug: 'samagri-samithalu', nameEn: 'Samithalu (homa sticks)', nameTe: 'సమితలు', priceMinor: 8000),
     SamagriLine(slug: 'samagri-ghee', nameEn: 'Ghee', nameTe: 'నెయ్యి', priceMinor: 25000),
     SamagriLine(slug: 'samagri-camphor', nameEn: 'Arati camphor', nameTe: 'హారతి కర్పూరం', priceMinor: 5000),
-    SamagriLine(slug: 'samagri-isthari-leaves', nameEn: 'Durva / isthari leaves', nameTe: 'ఇస్తరి ఆకులు', priceMinor: 4000),
+    SamagriLine(slug: 'samagri-isthari-leaves', nameEn: 'Isthari leaves (Durva)', nameTe: 'ఇస్తరి ఆకులు', priceMinor: 4000),
     SamagriLine(slug: 'samagri-homa-stand', nameEn: 'Homa stand', nameTe: 'హోమం స్టాండ్', priceMinor: 49900),
     SamagriLine(slug: 'samagri-dhoti', nameEn: 'Dhoti', nameTe: 'ధోతి', priceMinor: 39900),
-    SamagriLine(slug: 'samagri-blouse-pieces', nameEn: 'Blouse piece', nameTe: 'జాకెట్ పీసు', priceMinor: 39900),
+    SamagriLine(slug: 'samagri-blouse-pieces', nameEn: 'Blouse piece (Jacket piece)', nameTe: 'జాకెట్ పీసు', priceMinor: 39900),
     SamagriLine(slug: 'samagri-coconuts', nameEn: 'Coconuts', nameTe: 'కొబ్బరికాయలు', priceMinor: 6000, quantity: 2),
   ],
 );

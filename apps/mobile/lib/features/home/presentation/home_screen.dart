@@ -333,7 +333,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 itemBuilder: (context, i) {
                   if (featured.isEmpty) {
                     const fallback = [
-                      ('Ganesh Chaturthi Kit', 899, 'ganesh-chaturthi-kit'),
+                      (
+                        'Ganesh Puja Homam Samagri Kit',
+                        1999,
+                        'ganesh-puja-homam-samagri',
+                      ),
                       ('Satyanarayan Puja Kit', 749, 'satyanarayan-puja-kit'),
                       ('Daily Puja Kit', 399, 'daily-puja-kit'),
                     ];
@@ -342,7 +346,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       name: k.$1,
                       price: '₹${k.$2}',
                       imageAsset: CatalogImages.kitAsset(slug: k.$3, name: k.$1),
-                      onTap: () => context.push('/shop'),
+                      onTap: () => context.push('/kits/${k.$3}'),
                     );
                   }
                   final k = featured[i];

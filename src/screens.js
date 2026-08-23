@@ -380,9 +380,9 @@ function Festival({ t, actions, isDark }) {
         <Card t={t} style={{ marginTop: 22, padding: 16, flexDirection: 'row', gap: 14, alignItems: 'center', borderRadius: 18 }}>
           <Stripe data={stripe(0, isDark)} radius={14} style={{ width: 64, height: 64 }} />
           <View style={{ flex: 1 }}>
-            <TXT style={{ fontFamily: FONT.bodyBold, fontSize: 14.5, color: t.text }}>Complete Ganesh Chaturthi Kit</TXT>
-            <TXT style={{ fontSize: 12.5, color: t.textMuted, marginTop: 3 }}>Idol, modak, durva & 14 more items</TXT>
-            <TXT style={{ fontFamily: FONT.bodyBold, fontSize: 15.5, color: t.text, marginTop: 6 }}>₹899</TXT>
+            <TXT style={{ fontFamily: FONT.bodyBold, fontSize: 14.5, color: t.text }}>Ganesh Puja Homam Samagri Kit</TXT>
+            <TXT style={{ fontSize: 12.5, color: t.textMuted, marginTop: 3 }}>18 items from Pooja Samagri Excel list</TXT>
+            <TXT style={{ fontFamily: FONT.bodyBold, fontSize: 15.5, color: t.text, marginTop: 6 }}>₹1999</TXT>
           </View>
         </Card>
         <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
