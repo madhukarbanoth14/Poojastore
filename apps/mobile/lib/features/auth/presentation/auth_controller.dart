@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/i18n/locale_controller.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/fallback_dns.dart';
@@ -100,6 +101,30 @@ class AuthController extends StateNotifier<AuthState> {
         code: code,
         fullName: fullName,
         preferredLanguage: preferredLanguage,
+      );
+      state = state.copyWith(loading: false, user: session.user);
+      return true;
+    } catch (error) {
+      state = state.copyWith(loading: false, error: friendlyNetworkError(error));
+      return false;
+    }
+  }
+
+  Future<bool> continueWithSocial(String provider) async {
+    state = state.copyWith(loading: true, clearError: true);
+    try {
+      const storage = FlutterSecureStorage();
+      final key = 'social_subject_$provider';
+      var subject = await storage.read(key: key);
+      if (subject == null || subject.isEmpty) {
+        subject =
+            'ps-${provider.toLowerCase()}-${DateTime.now().microsecondsSinceEpoch}';
+        await storage.write(key: key, value: subject);
+      }
+      final session = await _repository.socialLogin(
+        provider: provider,
+        subject: subject,
+        fullName: provider == 'APPLE' ? 'Apple Devotee' : 'Google Devotee',
       );
       state = state.copyWith(loading: false, user: session.user);
       return true;

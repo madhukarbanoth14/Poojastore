@@ -99,23 +99,45 @@ model User {
   updatedAt         DateTime   @updatedAt @map("updated_at")
   deletedAt         DateTime?  @map("deleted_at")
 
-  otpChallenges OtpChallenge[]
-  refreshTokens RefreshToken[]
-  auditLogs     AuditLog[]
-  addresses     Address[]
-  cart          Cart?
-  orders        Order[]
-  birthProfile   BirthProfile?
-  kidsProgress   KidsProgress[]
-  priestBookings  PriestBooking[]
-  priestProfile   Priest?
+  otpChallenges      OtpChallenge[]
+  refreshTokens      RefreshToken[]
+  auditLogs          AuditLog[]
+  addresses          Address[]
+  cart               Cart?
+  orders             Order[]
+  birthProfile       BirthProfile?
+  kidsProgress       KidsProgress[]
+  priestBookings     PriestBooking[]
+  priestProfile      Priest?
   priestApplications PriestApplication[]
-  vratReminders   VratReminder[]
-  packageBookings PackageBooking[]
+  vratReminders      VratReminder[]
+  packageBookings    PackageBooking[]
+  socialIdentities   SocialIdentity[]
 
   @@index([role, status])
   @@index([createdAt])
   @@map("users")
+}
+
+enum SocialProvider {
+  GOOGLE
+  APPLE
+}
+
+model SocialIdentity {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  provider       SocialProvider
+  providerUserId String         @map("provider_user_id") @db.VarChar(191)
+  email          String?        @db.VarChar(255)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("social_identities")
 }
 
 enum Rasi {

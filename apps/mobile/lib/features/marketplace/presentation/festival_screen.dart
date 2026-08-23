@@ -31,7 +31,13 @@ class FestivalScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         GestureDetector(
-                          onTap: () => context.pop(),
+                          onTap: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/');
+                            }
+                          },
                           child: const Text(
                             '←',
                             style: TextStyle(
@@ -277,7 +283,7 @@ class FestivalScreen extends ConsumerWidget {
     try {
       final kits = await ref.read(marketplaceApiProvider).listKits();
       if (kits.isEmpty) {
-        if (context.mounted) context.push('/shop');
+        if (context.mounted) context.go('/shop');
         return;
       }
       final match = kits.cast<Map<String, dynamic>>().firstWhere(

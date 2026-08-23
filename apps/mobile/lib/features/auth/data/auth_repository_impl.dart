@@ -43,7 +43,34 @@ class AuthRepositoryImpl implements AuthRepository {
         'deviceId': 'flutter-mobile',
       },
     );
-    final data = response.data['data'] as Map<String, dynamic>;
+    return _sessionFromResponse(response.data['data'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<AuthSession> socialLogin({
+    required String provider,
+    required String subject,
+    String? idToken,
+    String? email,
+    String? fullName,
+    String? preferredLanguage,
+  }) async {
+    final response = await _api.dio.post(
+      '/auth/social',
+      data: {
+        'provider': provider,
+        'subject': subject,
+        if (idToken != null && idToken.isNotEmpty) 'idToken': idToken,
+        if (email != null && email.isNotEmpty) 'email': email,
+        if (fullName != null && fullName.isNotEmpty) 'fullName': fullName,
+        if (preferredLanguage != null) 'preferredLanguage': preferredLanguage,
+        'deviceId': 'flutter-mobile',
+      },
+    );
+    return _sessionFromResponse(response.data['data'] as Map<String, dynamic>);
+  }
+
+  Future<AuthSession> _sessionFromResponse(Map<String, dynamic> data) async {
     final tokens = data['tokens'] as Map<String, dynamic>;
     final user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
     await _persistTokens(

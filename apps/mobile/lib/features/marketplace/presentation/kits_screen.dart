@@ -55,7 +55,10 @@ class _KitsScreenState extends ConsumerState<KitsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: const PsHeader(title: 'Puja Kits'),
+      appBar: PsHeader(
+        title: 'Puja Kits',
+        showBack: context.canPop(),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null

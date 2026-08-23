@@ -81,4 +81,9 @@ export default () => ({
         process.env.STRIPE_CANCEL_URL ?? 'poojastore://payments/cancel',
     },
   },
+  social: {
+    requireIdToken: process.env.SOCIAL_AUTH_REQUIRE_ID_TOKEN === 'true',
+    googleClientIds: process.env.GOOGLE_CLIENT_IDS ?? '',
+    appleClientId: process.env.APPLE_CLIENT_ID ?? '',
+  },
 });

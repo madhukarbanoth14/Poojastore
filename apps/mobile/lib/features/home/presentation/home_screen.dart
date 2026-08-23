@@ -283,7 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   const Expanded(child: PpTitle('Puja Kits')),
                   GestureDetector(
-                    onTap: () => context.push('/shop'),
+                    onTap: () => context.go('/shop'),
                     child: const Text(
                       'View all',
                       style: TextStyle(
@@ -315,7 +315,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return _KitCard(
                       name: k.$1,
                       price: '₹${k.$2}',
-                      onTap: () => context.push('/shop'),
+                      onTap: () => context.go('/shop'),
                     );
                   }
                   final k = featured[i];

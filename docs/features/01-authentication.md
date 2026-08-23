@@ -13,6 +13,7 @@
 9. Admin can list users (paginated) and suspend/activate users.
 10. All auth events write audit logs.
 11. Production uses Twilio SMS (`SMS_PROVIDER=twilio`); console sender is dev/test only.
+12. Continue with Google / Apple via `POST /auth/social` (verified ID token required in production).
 
 ## 2. Database schema
 
@@ -24,6 +25,7 @@ See `apps/api/prisma/schema.prisma` models: `User`, `OtpChallenge`, `RefreshToke
 |--------|------|------|-------------|
 | POST | `/auth/otp/request` | Public | Send OTP |
 | POST | `/auth/otp/verify` | Public | Verify OTP, return tokens |
+| POST | `/auth/social` | Public | Continue with Google/Apple, return tokens |
 | POST | `/auth/refresh` | Public | Rotate tokens |
 | POST | `/auth/logout` | Bearer | Revoke session |
 | GET | `/auth/me` | Bearer | Current user |
@@ -34,6 +36,7 @@ See `apps/api/prisma/schema.prisma` models: `User`, `OtpChallenge`, `RefreshToke
 
 - [x] Backend use cases + Prisma repos + Redis OTP limiter
 - [x] Flutter auth UI (phone → OTP → home shell)
+- [x] Continue with Google / Apple (social identities + `/auth/social`)
 - [x] Admin user list / status (API + mobile admin gate)
 - [x] Validation DTOs
 - [x] Unit tests (OTP generation, phone normalization, use cases)
