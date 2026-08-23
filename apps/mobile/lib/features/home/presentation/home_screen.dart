@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/design_catalog.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/diya_mark.dart';
@@ -213,7 +214,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 118,
+              height: 148,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -225,48 +226,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     onTap: () => context.push('/festival/${f.id}'),
                     child: Container(
                       width: 168,
-                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.blush,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
                       ),
+                      clipBehavior: Clip.antiAlias,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.saffron,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              f.daysTo,
-                              style: const TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
+                          Expanded(
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                CatalogImage(
+                                  asset: CatalogImages.festivalAsset(f.id),
+                                  height: 78,
+                                  radius: 0,
+                                ),
+                                Positioned(
+                                  left: 10,
+                                  top: 10,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 9,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.saffron,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      f.daysTo,
+                                      style: const TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 9),
-                          Text(
-                            f.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14.5,
-                              color: AppColors.text,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            f.date,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textMuted,
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  f.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13.5,
+                                    color: AppColors.text,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  f.date,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -298,7 +324,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 168,
+              height: 196,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -307,21 +333,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 itemBuilder: (context, i) {
                   if (featured.isEmpty) {
                     const fallback = [
-                      ('Ganesh Chaturthi Kit', 899),
-                      ('Satyanarayan Puja Kit', 749),
-                      ('Daily Puja Kit', 399),
+                      ('Ganesh Chaturthi Kit', 899, 'ganesh-chaturthi-kit'),
+                      ('Satyanarayan Puja Kit', 749, 'satyanarayan-puja-kit'),
+                      ('Daily Puja Kit', 399, 'daily-puja-kit'),
                     ];
                     final k = fallback[i];
                     return _KitCard(
                       name: k.$1,
                       price: '₹${k.$2}',
+                      imageAsset: CatalogImages.kitAsset(slug: k.$3, name: k.$1),
                       onTap: () => context.push('/shop'),
                     );
                   }
                   final k = featured[i];
+                  final name = k['name'] as String;
                   return _KitCard(
-                    name: k['name'] as String,
+                    name: name,
                     price: formatInr(k['priceMinor'] as int),
+                    imageAsset: CatalogImages.kitAsset(
+                      slug: k['slug'] as String?,
+                      name: name,
+                    ),
                     onTap: () => context.push('/kits/${k['slug']}'),
                   );
                 },
@@ -340,36 +372,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
-                    childAspectRatio: 1.45,
+                    childAspectRatio: 1.05,
                     children: const [
                       _ServiceTile(
                         title: 'Puja Vidhi',
-                        color: AppColors.gold,
+                        imageId: 'vidhi',
                         route: '/vidhi',
                       ),
                       _ServiceTile(
                         title: 'Kids Corner',
-                        color: AppColors.maroonDeep,
+                        imageId: 'kids',
                         soon: true,
                       ),
                       _ServiceTile(
                         title: 'Book a Priest',
-                        color: AppColors.orange,
+                        imageId: 'priest',
                         route: '/priests',
                       ),
                       _ServiceTile(
                         title: 'Prasad & Vrat',
-                        color: AppColors.gold,
+                        imageId: 'prasad',
                         route: '/guides',
                       ),
                       _ServiceTile(
                         title: 'Puja Packages',
-                        color: AppColors.maroonDeep,
+                        imageId: 'packages',
                         route: '/packages',
                       ),
                       _ServiceTile(
                         title: 'Pooja Samagri',
-                        color: AppColors.gold,
+                        imageId: 'samagri',
                         route: '/samagri',
                       ),
                     ],
@@ -483,11 +515,13 @@ class _KitCard extends StatelessWidget {
     required this.name,
     required this.price,
     required this.onTap,
+    this.imageAsset,
   });
 
   final String name;
   final String price;
   final VoidCallback onTap;
+  final String? imageAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -495,7 +529,7 @@ class _KitCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 150,
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -504,7 +538,7 @@ class _KitCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const GoldThumb(height: 70),
+            CatalogImage(asset: imageAsset, height: 88, radius: 12),
             const SizedBox(height: 10),
             Text(
               name,
@@ -536,13 +570,13 @@ class _KitCard extends StatelessWidget {
 class _ServiceTile extends StatelessWidget {
   const _ServiceTile({
     required this.title,
-    required this.color,
+    required this.imageId,
     this.route,
     this.soon = false,
   });
 
   final String title;
-  final Color color;
+  final String imageId;
   final String? route;
   final bool soon;
 
@@ -553,67 +587,60 @@ class _ServiceTile extends StatelessWidget {
       child: GestureDetector(
         onTap: soon || route == null ? null : () => context.push(route!),
         child: Container(
-          padding: const EdgeInsets.all(13),
           decoration: BoxDecoration(
             color: AppColors.blush,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.border),
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFFFF3E7),
-                  border: Border.all(color: const Color(0xFFD9AE55), width: 1.5),
-                ),
-                alignment: Alignment.center,
-                child: Transform.rotate(
-                  angle: 0.785,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
+              Expanded(
+                child: CatalogImage(
+                  asset: CatalogImages.serviceAsset(imageId),
+                  height: 88,
+                  radius: 0,
                 ),
               ),
-              const SizedBox(height: 9),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: AppColors.text,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: AppColors.text,
+                      ),
+                    ),
+                    if (soon) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.chipBg,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'SOON',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFA8763B),
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              if (soon) ...[
-                const SizedBox(height: 7),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 7,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.chipBg,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'SOON',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFFA8763B),
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
