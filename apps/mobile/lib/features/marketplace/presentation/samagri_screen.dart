@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/catalog_images.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ps_format.dart';
 import '../../../core/widgets/ps_widgets.dart';
@@ -95,6 +96,16 @@ class _SamagriScreenState extends ConsumerState<SamagriScreen> {
                       onTap: () => context.push('/kits/${kit['slug']}'),
                       child: Row(
                         children: [
+                          CatalogImage(
+                            asset: CatalogImages.kitAsset(
+                              slug: kit['slug'] as String?,
+                              name: kit['name'] as String?,
+                            ),
+                            width: 56,
+                            height: 56,
+                            radius: 14,
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

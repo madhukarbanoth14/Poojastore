@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/catalog_images.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -97,7 +98,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ),
                   child: Row(
                     children: [
-                      const GoldThumb(width: 52, height: 52, radius: 12),
+                      CatalogImage(
+                        asset: CatalogImages.kitAsset(
+                          slug: product['slug'] as String?,
+                          name: product['name'] as String?,
+                        ),
+                        width: 52,
+                        height: 52,
+                        radius: 12,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(

@@ -155,7 +155,15 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                   children: [
-                    const GoldThumb(width: double.infinity, height: 140, radius: 16),
+                    CatalogImage(
+                      asset: CatalogImages.kitAsset(
+                        slug: widget.slug,
+                        name: name,
+                      ),
+                      width: double.infinity,
+                      height: 140,
+                      radius: 16,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       name,

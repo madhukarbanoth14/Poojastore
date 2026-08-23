@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/catalog_images.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ps_format.dart';
 import '../../../core/widgets/ps_widgets.dart';
@@ -101,7 +102,15 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                     children: [
                       Stack(
                         children: [
-                          StripeBlock(index: i, height: 100),
+                          CatalogImage(
+                            asset: CatalogImages.kitAsset(
+                              slug: slug,
+                              name: item['name'] as String?,
+                            ),
+                            width: double.infinity,
+                            height: 100,
+                            radius: 0,
+                          ),
                           Positioned(
                             top: 8,
                             right: 8,

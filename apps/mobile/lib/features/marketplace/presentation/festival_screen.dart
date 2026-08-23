@@ -82,6 +82,15 @@ class FestivalScreen extends ConsumerWidget {
                   ),
                 ),
                 Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: CatalogImage(
+                    asset: CatalogImages.festivalAsset(festivalId),
+                    width: double.infinity,
+                    height: 150,
+                    radius: 16,
+                  ),
+                ),
+                Padding(
                   padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
