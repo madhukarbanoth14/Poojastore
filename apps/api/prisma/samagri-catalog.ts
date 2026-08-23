@@ -68,12 +68,13 @@ const generalItems: SamagriItem[] = [
 ];
 
 const ganeshHomamItems: SamagriItem[] = [
+  // Sourced from docs/pooja_samagri.xlsx → "గణేష్ పూజ హోమం సామాగ్రి"
   { nameEn: 'Homa powder', nameTe: 'హోమం పొడి', quantity: 1, packEn: '1 kg', packTe: '1కిలో' },
-  { nameEn: 'Poha (Atukulu)', nameTe: 'అటుకులు', quantity: 1, packEn: '500g', packTe: '1/2కిలో' },
+  { nameEn: 'Poha (Atukulu)', nameTe: 'అటుకులు', quantity: 1, packEn: '1/2 kg', packTe: '1/2కిలో' },
   { nameEn: 'Jaggery', nameTe: 'బెల్లం', quantity: 1 },
   { nameEn: 'Navadhanyalu', nameTe: 'నవధాన్యాలు', quantity: 1 },
   { nameEn: 'Rice flour', nameTe: 'బియ్యం పిండి', quantity: 1 },
-  { nameEn: 'Purnahuti pack', nameTe: 'పూర్ణాహుతి', quantity: 1 },
+  { nameEn: 'Purnahuti', nameTe: 'పూర్ణాహుతి', quantity: 1 },
   { nameEn: 'Betel leaves', nameTe: 'తామలపాకులు', quantity: 1 },
   { nameEn: 'Fruits', nameTe: 'పండ్లు', quantity: 1 },
   { nameEn: 'Flowers', nameTe: 'పువ్వులు', quantity: 1 },
@@ -81,10 +82,10 @@ const ganeshHomamItems: SamagriItem[] = [
   { nameEn: 'Samithalu (homa sticks)', nameTe: 'సమితలు', quantity: 1 },
   { nameEn: 'Ghee', nameTe: 'నెయ్యి', quantity: 1 },
   { nameEn: 'Arati camphor', nameTe: 'హారతి కర్పూరం', quantity: 1 },
-  { nameEn: 'Durva / isthari leaves', nameTe: 'ఇస్తరి ఆకులు', quantity: 1 },
+  { nameEn: 'Isthari leaves (Durva)', nameTe: 'ఇస్తరి ఆకులు', quantity: 1 },
   { nameEn: 'Homa stand', nameTe: 'హోమం స్టాండ్', quantity: 1 },
   { nameEn: 'Dhoti', nameTe: 'ధోతి', quantity: 1 },
-  { nameEn: 'Blouse piece', nameTe: 'జాకెట్ పీసు', quantity: 1 },
+  { nameEn: 'Blouse piece (Jacket piece)', nameTe: 'జాకెట్ పీసు', quantity: 1 },
   { nameEn: 'Coconuts', nameTe: 'కొబ్బరికాయలు', quantity: 2 },
 ];
 
@@ -150,12 +151,12 @@ const kits: SamagriProduct[] = [
     slug: 'ganesh-puja-homam-samagri',
     type: ProductType.PUJA_KIT,
     sortOrder: 11,
-    nameEn: 'Ganesh Puja Homam Samagri',
-    nameTe: 'గణేష్ పూజ హోమం సామాగ్రి',
+    nameEn: 'Ganesh Puja Homam Samagri Kit',
+    nameTe: 'గణేష్ పూజ హోమం సామాగ్రి కిట్',
     descriptionEn:
-      'Complete homa pack for Ganesh puja — homa powder, navadhanyalu, samithalu, ghee, and ceremonial cloth.',
+      'Complete Ganesh puja / homam samagri from the Pooja Store Excel list (docs/pooja_samagri.xlsx) — homa powder, navadhanyalu, samithalu, ghee, cloth, and offerings.',
     descriptionTe:
-      'గణేష్ పూజ హోమానికి సంపూర్ణ సామగ్రి — హోమం పొడి, నవధాన్యాలు, సమితలు, నెయ్యి, ధోతి.',
+      'docs/pooja_samagri.xlsx లోని గణేష్ పూజ హోమం సామాగ్రి జాబితా ప్రకారం సంపూర్ణ కిట్ — హోమం పొడి, నవధాన్యాలు, సమితలు, నెయ్యి, ధోతి.',
     priceMinor: 199900,
     mrpMinor: 249900,
     items: ganeshHomamItems,
@@ -256,7 +257,10 @@ const nameAliases: Record<string, string> = {
   Deepam: 'Akhanda deepam',
   'Mango leaves for toranam': 'Mango leaves',
   'Blouse piece': 'Blouse pieces',
+  'Blouse piece (Jacket piece)': 'Blouse pieces',
   'Arati camphor': 'Camphor',
+  Purnahuti: 'Purnahuti pack',
+  'Isthari leaves (Durva)': 'Durva / isthari leaves',
 };
 
 function priceEntry(nameEn: string) {

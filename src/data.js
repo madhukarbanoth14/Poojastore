@@ -15,7 +15,7 @@ export const CATEGORY_DEFS = [
 ];
 
 export const KITS = [
-  { id: 'k1', name: 'Ganesh Chaturthi Kit', price: 899, mrp: 1199, rating: 4.8, reviews: 342, cat: 'festival-kits' },
+  { id: 'k1', name: 'Ganesh Puja Homam Samagri Kit', price: 1999, mrp: 2499, rating: 4.8, reviews: 342, cat: 'festival-kits' },
   { id: 'k2', name: 'Satyanarayan Puja Kit', price: 749, mrp: 999, rating: 4.7, reviews: 210, cat: 'function-kits' },
   { id: 'k3', name: 'Griha Pravesh Kit', price: 1499, mrp: 1899, rating: 4.9, reviews: 128, cat: 'function-kits' },
   { id: 'k4', name: 'Navratri Kit — 9 Days', price: 1299, mrp: 1599, rating: 4.8, reviews: 276, cat: 'festival-kits' },
@@ -83,7 +83,31 @@ export const FAMILY = [
   { name: 'Meera Sharma', relation: 'Spouse', gotram: 'Kashyap', nakshatram: 'Ashwini' },
 ];
 
-export const REQUIRED_ITEMS = ['Clay Ganesh Idol', 'Modak', 'Durva Grass', 'Red Hibiscus', 'Coconut', 'Banana Leaves', 'Agarbatti', 'Camphor', 'Kumkum', 'Panchamrit'];
+export const REQUIRED_ITEMS = [
+  'Homa powder — 1 kg',
+  'Poha / Atukulu — 1/2 kg',
+  'Jaggery',
+  'Navadhanyalu',
+  'Rice flour',
+  'Purnahuti',
+  'Betel leaves (Tamalapakulu)',
+  'Fruits',
+  'Flowers',
+  'Dry fruits',
+  'Samithalu (homa sticks)',
+  'Ghee',
+  'Arati camphor',
+  'Isthari / Durva leaves',
+  'Homa stand',
+  'Dhoti',
+  'Blouse piece (Jacket piece)',
+  'Coconuts',
+];
+
+/** Individual retail prices (₹) aligned with apps/api/prisma/samagri-catalog.ts */
+export const REQUIRED_ITEM_PRICES = [
+  149, 80, 80, 90, 60, 120, 30, 120, 80, 199, 80, 250, 50, 40, 499, 399, 399, 120,
+];
 
 export const ADDRESS_LIST = [
   { label: 'Home', detail: '4th Cross, Malleshwaram, Bengaluru 560003' },

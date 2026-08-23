@@ -5,6 +5,8 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/core/database/prisma.service';
 
+// CI runs `npx prisma db seed` before e2e so PUJA_KIT products exist.
+
 async function loginAs(
   app: INestApplication,
   phone: string,

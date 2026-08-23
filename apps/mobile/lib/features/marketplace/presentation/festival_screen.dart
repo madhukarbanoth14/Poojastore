@@ -5,6 +5,7 @@ import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/design_catalog.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
+import '../../../core/widgets/ps_format.dart';
 import 'kits_screen.dart';
 
 class FestivalScreen extends ConsumerWidget {
@@ -168,33 +169,98 @@ class FestivalScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       const PpTitle('Required Items', size: 14.5),
+                      if (f.pricedItems != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Individual prices · kit ${formatInr(f.kitPrice * 100)}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: f.items
-                            .map(
-                              (item) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.chipBg,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  item,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.maroonDeep,
+                      if (f.pricedItems != null)
+                        ...f.pricedItems!.map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    item.displayName(false),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.text,
+                                    ),
                                   ),
                                 ),
+                                Text(
+                                  formatInr(item.lineTotalMinor),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.saffron,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: f.items
+                              .map(
+                                (item) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.chipBg,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    item,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.maroonDeep,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      if (f.pricedItemsTotalMinor != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                'If bought separately',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                ),
                               ),
-                            )
-                            .toList(),
-                      ),
+                            ),
+                            Text(
+                              formatInr(f.pricedItemsTotalMinor!),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textMuted,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 20),
                       const PpTitle('Complete Pooja Kit', size: 14.5),
                       const SizedBox(height: 10),
@@ -208,7 +274,10 @@ class FestivalScreen extends ConsumerWidget {
                         child: Row(
                           children: [
                             CatalogImage(
-                              asset: CatalogImages.kitAsset(name: f.kitName),
+                              asset: CatalogImages.kitAsset(
+                                slug: f.kitSlug,
+                                name: f.kitName,
+                              ),
                               width: 56,
                               height: 56,
                               radius: 14,
@@ -296,16 +365,26 @@ class FestivalScreen extends ConsumerWidget {
 
   Future<void> _addKit(BuildContext context, WidgetRef ref) async {
     try {
+      final guide = festivalById(festivalId);
       final kits = await ref.read(marketplaceApiProvider).listKits();
       if (kits.isEmpty) {
-        if (context.mounted) context.go('/shop');
+        if (context.mounted) {
+          final slug = guide.kitSlug;
+          if (slug != null) {
+            context.push('/kits/$slug');
+          } else {
+            context.go('/shop');
+          }
+        }
         return;
       }
+      final slug = guide.kitSlug;
       final match = kits.cast<Map<String, dynamic>>().firstWhere(
             (k) {
+              if (slug != null && k['slug'] == slug) return true;
               final n = (k['name'] as String).toLowerCase();
               return n.contains(festivalId) ||
-                  n.contains(festivalById(festivalId).name.split(' ').first.toLowerCase());
+                  n.contains(guide.name.split(' ').first.toLowerCase());
             },
             orElse: () => kits.first,
           );

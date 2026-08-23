@@ -168,7 +168,7 @@ export function useApp() {
     })),
 
     addFestivalKitToCart: () => addToCartItem({
-      id: 'ganesh-kit', name: 'Complete Ganesh Chaturthi Kit', price: 899, type: 'kit',
+      id: 'ganesh-kit', name: 'Ganesh Puja Homam Samagri Kit', price: 1999, type: 'kit',
       stripe: stripe(0, isDark),
     }),
     addProductToCart: () => {

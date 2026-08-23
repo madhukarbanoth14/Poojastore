@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'samagri_catalog.dart';
 
 class ShopCategory {
   const ShopCategory({
@@ -45,6 +46,8 @@ class FestivalGuide {
     required this.items,
     required this.kitName,
     required this.kitPrice,
+    this.kitSlug,
+    this.pricedItems,
   });
 
   final String id;
@@ -57,6 +60,12 @@ class FestivalGuide {
   final List<String> items;
   final String kitName;
   final int kitPrice;
+  final String? kitSlug;
+  /// Per-item retail prices when sourced from [samagri_catalog.dart].
+  final List<SamagriLine>? pricedItems;
+
+  int? get pricedItemsTotalMinor =>
+      pricedItems == null ? null : sumSamagriLinePrices(pricedItems!);
 
   String get daysTo {
     final now = DateTime.now();
@@ -68,6 +77,28 @@ class FestivalGuide {
     return 'IN $days DAYS';
   }
 }
+
+/// From `docs/pooja_samagri.xlsx` → section "గణేష్ పూజ హోమం సామాగ్రి".
+const ganeshPujaHomamKitItems = [
+  'Homa powder — 1 kg',
+  'Poha / Atukulu — 1/2 kg',
+  'Jaggery',
+  'Navadhanyalu',
+  'Rice flour',
+  'Purnahuti',
+  'Betel leaves (Tamalapakulu)',
+  'Fruits',
+  'Flowers',
+  'Dry fruits',
+  'Samithalu (homa sticks)',
+  'Ghee',
+  'Arati camphor',
+  'Isthari / Durva leaves',
+  'Homa stand',
+  'Dhoti',
+  'Blouse piece (Jacket piece)',
+  'Coconuts',
+];
 
 final upcomingFestivals = [
   FestivalGuide(
@@ -86,17 +117,11 @@ final upcomingFestivals = [
       'Perform aarti morning and evening through the festival.',
       'Immerse the idol in water on the chosen day (visarjan).',
     ],
-    items: [
-      'Ganesha idol',
-      'Durva grass',
-      'Modak',
-      'Red cloth',
-      'Kumkum',
-      'Diya & oil',
-      'Incense sticks',
-    ],
-    kitName: 'Ganesh Chaturthi Complete Kit',
-    kitPrice: 899,
+    items: ganeshPujaHomamKitItems,
+    kitName: 'Ganesh Puja Homam Samagri Kit',
+    kitPrice: 1999,
+    kitSlug: 'ganesh-puja-homam-samagri',
+    pricedItems: ganeshHomamList.items,
   ),
   FestivalGuide(
     id: 'navratri',
@@ -159,18 +184,7 @@ FestivalGuide festivalById(String id) => upcomingFestivals.firstWhere(
       orElse: () => upcomingFestivals.first,
     );
 
-const festivalRequiredItems = [
-  'Clay Ganesh Idol',
-  'Modak',
-  'Durva Grass',
-  'Red Hibiscus',
-  'Coconut',
-  'Banana Leaves',
-  'Agarbatti',
-  'Camphor',
-  'Kumkum',
-  'Panchamrit',
-];
+const festivalRequiredItems = ganeshPujaHomamKitItems;
 
 const familyMembers = [
   (
