@@ -32,6 +32,17 @@ class _FakeAuthRepository implements AuthRepository {
       throw UnimplementedError();
 
   @override
+  Future<AuthSession> socialLogin({
+    required String provider,
+    required String subject,
+    String? idToken,
+    String? email,
+    String? fullName,
+    String? preferredLanguage,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
   Future<void> updatePreferredLanguage(String language) async {}
 
   @override
