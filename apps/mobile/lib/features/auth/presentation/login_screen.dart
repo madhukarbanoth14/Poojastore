@@ -65,10 +65,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (ok && mounted) context.go('/');
   }
 
-  void _socialUnavailable() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Phone OTP is required to sign in.')),
-    );
+  Future<void> _socialLogin(String provider) async {
+    final ok = await ref
+        .read(authControllerProvider.notifier)
+        .continueWithSocial(provider);
+    if (ok && mounted) context.go('/');
   }
 
   @override
@@ -147,7 +148,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       loading: auth.loading,
                       error: auth.error,
                       onSend: _requestOtp,
-                      onSocial: _socialUnavailable,
+                      onGoogle: () => _socialLogin('GOOGLE'),
+                      onApple: () => _socialLogin('APPLE'),
                     ),
             ),
           ),
@@ -163,14 +165,16 @@ class _MobileStep extends StatelessWidget {
     required this.loading,
     required this.error,
     required this.onSend,
-    required this.onSocial,
+    required this.onGoogle,
+    required this.onApple,
   });
 
   final TextEditingController phoneController;
   final bool loading;
   final String? error;
   final VoidCallback onSend;
-  final VoidCallback onSocial;
+  final VoidCallback onGoogle;
+  final VoidCallback onApple;
 
   @override
   Widget build(BuildContext context) {
@@ -266,7 +270,7 @@ class _MobileStep extends StatelessWidget {
         ),
         const SizedBox(height: 22),
         OutlinedButton(
-          onPressed: onSocial,
+          onPressed: loading ? null : onGoogle,
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.text,
             backgroundColor: Colors.white,
@@ -291,7 +295,7 @@ class _MobileStep extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         FilledButton(
-          onPressed: onSocial,
+          onPressed: loading ? null : onApple,
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF221013),
             foregroundColor: Colors.white,

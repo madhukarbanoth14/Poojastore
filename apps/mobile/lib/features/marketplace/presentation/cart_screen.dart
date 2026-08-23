@@ -67,7 +67,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     ),
                     const SizedBox(height: 18),
                     FilledButton(
-                      onPressed: () => context.push('/shop'),
+                      onPressed: () => context.go('/shop'),
                       child: const Text('Browse Kits'),
                     ),
                   ],

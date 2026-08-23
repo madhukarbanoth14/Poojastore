@@ -19,7 +19,7 @@ class PsHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canPop = Navigator.of(context).canPop();
+    final canPop = context.canPop();
     return Material(
       color: AppColors.headerBar,
       child: Container(
@@ -30,9 +30,15 @@ class PsHeader extends StatelessWidget implements PreferredSizeWidget {
         ),
         child: Row(
           children: [
-            if (showBack && canPop)
+            if (showBack)
               GestureDetector(
-                onTap: () => context.pop(),
+                onTap: () {
+                  if (canPop) {
+                    context.pop();
+                  } else {
+                    context.go('/');
+                  }
+                },
                 child: const Padding(
                   padding: EdgeInsets.only(right: 14),
                   child: Text(
