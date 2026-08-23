@@ -56,7 +56,7 @@ class CatalogImage extends StatelessWidget {
     super.key,
     required this.asset,
     this.width,
-    this.height,
+    required this.height,
     this.radius = 12,
     this.fit = BoxFit.cover,
   });
