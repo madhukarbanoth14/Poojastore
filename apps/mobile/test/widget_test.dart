@@ -1,10 +1,43 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pooja_store_mobile/app.dart';
+import 'package:pooja_store_mobile/features/auth/domain/auth_repository.dart';
+import 'package:pooja_store_mobile/features/auth/domain/auth_user.dart';
 import 'package:pooja_store_mobile/features/auth/presentation/auth_controller.dart';
 
-class _TestAuthController extends StateNotifier<AuthState> {
-  _TestAuthController() : super(const AuthState(bootstrapping: false));
+class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<AuthUser?> restoreSession() async => null;
+
+  @override
+  Future<String?> requestOtp({
+    required String countryCode,
+    required String phone,
+  }) async =>
+      null;
+
+  @override
+  Future<AuthSession> verifyOtp({
+    required String countryCode,
+    required String phone,
+    required String code,
+    String? fullName,
+    String? preferredLanguage,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> updatePreferredLanguage(String language) async {}
+
+  @override
+  Future<AuthUser> updateProfile({String? fullName, String? email}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<AuthUser> me() async => throw UnimplementedError();
+
+  @override
+  Future<void> logout() async {}
 }
 
 Future<void> _pumpUntilFound(
@@ -24,11 +57,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          authControllerProvider.overrideWith((ref) => _TestAuthController()),
+          authRepositoryProvider.overrideWith((ref) => _FakeAuthRepository()),
         ],
         child: const PoojaStoreApp(),
       ),
     );
+    await tester.pump();
     await tester.pump();
 
     // Splash repeats animations forever — avoid pumpAndSettle; advance its timer.
