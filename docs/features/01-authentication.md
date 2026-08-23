@@ -32,6 +32,11 @@ See `apps/api/prisma/schema.prisma` models: `User`, `OtpChallenge`, `RefreshToke
 | GET | `/admin/users` | Admin | List users |
 | PATCH | `/admin/users/:id/status` | Admin | Suspend/activate |
 
+## Social login
+
+- Dev/staging: mobile sends a stable `subject` per provider; API upserts `SocialIdentity` and issues JWTs.
+- Production: set `GOOGLE_CLIENT_IDS` / `APPLE_CLIENT_ID` and pass a verified `idToken` from the native Google/Apple SDKs (`SOCIAL_AUTH_REQUIRE_ID_TOKEN=true` also forces this outside production).
+
 ## 4–10. Implementation checklist
 
 - [x] Backend use cases + Prisma repos + Redis OTP limiter
