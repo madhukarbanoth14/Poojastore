@@ -277,16 +277,20 @@ class _MobileStep extends StatelessWidget {
             side: const BorderSide(color: AppColors.inputBorder),
             minimumSize: const Size.fromHeight(50),
           ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _GoogleDot(),
-              SizedBox(width: 10),
-              Text(
-                'Continue with Google',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
-              ),
-            ],
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                _GoogleDot(),
+                SizedBox(width: 10),
+                Text(
+                  'Continue with Google',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -297,23 +301,27 @@ class _MobileStep extends StatelessWidget {
             foregroundColor: Colors.white,
             minimumSize: const Size.fromHeight(50),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 14,
-                height: 17,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 14,
+                  height: 17,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              const Text(
-                'Continue with Apple',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
-              ),
-            ],
+                const SizedBox(width: 10),
+                const Text(
+                  'Continue with Apple',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),

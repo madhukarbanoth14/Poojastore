@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/design_catalog.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
@@ -84,6 +85,15 @@ class FestivalScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: CatalogImage(
+                    asset: CatalogImages.festivalAsset(festivalId),
+                    width: double.infinity,
+                    height: 150,
+                    radius: 16,
                   ),
                 ),
                 Padding(
@@ -197,7 +207,12 @@ class FestivalScreen extends ConsumerWidget {
                         ),
                         child: Row(
                           children: [
-                            const GoldThumb(width: 56, height: 56, radius: 14),
+                            CatalogImage(
+                              asset: CatalogImages.kitAsset(name: f.kitName),
+                              width: 56,
+                              height: 56,
+                              radius: 14,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(

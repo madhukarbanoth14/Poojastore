@@ -1,12 +1,87 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pooja_store_mobile/app.dart';
+import 'package:pooja_store_mobile/core/theme/app_theme.dart';
+import 'package:pooja_store_mobile/features/auth/domain/auth_repository.dart';
+import 'package:pooja_store_mobile/features/auth/domain/auth_user.dart';
+import 'package:pooja_store_mobile/features/auth/presentation/auth_controller.dart';
+import 'package:pooja_store_mobile/features/auth/presentation/login_screen.dart';
+import 'package:pooja_store_mobile/l10n/l10n.dart';
+
+class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<AuthUser?> restoreSession() async => null;
+
+  @override
+  Future<String?> requestOtp({
+    required String countryCode,
+    required String phone,
+  }) async =>
+      null;
+
+  @override
+  Future<AuthSession> verifyOtp({
+    required String countryCode,
+    required String phone,
+    required String code,
+    String? fullName,
+    String? preferredLanguage,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<AuthSession> socialLogin({
+    required String provider,
+    required String subject,
+    String? idToken,
+    String? email,
+    String? fullName,
+    String? preferredLanguage,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> updatePreferredLanguage(String language) async {}
+
+  @override
+  Future<AuthUser> updateProfile({String? fullName, String? email}) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<AuthUser> me() async => throw UnimplementedError();
+
+  @override
+  Future<void> logout() async {}
+}
 
 void main() {
-  testWidgets('app boots to login when unauthenticated', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: PoojaStoreApp()));
-    await tester.pumpAndSettle();
-    expect(find.text('Pooja Store'), findsWidgets);
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('login screen shows Send OTP when unauthenticated', (tester) async {
+    tester.view.physicalSize = const Size(800, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWith((ref) => _FakeAuthRepository()),
+        ],
+        child: MaterialApp(
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          theme: buildLightTheme(const Locale('en')),
+          home: const LoginScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Pooja Panchang'), findsOneWidget);
     expect(find.text('Send OTP'), findsOneWidget);
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/catalog_images.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -154,7 +155,15 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                   children: [
-                    const GoldThumb(width: double.infinity, height: 140, radius: 16),
+                    CatalogImage(
+                      asset: CatalogImages.kitAsset(
+                        slug: widget.slug,
+                        name: name,
+                      ),
+                      width: double.infinity,
+                      height: 140,
+                      radius: 16,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       name,

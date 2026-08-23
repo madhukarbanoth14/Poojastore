@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/catalog_images.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
 import '../../../core/widgets/ps_widgets.dart';
 import '../../auth/presentation/auth_controller.dart';
@@ -80,7 +80,15 @@ class _KitsScreenState extends ConsumerState<KitsScreen> {
                         ),
                         child: Row(
                           children: [
-                            const GoldThumb(width: 64, height: 64, radius: 14),
+                            CatalogImage(
+                              asset: CatalogImages.kitAsset(
+                                slug: k['slug'] as String?,
+                                name: k['name'] as String?,
+                              ),
+                              width: 64,
+                              height: 64,
+                              radius: 14,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(

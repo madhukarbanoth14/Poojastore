@@ -25,7 +25,6 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen> {
   final Set<String> _addons = {};
   String? _slotId;
   String? _addressId;
-  List<Map<String, dynamic>> _addresses = [];
   final _service = TextEditingController(text: 'Home Puja');
   bool _loading = false;
   String? _error;
@@ -46,7 +45,6 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen> {
   Future<void> _loadAddresses() async {
     final items = await ref.read(packagesApiProvider).listAddresses();
     setState(() {
-      _addresses = items;
       _addressId = items.isNotEmpty ? items.first['id'] as String : null;
     });
   }
