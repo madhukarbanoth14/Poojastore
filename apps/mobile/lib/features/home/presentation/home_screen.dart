@@ -346,11 +346,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       name: k.$1,
                       price: '₹${k.$2}',
                       imageAsset: CatalogImages.kitAsset(slug: k.$3, name: k.$1),
-<<<<<<< HEAD
                       onTap: () => context.push('/kits/${k.$3}'),
-=======
-                      onTap: () => context.go('/shop'),
->>>>>>> origin/master
                     );
                   }
                   final k = featured[i];
