@@ -24,7 +24,12 @@ class SamagriLine {
     final pack = te ? packTe : packEn;
     return pack == null || pack.isEmpty ? name : '$name — $pack';
   }
+
+  int get lineTotalMinor => priceMinor * quantity;
 }
+
+int sumSamagriLinePrices(Iterable<SamagriLine> lines) =>
+    lines.fold<int>(0, (sum, line) => sum + line.lineTotalMinor);
 
 class SamagriFestivalList {
   const SamagriFestivalList({

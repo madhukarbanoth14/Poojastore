@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'samagri_catalog.dart';
 
 class ShopCategory {
   const ShopCategory({
@@ -46,6 +47,7 @@ class FestivalGuide {
     required this.kitName,
     required this.kitPrice,
     this.kitSlug,
+    this.pricedItems,
   });
 
   final String id;
@@ -59,6 +61,11 @@ class FestivalGuide {
   final String kitName;
   final int kitPrice;
   final String? kitSlug;
+  /// Per-item retail prices when sourced from [samagri_catalog.dart].
+  final List<SamagriLine>? pricedItems;
+
+  int? get pricedItemsTotalMinor =>
+      pricedItems == null ? null : sumSamagriLinePrices(pricedItems!);
 
   String get daysTo {
     final now = DateTime.now();
@@ -114,6 +121,7 @@ final upcomingFestivals = [
     kitName: 'Ganesh Puja Homam Samagri Kit',
     kitPrice: 1999,
     kitSlug: 'ganesh-puja-homam-samagri',
+    pricedItems: ganeshHomamList.items,
   ),
   FestivalGuide(
     id: 'navratri',

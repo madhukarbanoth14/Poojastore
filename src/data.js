@@ -104,6 +104,11 @@ export const REQUIRED_ITEMS = [
   'Coconuts',
 ];
 
+/** Individual retail prices (₹) aligned with apps/api/prisma/samagri-catalog.ts */
+export const REQUIRED_ITEM_PRICES = [
+  149, 80, 80, 90, 60, 120, 30, 120, 80, 199, 80, 250, 50, 40, 499, 399, 399, 120,
+];
+
 export const ADDRESS_LIST = [
   { label: 'Home', detail: '4th Cross, Malleshwaram, Bengaluru 560003' },
   { label: 'Office', detail: 'Tech Park, Whitefield, Bengaluru 560066' },

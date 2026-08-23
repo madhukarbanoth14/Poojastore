@@ -5,7 +5,7 @@ import { H, TXT, Stripe, DiyaFlame, Flags, Dot } from './ui';
 import { FONT, stripe, monoBg, stars, initials } from './theme';
 import {
   CATEGORY_DEFS, KITS, ESSENTIALS, STORES, PRIESTS, ONBOARD_SLIDES, NOTIFICATIONS,
-  ORDER_HISTORY, PRIEST_HISTORY, FAMILY, REQUIRED_ITEMS, ADDRESS_LIST, SLOT_LIST,
+  ORDER_HISTORY, PRIEST_HISTORY, FAMILY, REQUIRED_ITEMS, REQUIRED_ITEM_PRICES, ADDRESS_LIST, SLOT_LIST,
   PAYMENT_LIST, TRACKING_STEPS, BOOKING_TIMES, RITUAL_OPTIONS,
 } from './data';
 
@@ -370,10 +370,15 @@ function Festival({ t, actions, isDark }) {
         <TXT style={{ fontSize: 13.5, color: t.textMuted, marginTop: 6 }}>Sept 6, 2026 · 10 days of celebration</TXT>
         <TXT style={{ fontSize: 14, color: t.text, lineHeight: 22, marginTop: 14 }}>Welcome Lord Ganesha home with a complete, temple-verified set of ritual items — sourced fresh and delivered same day.</TXT>
         <H style={{ fontSize: 15, color: t.text, marginTop: 22, marginBottom: 12 }}>Required Items</H>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 9 }}>
-          {REQUIRED_ITEMS.map((item) => (
-            <View key={item} style={{ paddingHorizontal: 13, paddingVertical: 8, borderRadius: 11, backgroundColor: t.chipBg }}>
-              <TXT style={{ fontSize: 12.5, color: t.text }}>{item}</TXT>
+        <View style={{ gap: 10 }}>
+          {REQUIRED_ITEMS.map((item, i) => (
+            <View key={item} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ flex: 1, paddingHorizontal: 13, paddingVertical: 10, borderRadius: 11, backgroundColor: t.chipBg }}>
+                <TXT style={{ fontSize: 12.5, color: t.text }}>{item}</TXT>
+              </View>
+              <TXT style={{ fontFamily: FONT.bodyBold, fontSize: 13, color: t.saffron, minWidth: 52, textAlign: 'right' }}>
+                ₹{REQUIRED_ITEM_PRICES[i]}
+              </TXT>
             </View>
           ))}
         </View>

@@ -72,7 +72,8 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
 
   int _priceOf(Map<String, dynamic> item) {
     final live = item['priceMinor'];
-    if (live is int) return live;
+    final qty = item['quantity'] as int? ?? 1;
+    if (live is int) return live * qty;
     return 0;
   }
 
@@ -193,6 +194,7 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                           item['optional'] == true || item['isOptional'] == true;
                       final selected = _selected.contains(key);
                       final pack = item['pack'] as String?;
+                      final linePrice = _priceOf(item);
                       return CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
                         value: selected,
@@ -217,13 +219,23 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                           [
                             if (pack != null && pack.isNotEmpty) pack,
                             if (optional) 'Optional',
-                            formatInr(_priceOf(item)),
                           ].join(' · '),
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textMuted,
                           ),
                         ),
+                        secondary: linePrice > 0
+                            ? Text(
+                                formatInr(linePrice),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.saffron,
+                                ),
+                              )
+                            : null,
+                        controlAffinity: ListTileControlAffinity.leading,
                       );
                     }),
                   ],
