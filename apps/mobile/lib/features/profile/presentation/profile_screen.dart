@@ -23,7 +23,10 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: t.bg,
-      appBar: const PsHeader(title: 'Profile'),
+      appBar: PsHeader(
+        title: 'Profile',
+        showBack: context.canPop(),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           children: [

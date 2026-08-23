@@ -69,4 +69,33 @@ describe('Auth (e2e)', () => {
 
     await prisma.user.deleteMany({ where: { phoneE164: '+919123456789' } });
   });
+
+  it('continues with Google social login and returns /me', async () => {
+    const subject = `e2e-google-${Date.now()}`;
+    const socialRes = await request(app.getHttpServer())
+      .post('/api/v1/auth/social')
+      .send({
+        provider: 'GOOGLE',
+        subject,
+        fullName: 'Social E2E',
+        email: `social.e2e.${Date.now()}@example.com`,
+        deviceId: 'e2e-social',
+      })
+      .expect(200);
+
+    expect(socialRes.body.data.tokens.accessToken).toBeDefined();
+    const accessToken = socialRes.body.data.tokens.accessToken as string;
+    const userId = socialRes.body.data.user.id as string;
+
+    const meRes = await request(app.getHttpServer())
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(meRes.body.data.fullName).toBe('Social E2E');
+    expect(meRes.body.data.id).toBe(userId);
+
+    await prisma.socialIdentity.deleteMany({ where: { userId } });
+    await prisma.user.deleteMany({ where: { id: userId } });
+  });
 });

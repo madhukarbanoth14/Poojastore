@@ -26,6 +26,15 @@ abstract class AuthRepository {
     String? preferredLanguage,
   });
 
+  Future<AuthSession> socialLogin({
+    required String provider,
+    required String subject,
+    String? idToken,
+    String? email,
+    String? fullName,
+    String? preferredLanguage,
+  });
+
   Future<void> updatePreferredLanguage(String language);
 
   Future<AuthUser> updateProfile({String? fullName, String? email});

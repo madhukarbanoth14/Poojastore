@@ -33,7 +33,13 @@ class FestivalScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         GestureDetector(
-                          onTap: () => context.pop(),
+                          onTap: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/');
+                            }
+                          },
                           child: const Text(
                             '←',
                             style: TextStyle(
@@ -364,7 +370,11 @@ class FestivalScreen extends ConsumerWidget {
       if (kits.isEmpty) {
         if (context.mounted) {
           final slug = guide.kitSlug;
-          context.push(slug != null ? '/kits/$slug' : '/shop');
+          if (slug != null) {
+            context.push('/kits/$slug');
+          } else {
+            context.go('/shop');
+          }
         }
         return;
       }

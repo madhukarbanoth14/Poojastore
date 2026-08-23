@@ -309,7 +309,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   const Expanded(child: PpTitle('Puja Kits')),
                   GestureDetector(
-                    onTap: () => context.push('/shop'),
+                    onTap: () => context.go('/shop'),
                     child: const Text(
                       'View all',
                       style: TextStyle(
