@@ -1,9 +1,11 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pooja_store_mobile/app.dart';
 import 'package:pooja_store_mobile/features/auth/domain/auth_repository.dart';
 import 'package:pooja_store_mobile/features/auth/domain/auth_user.dart';
 import 'package:pooja_store_mobile/features/auth/presentation/auth_controller.dart';
+import 'package:pooja_store_mobile/features/onboarding/onboarding_screen.dart';
 
 class _FakeAuthRepository implements AuthRepository {
   @override
@@ -53,6 +55,12 @@ Future<void> _pumpUntilFound(
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    FlutterSecureStorage.setMockInitialValues({kOnboardingDoneKey: '1'});
+  });
+
   testWidgets('app boots to login when unauthenticated', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -68,12 +76,6 @@ void main() {
     // Splash repeats animations forever — avoid pumpAndSettle; advance its timer.
     await tester.pump(const Duration(milliseconds: 2500));
     await tester.pump();
-
-    if (find.text('Skip').evaluate().isNotEmpty) {
-      await tester.tap(find.text('Skip'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-    }
 
     await _pumpUntilFound(tester, find.text('Send OTP'));
 
