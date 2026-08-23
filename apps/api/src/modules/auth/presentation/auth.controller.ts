@@ -22,6 +22,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { Public } from '../../../common/decorators/public.decorator';
 import type { AuthenticatedUser } from '../domain/authenticated-user';
 import { RequestOtpUseCase } from '../application/use-cases/request-otp.use-case';
+import { SocialLoginUseCase } from '../application/use-cases/social-login.use-case';
 import { VerifyOtpUseCase } from '../application/use-cases/verify-otp.use-case';
 import { TokenService } from '../infrastructure/token.service';
 import { PrismaService } from '../../../core/database/prisma.service';
@@ -29,9 +30,11 @@ import {
   LogoutDto,
   RefreshTokenDto,
   RequestOtpDto,
+  SocialLoginDto,
   VerifyOtpDto,
 } from './dto/request-otp.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
+import { SocialProvider } from '@prisma/client';
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -39,6 +42,7 @@ export class AuthController {
   constructor(
     private readonly requestOtp: RequestOtpUseCase,
     private readonly verifyOtp: VerifyOtpUseCase,
+    private readonly socialLogin: SocialLoginUseCase,
     private readonly tokens: TokenService,
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
@@ -73,6 +77,28 @@ export class AuthController {
       deviceId: dto.deviceId,
       fullName: dto.fullName,
       preferredLanguage: dto.preferredLanguage,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return { success: true, data: result };
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Post('social')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Continue with Google or Apple and issue tokens',
+  })
+  async social(@Body() dto: SocialLoginDto, @Req() req: Request) {
+    const result = await this.socialLogin.execute({
+      provider: dto.provider as SocialProvider,
+      subject: dto.subject,
+      idToken: dto.idToken,
+      email: dto.email,
+      fullName: dto.fullName,
+      preferredLanguage: dto.preferredLanguage,
+      deviceId: dto.deviceId,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });

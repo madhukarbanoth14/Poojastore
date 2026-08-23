@@ -30,7 +30,10 @@ class _PriestsListScreenState extends ConsumerState<PriestsListScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: const PsHeader(title: 'Book a Priest'),
+      appBar: PsHeader(
+        title: 'Book a Priest',
+        showBack: context.canPop(),
+      ),
       body: FutureBuilder(
         future: _future,
         builder: (context, snapshot) {
