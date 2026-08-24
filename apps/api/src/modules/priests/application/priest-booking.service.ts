@@ -8,6 +8,7 @@ import {
   Market,
   OrderStatus,
   PaymentStatus,
+  PriestBookingKind,
   PriestBookingStatus,
   PriestServiceMode,
   ProductType,
@@ -16,6 +17,11 @@ import { PrismaService } from '../../../core/database/prisma.service';
 import { PaymentOrchestratorService } from '../../payments/application/payment-orchestrator.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
 import { MeetingLinkService } from '../infrastructure/meeting-link.service';
+import {
+  archanaDeityBySlug,
+  archanaDeityLabel,
+  priestMatchesArchanaDeity,
+} from '../domain/archana-catalog';
 import { CreatePriestBookingDto } from '../presentation/dto/priest.dto';
 
 @Injectable()
@@ -55,6 +61,37 @@ export class PriestBookingService {
       },
     });
     return { items };
+  }
+
+  async listArchanaPriests(params: {
+    deity?: string;
+    city?: string;
+    market?: Market;
+  }) {
+    const requestedDeity = params.deity?.toLowerCase() ?? 'any';
+    const priests = await this.prisma.priest.findMany({
+      where: {
+        isActive: true,
+        offersOnlineArchana: true,
+        market: params.market ?? Market.IN,
+        ...(params.city
+          ? { city: { equals: params.city, mode: 'insensitive' } }
+          : {}),
+      },
+      orderBy: [{ sortOrder: 'asc' }, { ratingAvg: 'desc' }],
+      include: {
+        _count: {
+          select: {
+            slots: { where: { isBooked: false, startsAt: { gte: new Date() } } },
+          },
+        },
+      },
+    });
+
+    const items = priests.filter((priest) =>
+      priestMatchesArchanaDeity(priest.archanaDeities, requestedDeity),
+    );
+    return { items, deity: requestedDeity };
   }
 
   async bySlug(slug: string) {
@@ -100,10 +137,36 @@ export class PriestBookingService {
     }
 
     const serviceMode = dto.serviceMode ?? PriestServiceMode.HOME_VISIT;
+    const bookingKind = dto.bookingKind ?? PriestBookingKind.GENERAL;
+    if (bookingKind === PriestBookingKind.ARCHANA) {
+      if (serviceMode !== PriestServiceMode.ONLINE) {
+        throw new BadRequestException('Online archana must use ONLINE service mode');
+      }
+      if (!dto.deitySlug) {
+        throw new BadRequestException('Select a deity for online archana');
+      }
+      if (!archanaDeityBySlug(dto.deitySlug)) {
+        throw new BadRequestException('Unknown deity selection');
+      }
+      if (!priest.offersOnlineArchana) {
+        throw new BadRequestException('This pujari does not offer online archana');
+      }
+      if (!priestMatchesArchanaDeity(priest.archanaDeities, dto.deitySlug)) {
+        throw new BadRequestException('This pujari does not perform archana for the selected deity');
+      }
+    }
+
     const consultationMedia =
       serviceMode === PriestServiceMode.ONLINE
-        ? (dto.consultationMedia ?? ConsultationMedia.VIDEO)
+        ? bookingKind === PriestBookingKind.ARCHANA
+          ? ConsultationMedia.VIDEO
+          : (dto.consultationMedia ?? ConsultationMedia.VIDEO)
         : null;
+
+    const serviceName =
+      bookingKind === PriestBookingKind.ARCHANA
+        ? `Online Archana — ${archanaDeityLabel(dto.deitySlug!)}`
+        : dto.serviceName;
     const amountMinor =
       serviceMode === PriestServiceMode.ONLINE
         ? priest.basePriceMinor
@@ -169,8 +232,10 @@ export class PriestBookingService {
           priestId: priest.id,
           slotId: slot.id,
           addressId: address.id,
-          serviceName: dto.serviceName,
+          serviceName,
           serviceMode,
+          bookingKind,
+          deitySlug: dto.deitySlug ?? null,
           consultationMedia,
           notes: dto.notes,
           status: PriestBookingStatus.PENDING_PAYMENT,

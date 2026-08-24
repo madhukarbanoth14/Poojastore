@@ -30,6 +30,19 @@ class PriestsApi {
     return res.data['data'] as Map<String, dynamic>;
   }
 
+  Future<List<Map<String, dynamic>>> listArchanaPriests({String? deity}) async {
+    final res = await _api.dio.get(
+      '/archana/priests',
+      queryParameters: {if (deity != null) 'deity': deity},
+    );
+    return (res.data['data']['items'] as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<List<Map<String, dynamic>>> listDeities() async {
+    final res = await _api.dio.get('/archana/deities');
+    return (res.data['data']['items'] as List).cast<Map<String, dynamic>>();
+  }
+
   Future<Map<String, dynamic>> book({
     required String slug,
     required String slotId,
@@ -38,6 +51,8 @@ class PriestsApi {
     String? notes,
     String serviceMode = 'HOME_VISIT',
     String? consultationMedia,
+    String? bookingKind,
+    String? deitySlug,
   }) async {
     final res = await _api.dio.post(
       '/priests/$slug/bookings',
@@ -47,6 +62,8 @@ class PriestsApi {
         'serviceName': serviceName,
         'serviceMode': serviceMode,
         if (consultationMedia != null) 'consultationMedia': consultationMedia,
+        if (bookingKind != null) 'bookingKind': bookingKind,
+        if (deitySlug != null) 'deitySlug': deitySlug,
         if (notes != null && notes.isNotEmpty) 'notes': notes,
       },
     );

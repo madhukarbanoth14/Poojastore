@@ -112,6 +112,19 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                         color: AppColors.text,
                       ),
                     ),
+                    if (b['bookingKind'] == 'ARCHANA') ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        b['deitySlug'] != null
+                            ? 'Online Archana · ${b['deitySlug']}'
+                            : 'Online Archana',
+                        style: const TextStyle(
+                          color: AppColors.saffron,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Text(
                       '${_fmt(slot['startsAt'] as String)}\n${b['bookingNumber']} · $status · ${formatInr(b['amountMinor'] as int)}',
@@ -143,9 +156,11 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                               }
                             },
                             child: Text(
-                              b['consultationMedia'] == 'AUDIO'
-                                  ? 'Join audio call'
-                                  : 'Join video call',
+                              b['bookingKind'] == 'ARCHANA'
+                                  ? 'Join video archana'
+                                  : (b['consultationMedia'] == 'AUDIO'
+                                      ? 'Join audio call'
+                                      : 'Join video call'),
                             ),
                           ),
                         if (canCancel)

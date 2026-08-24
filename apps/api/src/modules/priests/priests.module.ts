@@ -10,11 +10,13 @@ import {
   PoojariController,
   PriestsController,
 } from './presentation/priests.controller';
+import { ArchanaController } from './presentation/archana.controller';
 
 @Module({
   imports: [PaymentsModule],
   controllers: [
     PriestsController,
+    ArchanaController,
     BookingsController,
     PoojariController,
     AdminBookingsController,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/archana_catalog.dart';
 import '../../../core/payments/payment_flow.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
@@ -20,10 +21,18 @@ const _rituals = [
 const _payments = ['UPI', 'Card', 'Cash on Delivery'];
 
 class BookingScreen extends ConsumerStatefulWidget {
-  const BookingScreen({super.key, required this.slug, required this.mode});
+  const BookingScreen({
+    super.key,
+    required this.slug,
+    required this.mode,
+    this.bookingKind,
+    this.deitySlug,
+  });
 
   final String slug;
   final String mode;
+  final String? bookingKind;
+  final String? deitySlug;
 
   @override
   ConsumerState<BookingScreen> createState() => _BookingScreenState();
@@ -41,6 +50,9 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
   String _consultationMedia = 'VIDEO';
 
   bool get _online => widget.mode == 'online';
+  bool get _archana => widget.bookingKind == 'archana';
+  ArchanaDeity? get _deity =>
+      widget.deitySlug == null ? null : archanaDeityBySlug(widget.deitySlug!);
 
   @override
   void initState() {
@@ -93,11 +105,15 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             slug: widget.slug,
             slotId: slotId,
             addressId: _addressId!,
-            serviceName: _ritualIdx == null
-                ? (_online ? 'Online consultation' : 'Home Visit')
-                : _rituals[_ritualIdx!],
+            serviceName: _archana
+                ? 'Online Archana'
+                : (_ritualIdx == null
+                    ? (_online ? 'Online consultation' : 'Home Visit')
+                    : _rituals[_ritualIdx!]),
             serviceMode: _online ? 'ONLINE' : 'HOME_VISIT',
             consultationMedia: _online ? _consultationMedia : null,
+            bookingKind: _archana ? 'ARCHANA' : null,
+            deitySlug: widget.deitySlug,
           );
       final payment = result['payment'] as Map<String, dynamic>?;
       if (payment != null) {
@@ -153,7 +169,9 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         return Scaffold(
           backgroundColor: t.bg,
           appBar: PsHeader(
-            title: _online ? 'Book Online Consultation' : 'Book Home Visit',
+            title: _archana
+                ? 'Schedule Online Archana'
+                : (_online ? 'Book Online Consultation' : 'Book Home Visit'),
           ),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
@@ -162,6 +180,42 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 'with $name',
                 style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
               ),
+              if (_archana && _deity != null) ...[
+                const SizedBox(height: 12),
+                PsCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Deity',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _deity!.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: AppColors.text,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _deity!.description,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          height: 1.35,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
               const Text(
                 'Date',
@@ -215,7 +269,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              if (_online) ...[
+              if (_online && !_archana) ...[
                 const Text(
                   'Consultation type',
                   style: TextStyle(
@@ -264,28 +318,46 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 ),
                 const SizedBox(height: 18),
               ],
-              const Text(
-                'Ritual Type',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  color: AppColors.text,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: List.generate(
-                  _rituals.length,
-                  (i) => SelectChip(
-                    label: _rituals[i],
-                    selected: _ritualIdx == i,
-                    onTap: () => setState(() => _ritualIdx = i),
+              if (!_archana) ...[
+                const Text(
+                  'Ritual Type',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppColors.text,
                   ),
                 ),
-              ),
-              const SizedBox(height: 18),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: List.generate(
+                    _rituals.length,
+                    (i) => SelectChip(
+                      label: _rituals[i],
+                      selected: _ritualIdx == i,
+                      onTap: () => setState(() => _ritualIdx = i),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+              ],
+              if (_archana) ...[
+                const Text(
+                  'Video call',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppColors.text,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'The pujari will perform archana at the temple while you join live on video at your scheduled slot.',
+                  style: TextStyle(color: AppColors.textMuted, height: 1.4),
+                ),
+                const SizedBox(height: 18),
+              ],
               const Text(
                 'Payment Method',
                 style: TextStyle(

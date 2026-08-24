@@ -668,6 +668,11 @@ enum ConsultationMedia {
   AUDIO
 }
 
+enum PriestBookingKind {
+  GENERAL
+  ARCHANA
+}
+
 enum PriestApplicationStatus {
   PENDING
   APPROVED
@@ -694,6 +699,9 @@ model Priest {
   basePriceMinor   Int          @map("base_price_minor")
   travelFeeMinor   Int          @default(0) @map("travel_fee_minor")
   serviceFees      Json         @default("[]") @map("service_fees")
+  offersOnlineArchana Boolean   @default(false) @map("offers_online_archana")
+  templeName       String?      @map("temple_name") @db.VarChar(160)
+  archanaDeities   String[]     @default([]) @map("archana_deities")
   isActive         Boolean      @default(true) @map("is_active")
   sortOrder        Int          @default(0) @map("sort_order")
   createdAt        DateTime     @default(now()) @map("created_at")
@@ -764,6 +772,8 @@ model PriestBooking {
   addressId              String              @map("address_id") @db.Uuid
   serviceName            String              @map("service_name") @db.VarChar(160)
   serviceMode            PriestServiceMode   @default(HOME_VISIT) @map("service_mode")
+  bookingKind            PriestBookingKind   @default(GENERAL) @map("booking_kind")
+  deitySlug              String?             @map("deity_slug") @db.VarChar(64)
   consultationMedia      ConsultationMedia?  @map("consultation_media")
   notes                  String?             @db.Text
   meetingProvider        String?             @map("meeting_provider") @db.VarChar(24)
