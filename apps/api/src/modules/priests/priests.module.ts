@@ -3,6 +3,7 @@ import { PaymentsModule } from '../payments/payments.module';
 import { PriestApplicationService } from './application/priest-application.service';
 import { PriestBookingService } from './application/priest-booking.service';
 import { MeetingLinkService } from './infrastructure/meeting-link.service';
+import { AgoraTokenService } from './infrastructure/agora-token.service';
 import {
   AdminBookingsController,
   BookingsController,
@@ -22,6 +23,7 @@ import {
     PriestBookingService,
     PriestApplicationService,
     MeetingLinkService,
+    AgoraTokenService,
   ],
   exports: [PriestBookingService, PriestApplicationService],
 })

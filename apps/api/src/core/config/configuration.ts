@@ -57,6 +57,10 @@ export default () => ({
   meetings: {
     provider: process.env.MEETING_PROVIDER ?? 'jitsi',
     jitsiBaseUrl: process.env.JITSI_BASE_URL ?? 'https://meet.jit.si',
+    agora: {
+      appId: process.env.AGORA_APP_ID ?? '',
+      appCertificate: process.env.AGORA_APP_CERTIFICATE ?? '',
+    },
     zoom: {
       accountId: process.env.ZOOM_ACCOUNT_ID ?? '',
       clientId: process.env.ZOOM_CLIENT_ID ?? '',

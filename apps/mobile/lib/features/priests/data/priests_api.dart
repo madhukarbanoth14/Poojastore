@@ -37,6 +37,7 @@ class PriestsApi {
     required String serviceName,
     String? notes,
     String serviceMode = 'HOME_VISIT',
+    String? consultationMedia,
   }) async {
     final res = await _api.dio.post(
       '/priests/$slug/bookings',
@@ -45,6 +46,7 @@ class PriestsApi {
         'addressId': addressId,
         'serviceName': serviceName,
         'serviceMode': serviceMode,
+        if (consultationMedia != null) 'consultationMedia': consultationMedia,
         if (notes != null && notes.isNotEmpty) 'notes': notes,
       },
     );
@@ -58,6 +60,11 @@ class PriestsApi {
 
   Future<Map<String, dynamic>> poojariAppointments() async {
     final res = await _api.dio.get('/poojari/appointments');
+    return res.data['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> joinBooking(String id) async {
+    final res = await _api.dio.post('/bookings/$id/join');
     return res.data['data'] as Map<String, dynamic>;
   }
 

@@ -141,6 +141,22 @@ export class BookingsController {
     });
     return { success: true, data };
   }
+
+  @Post(':id/join')
+  @ApiOperation({
+    summary: 'Join an online priest consultation (Agora token or meeting URL)',
+  })
+  async join(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const data = await this.priests.joinConsultation({
+      bookingId: id,
+      actorUserId: user.id,
+      isAdmin: user.role === Role.ADMIN,
+    });
+    return { success: true, data };
+  }
 }
 
 @ApiTags('Poojari')
@@ -160,23 +176,17 @@ export class PoojariController {
   }
 
   @Post('appointments/:id/join')
-  @ApiOperation({ summary: 'Create or return the video meeting link for an online booking' })
+  @ApiOperation({ summary: 'Join an online consultation as the assigned pujari' })
   async join(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const booking = await this.priests.bookingDetail(user.id, id, false);
-    const withMeeting = await this.priests.ensureMeeting(booking.id);
-    return {
-      success: true,
-      data: {
-        id: withMeeting.id,
-        serviceMode: withMeeting.serviceMode,
-        meetingProvider: withMeeting.meetingProvider,
-        meetingJoinUrl: withMeeting.meetingJoinUrl,
-        meetingHostUrl: withMeeting.meetingHostUrl,
-      },
-    };
+    const data = await this.priests.joinConsultation({
+      bookingId: id,
+      actorUserId: user.id,
+      isAdmin: false,
+    });
+    return { success: true, data };
   }
 }
 

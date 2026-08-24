@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required for video consultations with your pujari.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access is required for audio and video consultations with your pujari.</string>
 </dict>
 </plist>

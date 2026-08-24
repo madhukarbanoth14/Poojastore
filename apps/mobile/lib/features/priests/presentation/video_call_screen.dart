@@ -1,42 +1,155 @@
 import 'dart:async';
+
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ps_format.dart';
+import '../data/priests_api.dart';
 
-class VideoCallScreen extends StatefulWidget {
+class VideoCallScreen extends ConsumerStatefulWidget {
   const VideoCallScreen({
     super.key,
-    required this.slug,
-    required this.name,
+    required this.bookingId,
+    this.peerName,
   });
 
-  final String slug;
-  final String name;
+  final String bookingId;
+  final String? peerName;
 
   @override
-  State<VideoCallScreen> createState() => _VideoCallScreenState();
+  ConsumerState<VideoCallScreen> createState() => _VideoCallScreenState();
 }
 
-class _VideoCallScreenState extends State<VideoCallScreen> {
-  int _seconds = 0;
+class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
+  RtcEngine? _engine;
+  int? _remoteUid;
+  bool _joined = false;
   bool _muted = false;
   bool _videoOff = false;
-  bool _chatOpen = false;
+  bool _loading = true;
+  String? _error;
+  String _peerName = 'Panditji';
+  bool _audioOnly = false;
+  int _seconds = 0;
   Timer? _timer;
+  String? _channelName;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() => _seconds++);
-    });
+    _peerName = widget.peerName ?? 'Panditji';
+    _startCall();
   }
 
-  @override
-  void dispose() {
+  Future<void> _startCall() async {
+    try {
+      final join = await ref.read(priestsApiProvider).joinBooking(widget.bookingId);
+      final agora = join['agora'] as Map<String, dynamic>?;
+      if (agora == null) {
+        throw StateError('Agora credentials were not returned for this booking');
+      }
+
+      _audioOnly = (join['consultationMedia'] as String?) == 'AUDIO';
+      _peerName = (join['peerName'] as String?) ?? _peerName;
+      _channelName = agora['channelName'] as String;
+
+      final permissions = <Permission>[Permission.microphone];
+      if (!_audioOnly) permissions.add(Permission.camera);
+      for (final permission in permissions) {
+        final status = await permission.request();
+        if (!status.isGranted) {
+          throw StateError('Microphone/camera permission is required for consultations');
+        }
+      }
+
+      final engine = createAgoraRtcEngine();
+      await engine.initialize(
+        RtcEngineContext(appId: agora['appId'] as String),
+      );
+      engine.registerEventHandler(
+        RtcEngineEventHandler(
+          onJoinChannelSuccess: (_, __) {
+            if (mounted) setState(() => _joined = true);
+          },
+          onUserJoined: (_, remoteUid, __) {
+            if (mounted) setState(() => _remoteUid = remoteUid);
+          },
+          onUserOffline: (_, remoteUid, __) {
+            if (mounted && _remoteUid == remoteUid) {
+              setState(() => _remoteUid = null);
+            }
+          },
+        ),
+      );
+
+      await engine.enableAudio();
+      if (_audioOnly) {
+        await engine.disableVideo();
+        _videoOff = true;
+      } else {
+        await engine.enableVideo();
+        await engine.startPreview();
+      }
+
+      await engine.joinChannel(
+        token: agora['token'] as String,
+        channelId: agora['channelName'] as String,
+        uid: agora['uid'] as int,
+        options: const ChannelMediaOptions(
+          channelProfile: ChannelProfileType.channelProfileCommunication,
+          clientRoleType: ClientRoleType.clientRoleBroadcaster,
+        ),
+      );
+
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() => _seconds++);
+      });
+
+      if (mounted) {
+        setState(() {
+          _engine = engine;
+          _loading = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _error = '$error';
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _leaveCall() async {
     _timer?.cancel();
-    super.dispose();
+    final engine = _engine;
+    _engine = null;
+    if (engine != null) {
+      await engine.leaveChannel();
+      await engine.release();
+    }
+    if (mounted) context.pop();
+  }
+
+  Future<void> _toggleMute() async {
+    final engine = _engine;
+    if (engine == null) return;
+    final next = !_muted;
+    await engine.muteLocalAudioStream(next);
+    setState(() => _muted = next);
+  }
+
+  Future<void> _toggleVideo() async {
+    if (_audioOnly) return;
+    final engine = _engine;
+    if (engine == null) return;
+    final next = !_videoOff;
+    await engine.muteLocalVideoStream(next);
+    setState(() => _videoOff = next);
   }
 
   String get _duration {
@@ -46,35 +159,83 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   @override
+  void dispose() {
+    _timer?.cancel();
+    final engine = _engine;
+    _engine = null;
+    if (engine != null) {
+      engine.leaveChannel();
+      engine.release();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF12100F),
+        body: Center(child: CircularProgressIndicator(color: AppColors.saffron)),
+      );
+    }
+    if (_error != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF12100F),
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(_error!, style: const TextStyle(color: Colors.white)),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF12100F),
       body: Stack(
         children: [
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF241A16), Color(0xFF0E0B0A)],
+          if (!_audioOnly && _remoteUid != null && _engine != null)
+            AgoraVideoView(
+              controller: VideoViewController.remote(
+                rtcEngine: _engine!,
+                canvas: VideoCanvas(uid: _remoteUid),
+                connection: RtcConnection(channelId: _channelName!),
               ),
-            ),
-            child: SizedBox.expand(),
-          ),
-          Center(
-            child: CircleAvatar(
-              radius: 60,
-              backgroundColor: AppColors.avatar(widget.name.hashCode),
-              child: Text(
-                initialsFrom(widget.name),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 36,
+            )
+          else
+            Center(
+              child: CircleAvatar(
+                radius: 60,
+                backgroundColor: AppColors.avatar(_peerName.hashCode),
+                child: Text(
+                  initialsFrom(_peerName),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 36,
+                  ),
                 ),
               ),
             ),
-          ),
+          if (!_audioOnly && _engine != null && !_videoOff)
+            Positioned(
+              top: 90,
+              right: 20,
+              child: SizedBox(
+                width: 96,
+                height: 128,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: AgoraVideoView(
+                    controller: VideoViewController(
+                      rtcEngine: _engine!,
+                      canvas: const VideoCanvas(uid: 0),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             top: 50,
             left: 20,
@@ -82,13 +243,25 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
-                    widget.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _peerName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        _audioOnly ? 'Audio consultation' : 'Video consultation',
+                        style: const TextStyle(
+                          color: Color(0xB3FFFFFF),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Text(
@@ -103,84 +276,6 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             ),
           ),
           Positioned(
-            top: 90,
-            right: 20,
-            child: Container(
-              width: 78,
-              height: 110,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3A2A22),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0x33FFFFFF), width: 2),
-              ),
-              child: const Text(
-                'YOU',
-                style: TextStyle(
-                  color: Color(0x80FFFFFF),
-                  fontSize: 10,
-                  fontFamily: 'monospace',
-                ),
-              ),
-            ),
-          ),
-          if (_chatOpen)
-            Positioned(
-              left: 16,
-              right: 16,
-              top: 230,
-              bottom: 150,
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xD9140F0D),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 260),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 9,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0x1FFFFFFF),
-                          borderRadius: BorderRadius.circular(11),
-                        ),
-                        child: const Text(
-                          'Namaste! Please keep the Panchamrit ready before we begin.',
-                          style: TextStyle(color: Colors.white, fontSize: 12.5),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 260),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 9,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.ps.saffron,
-                          borderRadius: BorderRadius.circular(11),
-                        ),
-                        child: const Text(
-                          "Sure, it's ready. Thank you Panditji.",
-                          style: TextStyle(color: Colors.white, fontSize: 12.5),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          Positioned(
             left: 0,
             right: 0,
             bottom: 0,
@@ -193,33 +288,40 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                     label: _muted ? 'Unmute' : 'Mute',
                     bg: _muted ? Colors.white : const Color(0x26FFFFFF),
                     fg: _muted ? const Color(0xFF12100F) : Colors.white,
-                    onTap: () => setState(() => _muted = !_muted),
+                    onTap: _toggleMute,
                   ),
-                  const SizedBox(width: 16),
-                  _CallBtn(
-                    label: _videoOff ? 'Cam On' : 'Cam Off',
-                    bg: _videoOff ? Colors.white : const Color(0x26FFFFFF),
-                    fg: _videoOff ? const Color(0xFF12100F) : Colors.white,
-                    onTap: () => setState(() => _videoOff = !_videoOff),
-                  ),
-                  const SizedBox(width: 16),
-                  _CallBtn(
-                    label: 'Chat',
-                    bg: const Color(0x26FFFFFF),
-                    fg: Colors.white,
-                    onTap: () => setState(() => _chatOpen = !_chatOpen),
-                  ),
+                  if (!_audioOnly) ...[
+                    const SizedBox(width: 16),
+                    _CallBtn(
+                      label: _videoOff ? 'Cam On' : 'Cam Off',
+                      bg: _videoOff ? Colors.white : const Color(0x26FFFFFF),
+                      fg: _videoOff ? const Color(0xFF12100F) : Colors.white,
+                      onTap: _toggleVideo,
+                    ),
+                  ],
                   const SizedBox(width: 16),
                   _CallBtn(
                     label: 'End',
                     bg: const Color(0xFFD64545),
                     fg: Colors.white,
-                    onTap: () => context.pop(),
+                    onTap: _leaveCall,
                   ),
                 ],
               ),
             ),
           ),
+          if (!_joined)
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Color(0x88000000),
+                child: Center(
+                  child: Text(
+                    'Connecting…',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

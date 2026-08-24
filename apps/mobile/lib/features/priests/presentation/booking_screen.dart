@@ -38,6 +38,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
   bool _loading = false;
   String? _error;
   String? _addressId;
+  String _consultationMedia = 'VIDEO';
 
   bool get _online => widget.mode == 'online';
 
@@ -96,6 +97,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 ? (_online ? 'Online consultation' : 'Home Visit')
                 : _rituals[_ritualIdx!],
             serviceMode: _online ? 'ONLINE' : 'HOME_VISIT',
+            consultationMedia: _online ? _consultationMedia : null,
           );
       final payment = result['payment'] as Map<String, dynamic>?;
       if (payment != null) {
@@ -213,6 +215,37 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 ),
               ),
               const SizedBox(height: 18),
+              if (_online) ...[
+                const Text(
+                  'Consultation type',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppColors.text,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SelectChip(
+                        label: 'Video call',
+                        selected: _consultationMedia == 'VIDEO',
+                        onTap: () => setState(() => _consultationMedia = 'VIDEO'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: SelectChip(
+                        label: 'Audio call',
+                        selected: _consultationMedia == 'AUDIO',
+                        onTap: () => setState(() => _consultationMedia = 'AUDIO'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+              ],
               if (!_online) ...[
                 const Text(
                   'Address',

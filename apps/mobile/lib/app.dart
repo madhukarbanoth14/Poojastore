@@ -214,10 +214,17 @@ final _routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/consultation/:bookingId',
+        builder: (_, state) => VideoCallScreen(
+          bookingId: state.pathParameters['bookingId']!,
+          peerName: state.uri.queryParameters['name'],
+        ),
+      ),
+      GoRoute(
         path: '/priests/:slug/video',
         builder: (_, state) => VideoCallScreen(
-          slug: state.pathParameters['slug']!,
-          name: state.uri.queryParameters['name'] ?? 'Panditji',
+          bookingId: state.uri.queryParameters['bookingId'] ?? '',
+          peerName: state.uri.queryParameters['name'] ?? 'Panditji',
         ),
       ),
       GoRoute(path: '/poojari', builder: (_, __) => const PoojariHomeScreen()),

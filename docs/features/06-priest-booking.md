@@ -22,6 +22,7 @@ Reuses: Feature 2 payments (`PaymentOrchestrator` + mock/Razorpay/Stripe)
 | POST | `/priests/:slug/bookings` | User | Create booking + payment |
 | GET | `/bookings` | User | My bookings |
 | GET | `/bookings/:id` | User | Booking detail |
+| POST | `/bookings/:id/join` | User / Pujari | Join online consultation (Agora or meeting URL) |
 | GET | `/admin/bookings` | Admin | All bookings |
 
 ## Payment link

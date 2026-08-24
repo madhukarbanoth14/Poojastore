@@ -663,6 +663,11 @@ enum PriestServiceMode {
   ONLINE
 }
 
+enum ConsultationMedia {
+  VIDEO
+  AUDIO
+}
+
 enum PriestApplicationStatus {
   PENDING
   APPROVED
@@ -759,6 +764,7 @@ model PriestBooking {
   addressId              String              @map("address_id") @db.Uuid
   serviceName            String              @map("service_name") @db.VarChar(160)
   serviceMode            PriestServiceMode   @default(HOME_VISIT) @map("service_mode")
+  consultationMedia      ConsultationMedia?  @map("consultation_media")
   notes                  String?             @db.Text
   meetingProvider        String?             @map("meeting_provider") @db.VarChar(24)
   meetingId              String?             @map("meeting_id") @db.VarChar(160)
