@@ -12,4 +12,17 @@ class AppConfig {
     'ALLOW_MOCK_PAYMENTS',
     defaultValue: true,
   );
+
+  /// When true, Google/Apple buttons can use API demo social login if native
+  /// OAuth is not configured yet. Disable for store builds.
+  static const allowDemoSocial = bool.fromEnvironment(
+    'ALLOW_DEMO_SOCIAL',
+    defaultValue: true,
+  );
+
+  /// Optional Google OAuth web client ID (serverClientId) for ID tokens.
+  static const googleServerClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+    defaultValue: '',
+  );
 }

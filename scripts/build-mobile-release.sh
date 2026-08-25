@@ -4,12 +4,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/apps/mobile"
 
-API_BASE_URL="${API_BASE_URL:-https://api.poojastore.example/api/v1}"
+API_BASE_URL="${API_BASE_URL:-https://pooja-api-staging-tcjernzh5a-el.a.run.app/api/v1}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(date +%Y%m%d%H%M)}"
 
 DEFINES=(
   "--dart-define=API_BASE_URL=${API_BASE_URL}"
   "--dart-define=ALLOW_MOCK_PAYMENTS=false"
+  "--dart-define=ALLOW_DEMO_SOCIAL=true"
 )
 
 echo "Building release with ALLOW_MOCK_PAYMENTS=false"

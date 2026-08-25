@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +16,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _pulse;
+  final AudioPlayer _omPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -23,18 +25,32 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat();
-    Future<void>.delayed(const Duration(milliseconds: 2400), () async {
+    _playOmChant();
+    Future<void>.delayed(const Duration(milliseconds: 2800), () async {
       if (!mounted) return;
       const storage = FlutterSecureStorage();
       final done = await storage.read(key: kOnboardingDoneKey);
+      if (!mounted) return;
+      await _omPlayer.stop();
       if (!mounted) return;
       context.go(done == '1' ? '/' : '/onboarding');
     });
   }
 
+  Future<void> _playOmChant() async {
+    try {
+      await _omPlayer.setReleaseMode(ReleaseMode.stop);
+      await _omPlayer.setVolume(0.85);
+      await _omPlayer.play(AssetSource('audio/om-chant-5s.mp3'));
+    } catch (_) {
+      // Splash should still advance if audio fails.
+    }
+  }
+
   @override
   void dispose() {
     _pulse.dispose();
+    _omPlayer.dispose();
     super.dispose();
   }
 
@@ -95,41 +111,27 @@ class _SplashScreenState extends State<SplashScreen>
                             color: AppColors.goldBright.withValues(alpha: 0.5),
                           ),
                         ),
-                        const Positioned(
-                          top: 6,
-                          child: TwinkleDot(
-                            size: 5,
-                            color: AppColors.goldBright,
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.goldBright.withValues(alpha: 0.45),
+                                blurRadius: 36,
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/images/OM.jpg',
+                              fit: BoxFit.cover,
+                              width: 120,
+                              height: 120,
+                            ),
                           ),
                         ),
-                        const Positioned(
-                          left: 36,
-                          bottom: 18,
-                          child: TwinkleDot(
-                            size: 4,
-                            color: AppColors.cream,
-                            delay: Duration(milliseconds: 500),
-                          ),
-                        ),
-                        const Positioned(
-                          right: 28,
-                          top: 24,
-                          child: TwinkleDot(
-                            size: 4,
-                            color: AppColors.saffron,
-                            delay: Duration(milliseconds: 1000),
-                          ),
-                        ),
-                        const Positioned(
-                          right: 18,
-                          bottom: 36,
-                          child: TwinkleDot(
-                            size: 5,
-                            color: AppColors.goldBright,
-                            delay: Duration(milliseconds: 1300),
-                          ),
-                        ),
-                        const DiyaOrb(),
                       ],
                     ),
                   ),
