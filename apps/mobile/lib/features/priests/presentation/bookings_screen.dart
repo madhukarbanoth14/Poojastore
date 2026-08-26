@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ps_format.dart';
 import '../../../core/widgets/ps_widgets.dart';
 import '../../../l10n/l10n.dart';
 import '../data/priests_api.dart';
+import 'consultation_launcher.dart';
 
 class BookingsScreen extends ConsumerStatefulWidget {
   const BookingsScreen({super.key});
@@ -112,6 +112,19 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                         color: AppColors.text,
                       ),
                     ),
+                    if (b['bookingKind'] == 'ARCHANA') ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        b['deitySlug'] != null
+                            ? 'Online Archana · ${b['deitySlug']}'
+                            : 'Online Archana',
+                        style: const TextStyle(
+                          color: AppColors.saffron,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Text(
                       '${_fmt(slot['startsAt'] as String)}\n${b['bookingNumber']} · $status · ${formatInr(b['amountMinor'] as int)}',
@@ -127,13 +140,28 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                             (b['meetingJoinUrl'] as String?) != null)
                           TextButton(
                             onPressed: () async {
-                              final uri = Uri.parse(b['meetingJoinUrl'] as String);
-                              await launchUrl(
-                                uri,
-                                mode: LaunchMode.externalApplication,
-                              );
+                              try {
+                                final priest = b['priest'] as Map<String, dynamic>;
+                                await openConsultation(
+                                  context,
+                                  ref,
+                                  bookingId: b['id'] as String,
+                                  peerName: priest['fullName'] as String?,
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('$e')),
+                                );
+                              }
                             },
-                            child: const Text('Join meeting'),
+                            child: Text(
+                              b['bookingKind'] == 'ARCHANA'
+                                  ? 'Join video archana'
+                                  : (b['consultationMedia'] == 'AUDIO'
+                                      ? 'Join audio call'
+                                      : 'Join video call'),
+                            ),
                           ),
                         if (canCancel)
                           TextButton(

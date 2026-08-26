@@ -1,4 +1,4 @@
-import { Market, PriestApplicationStatus, PriestServiceMode } from '@prisma/client';
+import { Market, PriestApplicationStatus, PriestServiceMode, ConsultationMedia, PriestBookingKind } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -39,6 +39,22 @@ export class ListPriestsQueryDto {
   market?: Market;
 }
 
+export class ListArchanaPriestsQueryDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  deity?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  city?: string;
+
+  @IsOptional()
+  @IsEnum(Market)
+  market?: Market;
+}
+
 export class CreatePriestBookingDto {
   @IsUUID()
   slotId!: string;
@@ -59,6 +75,19 @@ export class CreatePriestBookingDto {
   @IsOptional()
   @IsEnum(PriestServiceMode)
   serviceMode?: PriestServiceMode;
+
+  @IsOptional()
+  @IsEnum(ConsultationMedia)
+  consultationMedia?: ConsultationMedia;
+
+  @IsOptional()
+  @IsEnum(PriestBookingKind)
+  bookingKind?: PriestBookingKind;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  deitySlug?: string;
 }
 
 export class CancelBookingDto {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/priests_api.dart';
+import 'consultation_launcher.dart';
 
 class PoojariHomeScreen extends ConsumerStatefulWidget {
   const PoojariHomeScreen({super.key});
@@ -353,17 +353,13 @@ class _PoojariAppointmentScreenState
   Future<void> _join() async {
     setState(() => _joining = true);
     try {
-      final meeting = await ref.read(priestsApiProvider).joinPoojariMeeting(widget.id);
-      final url = (meeting['meetingHostUrl'] as String?) ??
-          (meeting['meetingJoinUrl'] as String?);
-      if (url == null) throw StateError('No meeting link yet');
-      final uri = Uri.parse(url);
-      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!ok && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Open this link: $url')),
-        );
-      }
+      final user = _booking?['user'] as Map<String, dynamic>? ?? const {};
+      await openConsultation(
+        context,
+        ref,
+        bookingId: widget.id,
+        peerName: user['fullName'] as String?,
+      );
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

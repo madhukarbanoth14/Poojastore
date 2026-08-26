@@ -450,6 +450,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         soon: true,
                       ),
                       _ServiceTile(
+                        title: 'Online Archana',
+                        imageId: 'priest',
+                        route: '/archana',
+                      ),
+                      _ServiceTile(
                         title: 'Book a Priest',
                         imageId: 'priest',
                         route: '/priests',

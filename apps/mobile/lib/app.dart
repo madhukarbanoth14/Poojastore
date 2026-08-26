@@ -29,6 +29,9 @@ import 'features/kids/presentation/kids_list_screen.dart';
 import 'features/kids/presentation/kids_progress_screen.dart';
 import 'features/kids/presentation/kids_quiz_screen.dart';
 import 'features/kids/presentation/kids_story_screen.dart';
+import 'features/priests/presentation/archana_deity_screen.dart';
+import 'features/priests/presentation/archana_hub_screen.dart';
+import 'features/priests/presentation/archana_priests_screen.dart';
 import 'features/priests/presentation/booking_confirm_screen.dart';
 import 'features/priests/presentation/bookings_screen.dart';
 import 'features/priests/presentation/booking_screen.dart';
@@ -242,13 +245,33 @@ final _routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => BookingScreen(
           slug: state.pathParameters['slug']!,
           mode: state.uri.queryParameters['mode'] ?? 'home',
+          bookingKind: state.uri.queryParameters['kind'],
+          deitySlug: state.uri.queryParameters['deity'],
+        ),
+      ),
+      GoRoute(path: '/archana', builder: (_, __) => const ArchanaHubScreen()),
+      GoRoute(
+        path: '/archana/deity',
+        builder: (_, __) => const ArchanaDeityScreen(),
+      ),
+      GoRoute(
+        path: '/archana/priests',
+        builder: (_, state) => ArchanaPriestsScreen(
+          deitySlug: state.uri.queryParameters['deity'] ?? 'any',
+        ),
+      ),
+      GoRoute(
+        path: '/consultation/:bookingId',
+        builder: (_, state) => VideoCallScreen(
+          bookingId: state.pathParameters['bookingId']!,
+          peerName: state.uri.queryParameters['name'],
         ),
       ),
       GoRoute(
         path: '/priests/:slug/video',
         builder: (_, state) => VideoCallScreen(
-          slug: state.pathParameters['slug']!,
-          name: state.uri.queryParameters['name'] ?? 'Panditji',
+          bookingId: state.uri.queryParameters['bookingId'] ?? '',
+          peerName: state.uri.queryParameters['name'] ?? 'Panditji',
         ),
       ),
       GoRoute(path: '/poojari', builder: (_, __) => const PoojariHomeScreen()),
