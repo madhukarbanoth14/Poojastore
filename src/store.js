@@ -61,12 +61,12 @@ export function useApp() {
 
   const goTab = useCallback((tab) => merge({ screen: tab, history: [] }), [merge]);
 
-  // ---- Splash auto-advance ----
+  // ---- Splash auto-advance (OM chant plays for first ~5s on splash) ----
   useEffect(() => {
     if (state.screen !== 'splash') return;
     const id = setTimeout(() => {
       setState((s) => (s.screen === 'splash' ? { ...s, screen: 'onboarding', history: [] } : s));
-    }, 2400);
+    }, 2800);
     return () => clearTimeout(id);
   }, [state.screen]);
 

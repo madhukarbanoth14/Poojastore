@@ -28,7 +28,7 @@ abstract class AuthRepository {
 
   Future<AuthSession> socialLogin({
     required String provider,
-    required String subject,
+    String? subject,
     String? idToken,
     String? email,
     String? fullName,

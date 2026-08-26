@@ -9,3 +9,7 @@
 -keepclasseswithmembers class * {
     public void onPayment*(...);
 }
+
+# Agora RTC
+-keep class io.agora.** { *; }
+-dontwarn io.agora.**

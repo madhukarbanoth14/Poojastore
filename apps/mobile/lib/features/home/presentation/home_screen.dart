@@ -59,7 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String get _firstName {
     final user = ref.read(authControllerProvider).user;
     final full = user?.fullName?.trim();
-    if (full == null || full.isEmpty) return 'Aarav';
+    if (full == null || full.isEmpty) return 'Guest';
     return full.split(RegExp(r'\s+')).first;
   }
 
@@ -70,6 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final featured = _kits.take(3).toList();
+    final loggedIn = ref.watch(authControllerProvider).isAuthenticated;
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -91,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Text(
-                            'Pooja Panchang',
+                            'Pooja Store',
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 18,
@@ -100,6 +101,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                         ),
+                        if (!loggedIn) ...[
+                          GestureDetector(
+                            onTap: () => context.push('/login'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.goldBright,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Sign in',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.maroonDeep,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
                         GestureDetector(
                           onTap: () => context.push('/cart'),
                           child: Stack(
@@ -212,9 +237,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: PpTitle('Upcoming Festivals'),
             ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 6, 20, 0),
+              child: Text(
+                'Complete Pooja Samagri kits for each festival — ready to book.',
+                style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+              ),
+            ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 148,
+              height: 210,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -222,26 +254,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (context, i) {
                   final f = upcomingFestivals[i];
-                  return GestureDetector(
-                    onTap: () => context.push('/festival/${f.id}'),
-                    child: Container(
-                      width: 168,
-                      decoration: BoxDecoration(
-                        color: AppColors.blush,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
+                  return Container(
+                    width: 188,
+                    decoration: BoxDecoration(
+                      color: AppColors.blush,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => context.push('/festival/${f.id}'),
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
                                 CatalogImage(
                                   asset: CatalogImages.festivalAsset(f.id),
-                                  height: 78,
+                                  height: 86,
                                   radius: 0,
                                 ),
                                 Positioned(
@@ -269,34 +301,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ],
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  f.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13.5,
-                                    color: AppColors.text,
-                                  ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                f.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13.5,
+                                  color: AppColors.text,
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  f.date,
-                                  style: const TextStyle(
-                                    fontSize: 11.5,
-                                    color: AppColors.textMuted,
-                                  ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                f.date,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  color: AppColors.textMuted,
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton(
+                                  onPressed: () =>
+                                      context.push('/festival/${f.id}'),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.saffron,
+                                    minimumSize: const Size(0, 32),
+                                    padding: EdgeInsets.zero,
+                                    textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  child: const Text('Book samagri kit'),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -307,7 +357,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  const Expanded(child: PpTitle('Puja Kits')),
+                  const Expanded(child: PpTitle('Pooja Samagri')),
                   GestureDetector(
                     onTap: () => context.go('/shop'),
                     child: const Text(
@@ -322,6 +372,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 4, 20, 0),
+              child: Text(
+                'Festival & daily pooja essentials under one catalogue.',
+                style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+              ),
+            ),
             const SizedBox(height: 10),
             SizedBox(
               height: 196,
@@ -334,12 +391,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   if (featured.isEmpty) {
                     const fallback = [
                       (
-                        'Ganesh Puja Homam Samagri Kit',
+                        'Ganesh Puja Homam Samagri',
                         1999,
                         'ganesh-puja-homam-samagri',
                       ),
-                      ('Satyanarayan Puja Kit', 749, 'satyanarayan-puja-kit'),
-                      ('Daily Puja Kit', 399, 'daily-puja-kit'),
+                      (
+                        'Satyanarayan Puja Samagri',
+                        749,
+                        'satyanarayan-puja-kit',
+                      ),
+                      ('Daily Puja Samagri', 399, 'daily-puja-kit'),
                     ];
                     final k = fallback[i];
                     return _KitCard(
@@ -404,9 +465,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         route: '/packages',
                       ),
                       _ServiceTile(
-                        title: 'Pooja Samagri',
+                        title: 'Panchang',
                         imageId: 'samagri',
-                        route: '/samagri',
+                        route: '/panchang',
                       ),
                     ],
                   ),

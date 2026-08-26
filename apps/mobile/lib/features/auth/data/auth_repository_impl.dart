@@ -49,7 +49,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthSession> socialLogin({
     required String provider,
-    required String subject,
+    String? subject,
     String? idToken,
     String? email,
     String? fullName,
@@ -59,7 +59,7 @@ class AuthRepositoryImpl implements AuthRepository {
       '/auth/social',
       data: {
         'provider': provider,
-        'subject': subject,
+        if (subject != null && subject.isNotEmpty) 'subject': subject,
         if (idToken != null && idToken.isNotEmpty) 'idToken': idToken,
         if (email != null && email.isNotEmpty) 'email': email,
         if (fullName != null && fullName.isNotEmpty) 'fullName': fullName,

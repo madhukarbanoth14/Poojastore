@@ -47,7 +47,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     const storage = FlutterSecureStorage();
     await storage.write(key: kOnboardingDoneKey, value: '1');
     if (!mounted) return;
-    context.go('/login');
+    context.go('/');
   }
 
   void _next() {

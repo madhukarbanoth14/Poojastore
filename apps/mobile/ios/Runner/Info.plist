@@ -67,8 +67,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Camera access is required for video consultations with your pujari.</string>
+	<string>Pooja Store needs camera access for video consultations with poojaris.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Microphone access is required for audio and video consultations with your pujari.</string>
+	<string>Pooja Store needs microphone access for audio and video consultations.</string>
 </dict>
 </plist>

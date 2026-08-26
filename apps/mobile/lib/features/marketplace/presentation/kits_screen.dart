@@ -56,7 +56,7 @@ class _KitsScreenState extends ConsumerState<KitsScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: PsHeader(
-        title: 'Puja Kits',
+        title: 'Pooja Samagri',
         showBack: context.canPop(),
       ),
       body: _loading

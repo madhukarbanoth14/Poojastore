@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/i18n/language_switcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/diya_mark.dart';
@@ -56,20 +59,124 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _afterAuthSuccess() async {
+    if (!mounted) return;
+    final next = GoRouterState.of(context).uri.queryParameters['next'];
+    if (next != null && next.isNotEmpty) {
+      context.go(next);
+    } else if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/');
+    }
+  }
+
   Future<void> _verifyOtp() async {
     final ok = await ref.read(authControllerProvider.notifier).verifyOtp(
           countryCode: '91',
           phone: _phoneController.text.trim(),
           code: _otpController.text.trim(),
         );
-    if (ok && mounted) context.go('/');
+    if (ok) await _afterAuthSuccess();
   }
 
-  Future<void> _socialLogin(String provider) async {
-    final ok = await ref
-        .read(authControllerProvider.notifier)
-        .continueWithSocial(provider);
-    if (ok && mounted) context.go('/');
+  bool _googleReady = false;
+
+  Future<void> _ensureGoogle() async {
+    if (_googleReady) return;
+    await GoogleSignIn.instance.initialize(
+      serverClientId: AppConfig.googleServerClientId.isEmpty
+          ? null
+          : AppConfig.googleServerClientId,
+    );
+    _googleReady = true;
+  }
+
+  Future<void> _continueWithGoogle() async {
+    final auth = ref.read(authControllerProvider.notifier);
+    try {
+      await _ensureGoogle();
+      if (!GoogleSignIn.instance.supportsAuthenticate()) {
+        throw StateError('Google Sign-In is not supported on this device');
+      }
+      final account = await GoogleSignIn.instance.authenticate(
+        scopeHint: const ['email', 'profile'],
+      );
+      final idToken = account.authentication.idToken;
+      final ok = await auth.socialLogin(
+        provider: 'GOOGLE',
+        idToken: idToken,
+        subject: account.id,
+        email: account.email,
+        fullName: account.displayName,
+      );
+      if (ok) await _afterAuthSuccess();
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) return;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppConfig.allowDemoSocial
+                ? 'Google Sign-In failed. Configure GOOGLE_SERVER_CLIENT_ID or use phone OTP.'
+                : 'Google Sign-In is not configured. Use phone OTP.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Google Sign-In failed. Use phone OTP.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _continueWithApple() async {
+    final auth = ref.read(authControllerProvider.notifier);
+    try {
+      final available = await SignInWithApple.isAvailable();
+      if (!available) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Apple Sign-In is not available on this device.'),
+          ),
+        );
+        return;
+      }
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+      final given = credential.givenName;
+      final family = credential.familyName;
+      final fullName = [given, family].whereType<String>().join(' ').trim();
+      final ok = await auth.socialLogin(
+        provider: 'APPLE',
+        idToken: credential.identityToken,
+        subject: credential.userIdentifier,
+        email: credential.email,
+        fullName: fullName.isEmpty ? null : fullName,
+      );
+      if (ok) await _afterAuthSuccess();
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) return;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Apple Sign-In failed. Use phone OTP.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -82,24 +189,51 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: Column(
         children: [
           MaroonGradient(
-            padding: const EdgeInsets.fromLTRB(28, 54, 28, 30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const GarlandDots(alignStart: true),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    const DiyaOrb(size: 52),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Pooja Panchang',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      if (context.canPop())
+                        IconButton(
+                          onPressed: () => context.pop(),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: AppColors.cream,
+                            size: 18,
+                          ),
+                          tooltip: 'Back',
+                        )
+                      else
+                        IconButton(
+                          onPressed: () => context.go('/'),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: AppColors.cream,
+                            size: 18,
+                          ),
+                          tooltip: 'Home',
+                        ),
+                      const Spacer(),
+                    ],
+                  ),
+                  const GarlandDots(alignStart: true),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const DiyaOrb(size: 52),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Pooja Store',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
                               fontSize: 20,
                               color: AppColors.cream,
                             ),
@@ -123,6 +257,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ],
             ),
+          ),
           ),
           Expanded(
             child: Padding(
@@ -148,8 +283,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       loading: auth.loading,
                       error: auth.error,
                       onSend: _requestOtp,
-                      onGoogle: () => _socialLogin('GOOGLE'),
-                      onApple: () => _socialLogin('APPLE'),
+                      onGoogle: _continueWithGoogle,
+                      onApple: _continueWithApple,
                     ),
             ),
           ),
