@@ -104,8 +104,8 @@ final upcomingFestivals = [
   FestivalGuide(
     id: 'ganesh',
     name: 'Ganesh Chaturthi',
-    date: '27 Aug 2026',
-    target: DateTime(2026, 8, 27),
+    date: '14 Sep 2026',
+    target: DateTime(2026, 9, 14),
     description:
         'Ganesh Chaturthi marks the birth of Lord Ganesha, worshipped as the remover of obstacles and lord of new beginnings. Families install a clay idol at home for 1.5, 3, 5, 7 or 11 days before immersion.',
     speciality:
@@ -118,16 +118,16 @@ final upcomingFestivals = [
       'Immerse the idol in water on the chosen day (visarjan).',
     ],
     items: ganeshPujaHomamKitItems,
-    kitName: 'Ganesh Puja Homam Samagri Kit',
+    kitName: 'Ganesh Puja Homam Samagri',
     kitPrice: 1999,
     kitSlug: 'ganesh-puja-homam-samagri',
     pricedItems: ganeshHomamList.items,
   ),
   FestivalGuide(
     id: 'navratri',
-    name: 'Navratri',
-    date: '2 Oct 2026',
-    target: DateTime(2026, 10, 2),
+    name: 'Sharad Navratri',
+    date: '11 Oct 2026',
+    target: DateTime(2026, 10, 11),
     description:
         'Navratri honors nine forms of Goddess Durga over nine nights, culminating in Vijayadashami. Each day is dedicated to a different form of the goddess.',
     speciality:
@@ -147,7 +147,7 @@ final upcomingFestivals = [
       'Red chowki cloth',
       'Oil lamp',
     ],
-    kitName: 'Navratri Kalash Kit',
+    kitName: 'Navratri Kalash Samagri',
     kitPrice: 1099,
   ),
   FestivalGuide(
@@ -174,7 +174,7 @@ final upcomingFestivals = [
       'Coins',
       'Flowers',
     ],
-    kitName: 'Diwali Lakshmi Puja Kit',
+    kitName: 'Diwali Lakshmi Puja Samagri',
     kitPrice: 749,
   ),
 ];

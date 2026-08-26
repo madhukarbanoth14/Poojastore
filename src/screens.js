@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, ScrollView, Pressable, TextInput, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAudioPlayer } from 'expo-audio';
 import { H, TXT, Stripe, DiyaFlame, Flags, Dot } from './ui';
 import { FONT, stripe, monoBg, stars, initials } from './theme';
 import {
@@ -10,6 +11,8 @@ import {
 } from './data';
 
 const TABS = ['home', 'categories', 'priests', 'profile'];
+const OM_IMAGE = require('../assets/OM.jpg');
+const OM_CHANT = require('../assets/om-chant-5s.mp3');
 
 /* ---------------- shared chrome ---------------- */
 
@@ -62,15 +65,40 @@ function BottomNav({ t, screen, actions }) {
 
 function Splash({ t }) {
   const flags = [t.saffron, t.gold, '#FBF3E3', t.saffron, t.gold, '#FBF3E3', t.saffron, t.gold, '#FBF3E3', t.saffron];
+  const player = useAudioPlayer(OM_CHANT);
+
+  useEffect(() => {
+    player.play();
+    const stopId = setTimeout(() => {
+      try {
+        player.pause();
+      } catch (_) {}
+    }, 5000);
+    return () => {
+      clearTimeout(stopId);
+      try {
+        player.pause();
+      } catch (_) {}
+    };
+  }, [player]);
+
   return (
     <LinearGradient colors={[t.maroon, t.maroonDeep]} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 22 }}>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }}><Flags colors={flags} big /></View>
       <View style={{ width: 220, height: 220, alignItems: 'center', justifyContent: 'center' }}>
         <View style={{ position: 'absolute', width: 220, height: 220, borderRadius: 110, borderWidth: 1, borderColor: 'rgba(212,175,55,.35)', borderStyle: 'dashed' }} />
         <View style={{ position: 'absolute', width: 178, height: 178, borderRadius: 89, borderWidth: 1, borderColor: 'rgba(212,175,55,.5)', borderStyle: 'dashed' }} />
-        <View style={{ width: 104, height: 104, borderRadius: 52, backgroundColor: t.gold, alignItems: 'center', justifyContent: 'center' }}>
-          <DiyaFlame size={26} color={t.maroonDeep} />
-        </View>
+        <Image
+          source={OM_IMAGE}
+          style={{
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            shadowColor: t.gold,
+            shadowOpacity: 0.45,
+            shadowRadius: 18,
+          }}
+        />
       </View>
       <H style={{ fontSize: 30, color: '#FBF3E3', letterSpacing: 0.5 }}>Pooja Store</H>
       <TXT style={{ fontSize: 14, color: 'rgba(251,243,227,.75)', letterSpacing: 1.5, textTransform: 'uppercase' }}>Divine essentials, delivered</TXT>

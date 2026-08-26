@@ -309,14 +309,30 @@ async function main() {
 
   const festivalSeeds = [
     {
+      date: new Date('2026-09-14T00:00:00.000Z'),
+      title: 'Ganesh Chaturthi',
+      description:
+        'Vinayaka Chaturthi — install Ganesha and begin home shrine worship (civil calendar marker).',
+    },
+    {
+      date: new Date('2026-10-11T00:00:00.000Z'),
+      title: 'Sharad Navratri begins',
+      description: 'Nine nights of Goddess Durga worship; kalash sthapana on day one.',
+    },
+    {
+      date: new Date('2026-10-20T00:00:00.000Z'),
+      title: 'Dussehra / Vijayadashami',
+      description: 'Culmination of Navratri — celebrate victory of dharma.',
+    },
+    {
+      date: new Date('2026-11-08T00:00:00.000Z'),
+      title: 'Diwali / Deepavali',
+      description: 'Festival of lights — Lakshmi Puja at dusk.',
+    },
+    {
       date: new Date('2026-08-15T00:00:00.000Z'),
       title: 'Independence Day (secular note)',
       description: 'National holiday in India — plan temple visits around local schedules.',
-    },
-    {
-      date: new Date('2026-08-26T00:00:00.000Z'),
-      title: 'Ganesh Chaturthi (approx. civil marker)',
-      description: 'Begin Vinayaka worship; prefer Abhijit muhurtham for home shrine setup.',
     },
   ];
 

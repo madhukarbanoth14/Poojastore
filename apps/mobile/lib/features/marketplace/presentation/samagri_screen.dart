@@ -120,8 +120,8 @@ class _SamagriScreenState extends ConsumerState<SamagriScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   count == 0
-                                      ? 'Choose items'
-                                      : '$count items · tap to choose',
+                                      ? 'Complete festival samagri'
+                                      : '$count items included',
                                   style: const TextStyle(
                                     fontSize: 12.5,
                                     color: AppColors.textMuted,

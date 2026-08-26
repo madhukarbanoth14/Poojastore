@@ -13,9 +13,51 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authControllerProvider).user;
+    final auth = ref.watch(authControllerProvider);
+    final user = auth.user;
     final dark = ref.watch(themeControllerProvider) == ThemeMode.dark;
     final t = context.ps;
+
+    if (!auth.isAuthenticated) {
+      return Scaffold(
+        backgroundColor: t.bg,
+        appBar: const PsHeader(title: 'Account', showBack: false),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Explore freely',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 22,
+                  color: t.text,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Browse festivals and Pooja Samagri without signing in. Sign in when you are ready to checkout.',
+                style: TextStyle(fontSize: 14, color: t.textMuted, height: 1.45),
+              ),
+              const SizedBox(height: 28),
+              FilledButton(
+                onPressed: () => context.push('/login'),
+                child: const Text('Sign in / Register'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => context.go('/shop'),
+                child: const Text('Browse Pooja Samagri'),
+              ),
+              const SizedBox(height: 24),
+              const LanguageSwitcher(),
+            ],
+          ),
+        ),
+      );
+    }
+
     final name = user?.fullName?.trim().isNotEmpty == true
         ? user!.fullName!
         : 'Devotee';

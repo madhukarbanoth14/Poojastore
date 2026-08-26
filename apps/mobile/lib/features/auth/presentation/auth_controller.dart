@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/i18n/locale_controller.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/fallback_dns.dart';
@@ -57,7 +57,12 @@ class AuthController extends StateNotifier<AuthState> {
     _bootstrap();
   }
 
-  final AuthRepository _repository;
+  AuthRepository _repository;
+
+  /// Swap repository when ApiClient/locale changes without clearing the session.
+  void attachRepository(AuthRepository repository) {
+    _repository = repository;
+  }
 
   Future<void> _bootstrap() async {
     final user = await _repository.restoreSession();
@@ -110,21 +115,43 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> continueWithSocial(String provider) async {
+  /// Native Google / Apple path. Prefer [idToken]; subject-only only when
+  /// [AppConfig.allowDemoSocial] is true (staging/dev).
+  Future<bool> socialLogin({
+    required String provider,
+    String? idToken,
+    String? subject,
+    String? email,
+    String? fullName,
+    String? preferredLanguage,
+  }) async {
     state = state.copyWith(loading: true, clearError: true);
     try {
-      const storage = FlutterSecureStorage();
-      final key = 'social_subject_$provider';
-      var subject = await storage.read(key: key);
-      if (subject == null || subject.isEmpty) {
-        subject =
-            'ps-${provider.toLowerCase()}-${DateTime.now().microsecondsSinceEpoch}';
-        await storage.write(key: key, value: subject);
+      final hasToken = idToken != null && idToken.isNotEmpty;
+      final hasSubject = subject != null && subject.isNotEmpty;
+      if (!hasToken && !AppConfig.allowDemoSocial) {
+        state = state.copyWith(
+          loading: false,
+          error: provider == 'APPLE'
+              ? 'Apple Sign-In is not configured. Use phone OTP.'
+              : 'Google Sign-In is not configured. Use phone OTP.',
+        );
+        return false;
+      }
+      if (!hasToken && !hasSubject) {
+        state = state.copyWith(
+          loading: false,
+          error: 'Social sign-in did not return credentials.',
+        );
+        return false;
       }
       final session = await _repository.socialLogin(
         provider: provider,
-        subject: subject,
-        fullName: provider == 'APPLE' ? 'Apple Devotee' : 'Google Devotee',
+        idToken: idToken,
+        subject: hasToken ? null : subject,
+        email: email,
+        fullName: fullName,
+        preferredLanguage: preferredLanguage,
       );
       state = state.copyWith(loading: false, user: session.user);
       return true;
@@ -159,5 +186,11 @@ class AuthController extends StateNotifier<AuthState> {
 
 final authControllerProvider =
     StateNotifierProvider<AuthController, AuthState>((ref) {
-  return AuthController(ref.watch(authRepositoryProvider));
+  // Use read (not watch) so locale/ApiClient rebuilds do not recreate AuthController
+  // and wipe the in-memory session (that was forcing a second login after OTP).
+  final controller = AuthController(ref.read(authRepositoryProvider));
+  ref.listen<AuthRepository>(authRepositoryProvider, (_, next) {
+    controller.attachRepository(next);
+  });
+  return controller;
 });

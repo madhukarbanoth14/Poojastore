@@ -29,7 +29,7 @@ class AppShell extends StatelessWidget {
                   icon: _NavIcon.home,
                 ),
                 _NavItem(
-                  label: 'Categories',
+                  label: 'Samagri',
                   selected: navigationShell.currentIndex == 1,
                   onTap: () => _go(1),
                   icon: _NavIcon.categories,
@@ -41,7 +41,7 @@ class AppShell extends StatelessWidget {
                   icon: _NavIcon.priests,
                 ),
                 _NavItem(
-                  label: 'Profile',
+                  label: 'Account',
                   selected: navigationShell.currentIndex == 3,
                   onTap: () => _go(3),
                   icon: _NavIcon.profile,
