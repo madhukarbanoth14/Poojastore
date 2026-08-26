@@ -62,13 +62,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Browse puja kits to get started.',
+                      'Browse Pooja Samagri to get started.',
                       style: TextStyle(fontSize: 13, color: AppColors.textMuted),
                     ),
                     const SizedBox(height: 18),
                     FilledButton(
                       onPressed: () => context.go('/shop'),
-                      child: const Text('Browse Kits'),
+                      child: const Text('Browse Samagri'),
                     ),
                   ],
                 ),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/design_catalog.dart';
+import '../../../core/network/fallback_dns.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -341,18 +343,14 @@ class FestivalScreen extends ConsumerWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => context.push('/priests'),
-                    child: const Text('Book Priest'),
+                    child: const Text('Book Poojari'),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: FilledButton(
-                    onPressed: () => context.push(
-                      festivalId == 'ganesh'
-                          ? '/samagri?festival=ganesh'
-                          : '/samagri',
-                    ),
-                    child: const Text('Choose items'),
+                    onPressed: () => _addKit(context, ref),
+                    child: const Text('Add to Cart'),
                   ),
                 ),
               ],
@@ -364,35 +362,54 @@ class FestivalScreen extends ConsumerWidget {
   }
 
   Future<void> _addKit(BuildContext context, WidgetRef ref) async {
+    final ok = await ensureLoggedIn(
+      context,
+      ref,
+      message: 'Sign in to add samagri to your cart',
+    );
+    if (!ok || !context.mounted) return;
     try {
       final guide = festivalById(festivalId);
+      final slug = guide.kitSlug;
       final kits = await ref.read(marketplaceApiProvider).listKits();
-      if (kits.isEmpty) {
-        if (context.mounted) {
-          final slug = guide.kitSlug;
-          if (slug != null) {
-            context.push('/kits/$slug');
-          } else {
-            context.go('/shop');
+      Map<String, dynamic>? match;
+      for (final raw in kits) {
+        final k = Map<String, dynamic>.from(raw as Map);
+        if (slug != null && k['slug'] == slug) {
+          match = k;
+          break;
+        }
+      }
+      if (match == null) {
+        for (final raw in kits) {
+          final k = Map<String, dynamic>.from(raw as Map);
+          final n = (k['name'] as String? ?? '').toLowerCase();
+          if (n.contains(festivalId) ||
+              n.contains(guide.name.split(' ').first.toLowerCase())) {
+            match = k;
+            break;
           }
+        }
+      }
+      if (match == null && kits.isNotEmpty) {
+        match = Map<String, dynamic>.from(kits.first as Map);
+      }
+      if (match == null) {
+        if (!context.mounted) return;
+        if (slug != null) {
+          context.push('/kits/$slug');
+        } else {
+          context.go('/shop');
         }
         return;
       }
-      final slug = guide.kitSlug;
-      final match = kits.cast<Map<String, dynamic>>().firstWhere(
-            (k) {
-              if (slug != null && k['slug'] == slug) return true;
-              final n = (k['name'] as String).toLowerCase();
-              return n.contains(festivalId) ||
-                  n.contains(guide.name.split(' ').first.toLowerCase());
-            },
-            orElse: () => kits.first,
-          );
       await ref.read(marketplaceApiProvider).addToCart(match['id'] as String);
       if (context.mounted) context.push('/cart');
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyNetworkError(e))),
+        );
       }
     }
   }

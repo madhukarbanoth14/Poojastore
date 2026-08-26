@@ -16,7 +16,6 @@ import 'features/marketplace/presentation/cart_screen.dart';
 import 'features/marketplace/presentation/checkout_screen.dart';
 import 'features/marketplace/presentation/festival_screen.dart';
 import 'features/marketplace/presentation/kit_detail_screen.dart';
-import 'features/marketplace/presentation/kits_screen.dart';
 import 'features/marketplace/presentation/samagri_screen.dart';
 import 'features/marketplace/presentation/order_confirm_screen.dart';
 import 'features/marketplace/presentation/order_detail_screen.dart';
@@ -71,15 +70,47 @@ final _routerProvider = Provider<GoRouter>((ref) {
       if (auth.bootstrapping) {
         return loc == '/splash' ? null : '/splash';
       }
-      final public =
-          loc == '/login' ||
-          loc == '/splash' ||
-          loc == '/onboarding' ||
-          loc == '/poojari/apply';
-      if (!auth.isAuthenticated && !public) return '/login';
-      if (auth.isAuthenticated &&
-          (loc == '/login' || loc == '/splash' || loc == '/onboarding')) {
+
+      // Guests may browse the store; only account/checkout flows require login.
+      final isPoojariApply = loc == '/poojari/apply';
+      const authRequiredExact = {
+        '/checkout',
+        '/cart',
+        '/orders',
+        '/order-confirm',
+        '/tracking',
+        '/bookings',
+        '/packages/bookings',
+        '/admin',
+        '/poojari',
+        '/panchang/profile',
+      };
+      final needsAuth =
+          !isPoojariApply &&
+          (authRequiredExact.contains(loc) ||
+              loc.startsWith('/checkout') ||
+              loc.startsWith('/orders/') ||
+              loc.startsWith('/tracking') ||
+              loc.startsWith('/book/') ||
+              loc.startsWith('/profile/') ||
+              loc.startsWith('/admin/') ||
+              loc.startsWith('/poojari/') ||
+              loc.startsWith('/video/') ||
+              loc.startsWith('/order-confirm'));
+
+      if (!auth.isAuthenticated && needsAuth) {
+        final next = Uri.encodeComponent(loc);
+        return '/login?next=$next';
+      }
+      if (auth.isAuthenticated && (loc == '/splash' || loc == '/onboarding')) {
         return auth.user?.isPoojari == true ? '/poojari' : '/';
+      }
+      // Stay on /login after auth so LoginScreen can pop (guest add-to-cart)
+      // or honor ?next= when redirected from a gated route.
+      if (auth.isAuthenticated && loc == '/login') {
+        final next = state.uri.queryParameters['next'];
+        if (next != null && next.isNotEmpty) return next;
+        return null;
       }
       if (auth.user?.isPoojari == true && loc == '/') return '/poojari';
       return null;
@@ -103,7 +134,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(path: '/shop', builder: (_, __) => const KitsScreen()),
+              GoRoute(path: '/shop', builder: (_, __) => const SamagriScreen()),
             ],
           ),
           StatefulShellBranch(

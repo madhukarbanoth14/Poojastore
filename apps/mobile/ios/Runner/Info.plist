@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Pooja Store needs camera access for video consultations with poojaris.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Pooja Store needs microphone access for audio and video consultations.</string>
 </dict>
 </plist>

@@ -1,28 +1,43 @@
 class AppConfig {
   const AppConfig._();
 
+  /// Override with `--dart-define=API_BASE_URL=...` for local/dev.
+  /// Default targets staging HTTPS so accidental release builds are not localhost.
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:3000/api/v1',
+    defaultValue: 'https://pooja-api-staging-tcjernzh5a-el.a.run.app/api/v1',
   );
 
   /// Dev/test only. Must be false for release/store builds.
   /// When true, client may call `/payments/:id/mock-confirm` after checkout.
   static const allowMockPayments = bool.fromEnvironment(
     'ALLOW_MOCK_PAYMENTS',
-    defaultValue: true,
+    defaultValue: false,
   );
 
-  /// When true, Google/Apple buttons can use API demo social login if native
-  /// OAuth is not configured yet. Disable for store builds.
+  /// When true, social login may fall back to subject-only (staging/dev API).
+  /// Must be false for production store builds.
   static const allowDemoSocial = bool.fromEnvironment(
     'ALLOW_DEMO_SOCIAL',
-    defaultValue: true,
+    defaultValue: false,
   );
 
-  /// Optional Google OAuth web client ID (serverClientId) for ID tokens.
+  /// Google OAuth web client ID (serverClientId) required for ID tokens on Android.
   static const googleServerClientId = String.fromEnvironment(
     'GOOGLE_SERVER_CLIENT_ID',
+    defaultValue: '',
+  );
+
+  /// Agora RTC App ID (safe to ship in the client).
+  static const agoraAppId = String.fromEnvironment(
+    'AGORA_APP_ID',
+    defaultValue: '7e9a244ee350427f82d060d70e0bb958',
+  );
+
+  /// Optional temporary/testing token. Leave empty for App ID-only projects.
+  /// Production must mint tokens on the server (never embed App Certificate).
+  static const agoraToken = String.fromEnvironment(
+    'AGORA_TOKEN',
     defaultValue: '',
   );
 }

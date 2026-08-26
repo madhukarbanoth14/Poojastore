@@ -49,7 +49,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthSession> socialLogin({
     required String provider,
-    required String subject,
+    String? subject,
     String? idToken,
     String? email,
     String? fullName,
@@ -59,7 +59,7 @@ class AuthRepositoryImpl implements AuthRepository {
       '/auth/social',
       data: {
         'provider': provider,
-        'subject': subject,
+        if (subject != null && subject.isNotEmpty) 'subject': subject,
         if (idToken != null && idToken.isNotEmpty) 'idToken': idToken,
         if (email != null && email.isNotEmpty) 'email': email,
         if (fullName != null && fullName.isNotEmpty) 'fullName': fullName,
@@ -71,37 +71,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<AuthSession> _sessionFromResponse(Map<String, dynamic> data) async {
-    final tokens = data['tokens'] as Map<String, dynamic>;
-    final user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
-    await _persistTokens(
-      accessToken: tokens['accessToken'] as String,
-      refreshToken: tokens['refreshToken'] as String,
-    );
-    return AuthSession(
-      accessToken: tokens['accessToken'] as String,
-      refreshToken: tokens['refreshToken'] as String,
-      user: user,
-    );
-  }
-
-  @override
-  Future<AuthSession> socialLogin({
-    required String provider,
-    String? idToken,
-    bool demo = false,
-    String? preferredLanguage,
-  }) async {
-    final response = await _api.dio.post(
-      '/auth/social',
-      data: {
-        'provider': provider,
-        if (idToken != null && idToken.isNotEmpty) 'idToken': idToken,
-        if (demo) 'demo': true,
-        if (preferredLanguage != null) 'preferredLanguage': preferredLanguage,
-        'deviceId': 'flutter-mobile',
-      },
-    );
-    final data = response.data['data'] as Map<String, dynamic>;
     final tokens = data['tokens'] as Map<String, dynamic>;
     final user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
     await _persistTokens(

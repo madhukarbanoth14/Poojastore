@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/l10n.dart';
 import '../data/guides_api.dart';
@@ -25,6 +26,12 @@ class _PrasadDetailScreenState extends ConsumerState<PrasadDetailScreen> {
   }
 
   Future<void> _order(Map<String, dynamic> product) async {
+    final loggedIn = await ensureLoggedIn(
+      context,
+      ref,
+      message: 'Sign in to add prasad to your cart',
+    );
+    if (!loggedIn || !mounted) return;
     setState(() => _adding = true);
     try {
       await ref

@@ -26,13 +26,14 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1200),
     )..repeat();
     _playOmChant();
-    Future<void>.delayed(const Duration(milliseconds: 2800), () async {
+    Future<void>.delayed(const Duration(milliseconds: 10000), () async {
       if (!mounted) return;
       const storage = FlutterSecureStorage();
       final done = await storage.read(key: kOnboardingDoneKey);
       if (!mounted) return;
       await _omPlayer.stop();
       if (!mounted) return;
+      // Guests land on home (or onboarding once); login is optional until checkout.
       context.go(done == '1' ? '/' : '/onboarding');
     });
   }
@@ -41,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       await _omPlayer.setReleaseMode(ReleaseMode.stop);
       await _omPlayer.setVolume(0.85);
-      await _omPlayer.play(AssetSource('audio/om-chant-5s.mp3'));
+      await _omPlayer.play(AssetSource('audio/om-chant-10s.mp3'));
     } catch (_) {
       // Splash should still advance if audio fails.
     }

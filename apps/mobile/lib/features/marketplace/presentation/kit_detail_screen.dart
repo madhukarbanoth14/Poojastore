@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/catalog/catalog_images.dart';
+import '../../../core/network/fallback_dns.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -105,6 +107,12 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
   Future<void> _add() async {
     final kit = _kit;
     if (kit == null) return;
+    final loggedIn = await ensureLoggedIn(
+      context,
+      ref,
+      message: 'Sign in to add samagri to your cart',
+    );
+    if (!loggedIn || !mounted) return;
     final keys = _selected.toList();
     if (_items.isNotEmpty && keys.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +130,9 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
       if (mounted) context.push('/cart');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendlyNetworkError(e))),
+        );
       }
     } finally {
       if (mounted) setState(() => _adding = false);
@@ -135,7 +145,7 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: const PsHeader(title: 'Choose items'),
+      appBar: const PsHeader(title: 'Pooja Samagri'),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _kit == null
