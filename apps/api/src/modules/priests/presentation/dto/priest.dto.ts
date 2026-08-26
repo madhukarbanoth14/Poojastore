@@ -1,4 +1,4 @@
-import { Market, PriestApplicationStatus, PriestServiceMode } from '@prisma/client';
+import { Market, PriestApplicationStatus, PriestServiceMode, ConsultationMedia } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -59,6 +59,10 @@ export class CreatePriestBookingDto {
   @IsOptional()
   @IsEnum(PriestServiceMode)
   serviceMode?: PriestServiceMode;
+
+  @IsOptional()
+  @IsEnum(ConsultationMedia)
+  consultationMedia?: ConsultationMedia;
 }
 
 export class CancelBookingDto {

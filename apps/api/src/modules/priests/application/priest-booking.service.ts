@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  ConsultationMedia,
   Market,
   OrderStatus,
   PaymentStatus,
@@ -13,6 +14,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../../../core/database/prisma.service';
 import { PaymentOrchestratorService } from '../../payments/application/payment-orchestrator.service';
+import { AgoraTokenService } from '../infrastructure/agora-token.service';
 import { MeetingLinkService } from '../infrastructure/meeting-link.service';
 import { CreatePriestBookingDto } from '../presentation/dto/priest.dto';
 
@@ -22,6 +24,7 @@ export class PriestBookingService {
     private readonly prisma: PrismaService,
     private readonly payments: PaymentOrchestratorService,
     private readonly meetings: MeetingLinkService,
+    private readonly agora: AgoraTokenService,
   ) {}
 
   async list(params: {
@@ -97,6 +100,10 @@ export class PriestBookingService {
     }
 
     const serviceMode = dto.serviceMode ?? PriestServiceMode.HOME_VISIT;
+    const consultationMedia =
+      serviceMode === PriestServiceMode.ONLINE
+        ? (dto.consultationMedia ?? ConsultationMedia.VIDEO)
+        : null;
     const amountMinor =
       serviceMode === PriestServiceMode.ONLINE
         ? priest.basePriceMinor
@@ -164,6 +171,7 @@ export class PriestBookingService {
           addressId: address.id,
           serviceName: dto.serviceName,
           serviceMode,
+          consultationMedia,
           notes: dto.notes,
           status: PriestBookingStatus.PENDING_PAYMENT,
           market: priest.market,
@@ -376,6 +384,7 @@ export class PriestBookingService {
     );
     const meeting = await this.meetings.createForBooking({
       bookingNumber: booking.bookingNumber,
+      bookingId: booking.id,
       serviceName: booking.serviceName,
       startsAt: booking.slot.startsAt,
       durationMinutes,
@@ -396,6 +405,52 @@ export class PriestBookingService {
         user: { select: { id: true, phoneE164: true, fullName: true } },
       },
     });
+  }
+
+  async joinConsultation(params: {
+    bookingId: string;
+    actorUserId: string;
+    isAdmin: boolean;
+  }) {
+    const booking = await this.bookingDetail(
+      params.actorUserId,
+      params.bookingId,
+      params.isAdmin,
+    );
+    if (booking.serviceMode !== PriestServiceMode.ONLINE) {
+      throw new BadRequestException('This booking is not an online consultation');
+    }
+    if (
+      booking.status !== PriestBookingStatus.CONFIRMED &&
+      booking.status !== PriestBookingStatus.PENDING_PAYMENT
+    ) {
+      throw new BadRequestException('Consultation is not available yet');
+    }
+
+    const ownsAsPriest = booking.priest.userId === params.actorUserId;
+    const peerName = ownsAsPriest
+      ? (booking.user.fullName ?? booking.user.phoneE164)
+      : booking.priest.fullName;
+
+    const payload: Record<string, unknown> = {
+      id: booking.id,
+      serviceMode: booking.serviceMode,
+      consultationMedia: booking.consultationMedia ?? ConsultationMedia.VIDEO,
+      meetingProvider: booking.meetingProvider,
+      meetingJoinUrl: booking.meetingJoinUrl,
+      meetingHostUrl: booking.meetingHostUrl,
+      meetingId: booking.meetingId,
+      peerName,
+    };
+
+    if (booking.meetingProvider === 'agora' && booking.meetingId) {
+      payload.agora = this.agora.createRtcToken({
+        channelName: booking.meetingId,
+        userId: params.actorUserId,
+      });
+    }
+
+    return payload;
   }
 
   async adminList() {

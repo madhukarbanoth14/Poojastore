@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 export type MeetingLink = {
-  provider: 'jitsi' | 'zoom';
+  provider: 'jitsi' | 'zoom' | 'agora';
   meetingId: string;
   joinUrl: string;
   hostUrl: string;
@@ -27,6 +27,17 @@ export function jitsiMeeting(
   };
 }
 
+export function agoraMeeting(bookingNumber: string, bookingId: string): MeetingLink {
+  const channel = jitsiRoomName(bookingNumber);
+  const deepLink = `poojastore://consultation/${bookingId}`;
+  return {
+    provider: 'agora',
+    meetingId: channel,
+    joinUrl: deepLink,
+    hostUrl: deepLink,
+  };
+}
+
 @Injectable()
 export class MeetingLinkService {
   private readonly logger = new Logger(MeetingLinkService.name);
@@ -35,11 +46,15 @@ export class MeetingLinkService {
 
   async createForBooking(params: {
     bookingNumber: string;
+    bookingId: string;
     serviceName: string;
     startsAt: Date;
     durationMinutes?: number;
   }): Promise<MeetingLink> {
     const provider = (this.config.get<string>('meetings.provider') ?? 'jitsi').toLowerCase();
+    if (provider === 'agora') {
+      return agoraMeeting(params.bookingNumber, params.bookingId);
+    }
     if (provider === 'zoom') {
       try {
         const zoom = await this.createZoomMeeting(params);
