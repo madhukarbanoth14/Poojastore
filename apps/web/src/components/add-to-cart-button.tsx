@@ -19,7 +19,6 @@ export function AddToCartButton({
   const { user, refreshCart } = useAuth();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function add() {
@@ -39,8 +38,7 @@ export function AddToCartButton({
         }),
       });
       await refreshCart();
-      setDone(true);
-      setTimeout(() => setDone(false), 1800);
+      router.push("/cart");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add to cart");
     } finally {
@@ -56,7 +54,7 @@ export function AddToCartButton({
         disabled={busy}
         className={`btn-orange disabled:opacity-60 ${className}`}
       >
-        {busy ? "Adding…" : done ? "Added" : label}
+        {busy ? "Adding…" : label}
       </button>
       {error ? <p className="mt-2 text-sm text-orange">{error}</p> : null}
     </div>

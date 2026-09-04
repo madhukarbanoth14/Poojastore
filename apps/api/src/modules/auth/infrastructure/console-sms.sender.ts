@@ -6,6 +6,13 @@ export class ConsoleSmsSender implements SmsSenderPort {
   private readonly logger = new Logger(ConsoleSmsSender.name);
 
   async sendOtp(phoneE164: string, code: string): Promise<void> {
-    this.logger.log(`OTP for ${phoneE164}: ${code}`);
+    await this.sendMessage(
+      phoneE164,
+      `Pavitra Seva OTP: ${code}. Valid for a few minutes. Do not share.`,
+    );
+  }
+
+  async sendMessage(phoneE164: string, body: string): Promise<void> {
+    this.logger.log(`SMS to ${phoneE164}: ${body}`);
   }
 }

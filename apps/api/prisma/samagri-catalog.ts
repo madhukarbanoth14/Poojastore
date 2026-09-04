@@ -85,6 +85,30 @@ const basicPoojaItems: SamagriItem[] = [
   { nameEn: 'Jaggery', nameTe: 'బెల్లం', quantity: 1 },
 ];
 
+const ganeshHomePujaItems: SamagriItem[] = [
+  { nameEn: 'Turmeric (Pasupu)', nameTe: 'పసుపు', quantity: 1, packEn: '50g', packTe: '50 గ్రాములు' },
+  { nameEn: 'Kumkum', nameTe: 'కుంకుమ', quantity: 1, packEn: '50g', packTe: '50 గ్రాములు' },
+  { nameEn: 'Bukka gulal', nameTe: 'బుక్కా గులాల్', quantity: 1, packEn: '50g', packTe: '50 గ్రాములు' },
+  { nameEn: 'Large wick', nameTe: 'పెద్ద వత్తి', quantity: 1 },
+  { nameEn: 'Incense sticks', nameTe: 'అగరబత్తులు', quantity: 1, packEn: '1 packet', packTe: '1 ప్యాకెట్' },
+  { nameEn: 'Oil', nameTe: 'నూనె', quantity: 1, packEn: '500 ml', packTe: '500 మి.లీ.' },
+  { nameEn: 'Camphor', nameTe: 'కర్పూరం', quantity: 1, packEn: '25g', packTe: '25 గ్రాములు' },
+  { nameEn: 'Cotton vastra', nameTe: 'పత్తి వస్త్రం', quantity: 1 },
+  { nameEn: 'Betel nuts (Vakkalu)', nameTe: 'వక్కలు', quantity: 12 },
+  { nameEn: 'Dates', nameTe: 'ఖర్జూరాలు', quantity: 12 },
+  { nameEn: 'Sambrani', nameTe: 'సాంబ్రాణి', quantity: 1, packEn: '50g', packTe: '50 గ్రాములు' },
+  { nameEn: 'Attar', nameTe: 'అత్తరు', quantity: 1 },
+  { nameEn: 'Rose water', nameTe: 'పన్నీరు', quantity: 1 },
+  { nameEn: 'Honey', nameTe: 'తేనె', quantity: 1 },
+  { nameEn: 'Ghee', nameTe: 'నెయ్యి', quantity: 1 },
+  { nameEn: 'Sandal paste (Gandham)', nameTe: 'గంధం', quantity: 1, packEn: '30g', packTe: '30 గ్రాములు' },
+  { nameEn: 'White cloth', nameTe: 'తెల్ల బట్ట', quantity: 1 },
+  { nameEn: 'Kankana thread', nameTe: 'కంకణాల దారం', quantity: 1 },
+  { nameEn: 'Turmeric roots', nameTe: 'పసుపు కొమ్ములు', quantity: 11 },
+  { nameEn: 'Dried coconuts', nameTe: 'కుడుకలు', quantity: 2 },
+  { nameEn: 'Coconuts', nameTe: 'కొబ్బరికాయలు', quantity: 2 },
+];
+
 const ganeshPoojaItems: SamagriItem[] = [
   { nameEn: 'Turmeric (Pasupu)', nameTe: 'పసుపు', quantity: 1, packEn: '100g', packTe: '100గ్రా' },
   { nameEn: 'Kumkum', nameTe: 'కుంకుమ', quantity: 1, packEn: '100g', packTe: '100గ్రా' },
@@ -348,15 +372,29 @@ const kits: SamagriProduct[] = [
     items: basicPoojaItems,
   },
   {
-    slug: 'ganesh-chaturthi-pooja-samagri',
+    slug: 'ganesh-chaturthi-home-puja',
     type: ProductType.PUJA_KIT,
     sortOrder: 11,
-    nameEn: 'Ganesh Chaturthi Pooja Samagri Kit',
-    nameTe: 'వినాయక చవితి పూజా సామగ్రి కిట్',
+    nameEn: 'Ganesh Chaturthi Home Puja Kit',
+    nameTe: 'వినాయక చవితి ఇంటి పూజ కిట్',
     descriptionEn:
-      'Vinayaka Chavithi home pooja samagri — turmeric, kumkum, dhoti, clay akhanda deepam, and the diary list. Optional items are chosen at checkout. Homam is a separate kit.',
+      'Home puja samagri for Vinayaka Chavithi — turmeric, kumkum, oil, camphor, vastra, and daily offerings. Mandapam and homam are separate kits.',
     descriptionTe:
-      'వినాయక చవితి ఇంటి పూజా సామగ్రి — పసుపు, కుంకుమ, దోవతి, మట్టి అఖండ దీపం. ఐచ్ఛిక వస్తువులు చెక్‌అవుట్‌లో ఎంచుకోవాలి. హోమం వేరు కిట్.',
+      'వినాయక చవితి ఇంటి పూజా సామగ్రి — పసుపు, కుంకుమ, నూనె, కర్పూరం, వస్త్రం. మండపం, హోమం వేరు కిట్‌లు.',
+    priceMinor: 75000,
+    mrpMinor: 99900,
+    items: ganeshHomePujaItems,
+  },
+  {
+    slug: 'ganesh-chaturthi-pooja-samagri',
+    type: ProductType.PUJA_KIT,
+    sortOrder: 12,
+    nameEn: 'Ganesh Mandapam Kit',
+    nameTe: 'గణేష్ మండపం కిట్',
+    descriptionEn:
+      'Mandapam / larger Vinayaka Chavithi samagri — dhoti, sela, clay akhanda deepam, navadhanyalu, and the full diary list. Optional items are chosen at checkout. Homam is a separate kit.',
+    descriptionTe:
+      'మండపం / పెద్ద వినాయక చవితి సామగ్రి — దోవతి, శేల, మట్టి అఖండ దీపం, నవధాన్యాలు. ఐచ్ఛిక వస్తువులు చెక్‌అవుట్‌లో ఎంచుకోవాలి. హోమం వేరు కిట్.',
     priceMinor: 149900,
     mrpMinor: 189900,
     items: ganeshPoojaItems,
@@ -364,7 +402,7 @@ const kits: SamagriProduct[] = [
   {
     slug: 'ganesh-puja-homam-samagri',
     type: ProductType.PUJA_KIT,
-    sortOrder: 12,
+    sortOrder: 13,
     nameEn: 'Ganesh Puja Homam Samagri Kit',
     nameTe: 'గణేష్ పూజ హోమం సామాగ్రి కిట్',
     descriptionEn:
@@ -626,6 +664,8 @@ const kits: SamagriProduct[] = [
 const individualPrices: Record<string, { slug: string; priceMinor: number; mrpMinor: number }> = {
   'Turmeric (Pasupu)': { slug: 'samagri-turmeric', priceMinor: 4000, mrpMinor: 5500 },
   Kumkum: { slug: 'samagri-kumkum', priceMinor: 5000, mrpMinor: 6500 },
+  'Bukka gulal': { slug: 'samagri-bukka-gulal', priceMinor: 4000, mrpMinor: 5500 },
+  'Large wick': { slug: 'samagri-large-wick', priceMinor: 3000, mrpMinor: 4000 },
   Ghee: { slug: 'samagri-ghee', priceMinor: 25000, mrpMinor: 29900 },
   'Incense sticks': { slug: 'samagri-incense', priceMinor: 4000, mrpMinor: 5500 },
   'Mango leaves': { slug: 'samagri-mango-leaves', priceMinor: 3000, mrpMinor: 4000 },
@@ -653,6 +693,11 @@ const individualPrices: Record<string, { slug: string; priceMinor: number; mrpMi
   'Turmeric & durva grass': { slug: 'samagri-durva', priceMinor: 3000, mrpMinor: 4000 },
   'Akhanda deepam': { slug: 'samagri-akhanda-deepam', priceMinor: 14900, mrpMinor: 17900 },
   Camphor: { slug: 'samagri-camphor', priceMinor: 5000, mrpMinor: 6500 },
+  'Cotton vastra': { slug: 'samagri-cotton-vastra', priceMinor: 8000, mrpMinor: 9900 },
+  Sambrani: { slug: 'samagri-sambrani', priceMinor: 6000, mrpMinor: 7500 },
+  Attar: { slug: 'samagri-attar', priceMinor: 8000, mrpMinor: 9900 },
+  'Rose water': { slug: 'samagri-rose-water', priceMinor: 5000, mrpMinor: 6500 },
+  'White cloth': { slug: 'samagri-white-cloth', priceMinor: 8000, mrpMinor: 9900 },
   'Cotton wicks': { slug: 'samagri-cotton-wicks', priceMinor: 3000, mrpMinor: 4000 },
   Plates: { slug: 'samagri-plates', priceMinor: 12000, mrpMinor: 14900 },
   'Arati plate': { slug: 'samagri-arati-plate', priceMinor: 15000, mrpMinor: 18900 },

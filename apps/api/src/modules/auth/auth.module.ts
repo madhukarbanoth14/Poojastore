@@ -53,6 +53,6 @@ import { AuthController } from './presentation/auth.controller';
       },
     },
   ],
-  exports: [TokenService],
+  exports: [TokenService, SMS_SENDER],
 })
 export class AuthModule {}

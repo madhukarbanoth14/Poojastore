@@ -58,14 +58,48 @@ class SamagriFestivalList {
   String subtitle(bool te) => te ? subtitleTe : subtitleEn;
 }
 
-/// Vinayaka Chavithi home pooja list (handwritten samagri diary).
+/// Vinayaka Chavithi home puja list.
+const ganeshHomePujaList = SamagriFestivalList(
+  id: 'ganesh-home-puja',
+  kitSlug: 'ganesh-chaturthi-home-puja',
+  titleEn: 'Ganesh Chaturthi Home Puja',
+  titleTe: 'వినాయక చవితి ఇంటి పూజ',
+  subtitleEn: 'Home puja samagri for Vinayaka Chavithi.',
+  subtitleTe: 'వినాయక చవితి ఇంటి పూజా సామగ్రి.',
+  kitPriceMinor: 75000,
+  items: [
+    SamagriLine(slug: 'samagri-turmeric', nameEn: 'Turmeric', nameTe: 'పసుపు', priceMinor: 4000, packEn: '50g', packTe: '50 గ్రాములు'),
+    SamagriLine(slug: 'samagri-kumkum', nameEn: 'Kumkum', nameTe: 'కుంకుమ', priceMinor: 5000, packEn: '50g', packTe: '50 గ్రాములు'),
+    SamagriLine(slug: 'samagri-bukka-gulal', nameEn: 'Bukka gulal', nameTe: 'బుక్కా గులాల్', priceMinor: 4000, packEn: '50g', packTe: '50 గ్రాములు'),
+    SamagriLine(slug: 'samagri-large-wick', nameEn: 'Large wick', nameTe: 'పెద్ద వత్తి', priceMinor: 3000),
+    SamagriLine(slug: 'samagri-incense', nameEn: 'Incense sticks', nameTe: 'అగరబత్తులు', priceMinor: 4000, packEn: '1 packet', packTe: '1 ప్యాకెట్'),
+    SamagriLine(slug: 'samagri-oil', nameEn: 'Oil', nameTe: 'నూనె', priceMinor: 28000, packEn: '500 ml', packTe: '500 మి.లీ.'),
+    SamagriLine(slug: 'samagri-camphor', nameEn: 'Camphor', nameTe: 'కర్పూరం', priceMinor: 5000, packEn: '25g', packTe: '25 గ్రాములు'),
+    SamagriLine(slug: 'samagri-cotton-vastra', nameEn: 'Cotton vastra', nameTe: 'పత్తి వస్త్రం', priceMinor: 8000),
+    SamagriLine(slug: 'samagri-betel-nuts', nameEn: 'Betel nuts', nameTe: 'వక్కలు', priceMinor: 8000, quantity: 12),
+    SamagriLine(slug: 'samagri-dates', nameEn: 'Dates', nameTe: 'ఖర్జూరాలు', priceMinor: 8000, quantity: 12),
+    SamagriLine(slug: 'samagri-sambrani', nameEn: 'Sambrani', nameTe: 'సాంబ్రాణి', priceMinor: 6000, packEn: '50g', packTe: '50 గ్రాములు'),
+    SamagriLine(slug: 'samagri-attar', nameEn: 'Attar', nameTe: 'అత్తరు', priceMinor: 8000),
+    SamagriLine(slug: 'samagri-rose-water', nameEn: 'Rose water', nameTe: 'పన్నీరు', priceMinor: 5000),
+    SamagriLine(slug: 'samagri-honey', nameEn: 'Honey', nameTe: 'తేనె', priceMinor: 12000),
+    SamagriLine(slug: 'samagri-ghee', nameEn: 'Ghee', nameTe: 'నెయ్యి', priceMinor: 25000),
+    SamagriLine(slug: 'samagri-gandham', nameEn: 'Sandal paste (Gandham)', nameTe: 'గంధం', priceMinor: 8000, packEn: '30g', packTe: '30 గ్రాములు'),
+    SamagriLine(slug: 'samagri-white-cloth', nameEn: 'White cloth', nameTe: 'తెల్ల బట్ట', priceMinor: 8000),
+    SamagriLine(slug: 'samagri-kankana-thread', nameEn: 'Kankana thread', nameTe: 'కంకణాల దారం', priceMinor: 2000),
+    SamagriLine(slug: 'samagri-turmeric-roots', nameEn: 'Turmeric roots', nameTe: 'పసుపు కొమ్ములు', priceMinor: 6000, quantity: 11),
+    SamagriLine(slug: 'samagri-dried-coconut', nameEn: 'Dried coconut halves', nameTe: 'కుడుకలు', priceMinor: 19900, quantity: 2),
+    SamagriLine(slug: 'samagri-coconuts', nameEn: 'Coconuts', nameTe: 'కొబ్బరికాయలు', priceMinor: 6000, quantity: 2),
+  ],
+);
+
+/// Mandapam / larger Vinayaka Chavithi list (previous Ganesh Puja kit).
 const ganeshPoojaList = SamagriFestivalList(
   id: 'ganesh-pooja',
   kitSlug: 'ganesh-chaturthi-pooja-samagri',
-  titleEn: 'Ganesh Pooja items',
-  titleTe: 'వినాయక చవితి పూజా సామగ్రి',
-  subtitleEn: 'Home pooja samagri for Vinayaka Chavithi — view first, then Homam.',
-  subtitleTe: 'వినాయక చవితి ఇంటి పూజా సామగ్రి — ముందు పూజా వస్తువులు, తర్వాత హోమం.',
+  titleEn: 'Ganesh Mandapam Kit',
+  titleTe: 'గణేష్ మండపం కిట్',
+  subtitleEn: 'Mandapam samagri for Vinayaka Chavithi — view first, then Homam.',
+  subtitleTe: 'వినాయక చవితి మండపం సామగ్రి — ముందు మండపం, తర్వాత హోమం.',
   kitPriceMinor: 149900,
   items: [
     SamagriLine(slug: 'samagri-turmeric', nameEn: 'Turmeric', nameTe: 'పసుపు', priceMinor: 4000, packEn: '100g', packTe: '100గ్రా'),
@@ -181,7 +215,12 @@ const varalakshmiList = SamagriFestivalList(
   ],
 );
 
-const festivalSamagriLists = [ganeshPoojaList, ganeshHomamList, varalakshmiList];
+const festivalSamagriLists = [
+  ganeshHomePujaList,
+  ganeshPoojaList,
+  ganeshHomamList,
+  varalakshmiList,
+];
 
 SamagriFestivalList samagriListById(String? id) {
   return festivalSamagriLists.firstWhere(

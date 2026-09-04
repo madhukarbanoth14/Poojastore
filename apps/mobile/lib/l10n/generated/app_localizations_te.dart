@@ -713,13 +713,13 @@ class AppLocalizationsTe extends AppLocalizations {
   String get optionalItemsHint => 'ఇవి కిట్‌లో ఉండవు — కావాలంటే టిక్ చేయండి.';
 
   @override
-  String get ganeshPoojaItemsTab => 'పూజా సామగ్రి';
+  String get ganeshPoojaItemsTab => 'ఇంటి పూజ';
 
   @override
   String get ganeshHomamTab => 'హోమం';
 
   @override
-  String get ganeshPoojaListTitle => 'వినాయక చవితి పూజా సామగ్రి';
+  String get ganeshPoojaListTitle => 'వినాయక చవితి ఇంటి పూజ';
 
   @override
   String get ganeshHomamListTitle => 'గణేష్ పూజ హోమం సామగ్రి';

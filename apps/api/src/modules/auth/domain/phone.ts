@@ -49,6 +49,27 @@ export function normalizePhone(
   };
 }
 
+/** Accepts +91…, 91…, or a 10-digit Indian mobile; also +1 US/Canada. */
+export function parseMobileInput(raw: string): NormalizedPhone {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    throw new InvalidPhoneError('Phone number is required');
+  }
+  const digits = trimmed.replace(/\D/g, '');
+  if (digits.length === 10) {
+    return normalizePhone('91', digits);
+  }
+  if (digits.length === 12 && digits.startsWith('91')) {
+    return normalizePhone('91', digits.slice(2));
+  }
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return normalizePhone('1', digits.slice(1));
+  }
+  throw new InvalidPhoneError(
+    'Enter a valid Indian (+91) or US (+1) mobile number',
+  );
+}
+
 export function generateNumericOtp(length: number): string {
   if (length < 4 || length > 10) {
     throw new Error('OTP length must be between 4 and 10');

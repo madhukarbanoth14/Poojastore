@@ -172,6 +172,21 @@ export function PanchangAlmanacCard({
           value={windowPhrase(panchang.yamagandam as Window | undefined, locale)}
         />
         <Row
+          icon={ICONS.rahu}
+          label={pl(locale, "gulika")}
+          value={windowPhrase(panchang.gulikaKalam as Window | undefined, locale)}
+        />
+        <Row
+          icon={ICONS.amrit}
+          label={pl(locale, "abhijit")}
+          value={windowPhrase(panchang.abhijitMuhurtham as Window | undefined, locale)}
+        />
+        <Row
+          icon={ICONS.yoga}
+          label={pl(locale, "subha")}
+          value={windowPhrase(panchang.subhaGadiyalu as Window | undefined, locale)}
+        />
+        <Row
           icon={ICONS.surya}
           label={pl(locale, "suryaRashi")}
           value={localizeTerm(panchang.suryaRashi as string | undefined, locale)}
@@ -202,8 +217,9 @@ export function PanchangAlmanacCard({
 export function usePanchangDate(
   initial: PanchangToday | null,
   city = "Hyderabad",
+  timeZone = "Asia/Kolkata",
 ) {
-  const today = useMemo(() => todayIso(), []);
+  const today = useMemo(() => todayIso(timeZone), [timeZone]);
   const max = useMemo(() => addDaysIso(today, 90), [today]);
   const startDate =
     (typeof initial?.date === "string" && initial.date) || today;

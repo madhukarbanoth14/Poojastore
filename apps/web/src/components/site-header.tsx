@@ -11,12 +11,12 @@ import { t, type CopyKey } from "@/lib/copy";
 import type { Locale } from "@/lib/types";
 
 const NAV: { href: string; key: CopyKey }[] = [
-  { href: "/kits", key: "navKits" },
-  { href: "/samagri", key: "navSamagri" },
+  { href: "/panchang", key: "navPanchang" },
   { href: "/poojas", key: "navPoojas" },
   { href: "/festivals", key: "navFestivals" },
   { href: "/priests", key: "navPriests" },
-  { href: "/panchang", key: "navPanchang" },
+  { href: "/kits", key: "navKits" },
+  { href: "/samagri", key: "navSamagri" },
   { href: "/packages", key: "navPackages" },
   { href: "/vidhi", key: "navVidhi" },
 ];
@@ -78,6 +78,14 @@ export function SiteHeader({ locale, brand }: { locale: Locale; brand: string })
               </span>
             ) : null}
           </Link>
+          {user?.role === "ADMIN" ? (
+            <Link
+              href="/admin"
+              className="hidden rounded-full border border-gold-bright/30 px-3.5 py-1.5 font-semibold tracking-wide hover:border-gold-bright/70 sm:inline"
+            >
+              Ops
+            </Link>
+          ) : null}
           {ready ? (
             <Link
               href={user ? "/account" : "/login"}
@@ -117,6 +125,11 @@ export function SiteHeader({ locale, brand }: { locale: Locale; brand: string })
             <Link href="/about" onClick={() => setOpen(false)} className="py-2.5">
               {t(locale, "navAbout")}
             </Link>
+            {user?.role === "ADMIN" ? (
+              <Link href="/admin" onClick={() => setOpen(false)} className="py-2.5 text-gold-bright">
+                Ops desk
+              </Link>
+            ) : null}
             <Link href={user ? "/account" : "/login"} onClick={() => setOpen(false)} className="py-2.5 text-orange">
               {user ? t(locale, "account") : t(locale, "login")}
             </Link>

@@ -122,9 +122,13 @@ export type PanchangToday = {
   moonset?: string;
   rahuKalam?: { start?: string; end?: string };
   yamagandam?: { start?: string; end?: string };
+  gulikaKalam?: { start?: string; end?: string };
   amritKalam?: { start?: string; end?: string };
   varjyam?: { start?: string; end?: string };
   durmuhurtham?: { start?: string; end?: string };
+  abhijitMuhurtham?: { start?: string; end?: string };
+  subhaGadiyalu?: { start?: string; end?: string };
+  timezone?: string;
   specialNote?: string | null;
   disclaimer?: string;
   muhurats?: { name: string; start: string; end: string; inauspicious?: boolean }[];
@@ -173,12 +177,78 @@ export type Address = {
   isDefault: boolean;
 };
 
+export type TrackingStep = {
+  code: string;
+  label: string;
+  at: string | null;
+  eta: string | null;
+  done: boolean;
+};
+
+export type OrderTracking = {
+  trackingNumber?: string | null;
+  courierName?: string | null;
+  deliverySlot?: string | null;
+  returnStatus?: string;
+  nextFulfillment?:
+    | "CONFIRMED"
+    | "DISPATCH_VENDOR"
+    | "PACKED"
+    | "SHIPPED"
+    | "OUT_FOR_DELIVERY"
+    | "DELIVERED"
+    | null;
+  canConfirm?: boolean;
+  canDispatchVendor?: boolean;
+  canCancel?: boolean;
+  canRefund?: boolean;
+  canReturn?: boolean;
+  steps: TrackingStep[];
+};
+
 export type Order = {
   id: string;
   orderNumber?: string;
   status: string;
   totalMinor: number;
+  subtotalMinor?: number;
+  shippingMinor?: number;
+  taxMinor?: number;
   currency: string;
   createdAt: string;
-  items?: { productName?: string; name?: string; quantity: number }[];
+  deliverySlot?: string | null;
+  trackingNumber?: string | null;
+  courierName?: string | null;
+  cancelReason?: string | null;
+  items?: {
+    productName?: string;
+    name?: string;
+    quantity: number;
+    unitPriceMinor?: number;
+    totalMinor?: number;
+  }[];
+  shippingAddress?: Address;
+  payments?: {
+    id: string;
+    status: string;
+    provider: string;
+    amountMinor: number;
+  }[];
+  tracking?: OrderTracking;
+  user?: {
+    id?: string;
+    fullName?: string | null;
+    phoneE164?: string;
+    email?: string | null;
+  };
+  promoCode?: { code: string } | null;
+  confirmedAt?: string | null;
+  vendorNotifiedAt?: string | null;
+  vendor?: { id: string; name: string; phoneE164: string } | null;
+  vendorSlip?: {
+    phoneE164: string;
+    vendorName: string;
+    message: string;
+    sentAt: string;
+  };
 };

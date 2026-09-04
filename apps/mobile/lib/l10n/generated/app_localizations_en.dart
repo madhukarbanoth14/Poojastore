@@ -718,13 +718,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'These are not packed unless you select them.';
 
   @override
-  String get ganeshPoojaItemsTab => 'Pooja items';
+  String get ganeshPoojaItemsTab => 'Home Puja';
 
   @override
   String get ganeshHomamTab => 'Homam';
 
   @override
-  String get ganeshPoojaListTitle => 'Vinayaka Chavithi Pooja Samagri';
+  String get ganeshPoojaListTitle => 'Ganesh Chaturthi Home Puja';
 
   @override
   String get ganeshHomamListTitle => 'Ganesh Homam Samagri';

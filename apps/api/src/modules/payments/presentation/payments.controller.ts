@@ -26,6 +26,11 @@ import { RefundPaymentService } from '../application/refund-payment.service';
 import { VerifyRazorpayService } from '../application/verify-razorpay.service';
 import { RefundPaymentDto } from './dto/refund-payment.dto';
 import { VerifyRazorpayDto } from './dto/verify-razorpay.dto';
+import {
+  razorpayWebhookSecret,
+  stripeSecretKey,
+  stripeWebhookSecret,
+} from '../infrastructure/payment-credentials';
 
 @ApiTags('Payments')
 @Controller({ path: 'payments', version: '1' })
@@ -53,8 +58,7 @@ export class PaymentsController {
     @Headers('x-razorpay-signature') signature: string,
     @Body() body: Record<string, unknown>,
   ) {
-    const secret =
-      this.config.get<string>('payments.razorpay.webhookSecret') ?? '';
+    const secret = razorpayWebhookSecret(this.config);
 
     if (this.isLiveMode || this.isProduction) {
       if (!secret) {
@@ -171,8 +175,8 @@ export class PaymentsController {
     @Headers('stripe-signature') signature: string,
     @Body() body: Record<string, unknown>,
   ) {
-    const secret = this.config.get<string>('payments.stripe.webhookSecret') ?? '';
-    const stripeKey = this.config.get<string>('payments.stripe.secretKey') ?? '';
+    const secret = stripeWebhookSecret(this.config);
+    const stripeKey = stripeSecretKey(this.config);
 
     if (this.isLiveMode || this.isProduction) {
       if (!secret || !stripeKey) {

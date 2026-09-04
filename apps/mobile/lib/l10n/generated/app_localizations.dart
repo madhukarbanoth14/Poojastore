@@ -1439,7 +1439,7 @@ abstract class AppLocalizations {
   /// No description provided for @ganeshPoojaItemsTab.
   ///
   /// In en, this message translates to:
-  /// **'Pooja items'**
+  /// **'Home Puja'**
   String get ganeshPoojaItemsTab;
 
   /// No description provided for @ganeshHomamTab.
@@ -1451,7 +1451,7 @@ abstract class AppLocalizations {
   /// No description provided for @ganeshPoojaListTitle.
   ///
   /// In en, this message translates to:
-  /// **'Vinayaka Chavithi Pooja Samagri'**
+  /// **'Ganesh Chaturthi Home Puja'**
   String get ganeshPoojaListTitle;
 
   /// No description provided for @ganeshHomamListTitle.

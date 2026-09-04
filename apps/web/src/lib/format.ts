@@ -30,6 +30,18 @@ export function daysUntil(target: Date) {
   return `In ${days} days`;
 }
 
+export function formatWhen(iso?: string | null) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function formatSlot(iso: string) {
   const d = new Date(iso);
   return d.toLocaleString("en-IN", {

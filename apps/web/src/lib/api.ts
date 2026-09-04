@@ -33,28 +33,44 @@ async function apiGet<T>(path: string, locale: Locale = "en"): Promise<T | null>
   }
 }
 
-export async function listKits(locale: Locale = "en", market = "IN") {
-  const data = await apiGet<{ items: Product[] }>(
-    `/products?market=${market}&type=PUJA_KIT`,
-    locale,
-  );
-  return data?.items ?? [];
+async function listOrIndia<T>(
+  market: string,
+  load: (nextMarket: string) => Promise<T[]>,
+): Promise<T[]> {
+  const items = await load(market);
+  if (items.length || market === "IN") return items;
+  return load("IN");
 }
 
-export async function listFestivalKits(locale: Locale = "en", market = "IN") {
-  const data = await apiGet<{ items: Product[] }>(
-    `/products?market=${market}&catalog=pooja-samagri&type=PUJA_KIT`,
-    locale,
-  );
-  return data?.items ?? [];
+export async function listKits(locale: Locale = "en", market = "IN") {
+  return listOrIndia(market, async (nextMarket) => {
+    const data = await apiGet<{ items: Product[] }>(
+      `/products?market=${nextMarket}&type=PUJA_KIT`,
+      locale,
+    );
+    return data?.items ?? [];
+  });
+}
+
+export async function listFestivalKits(locale: Locale = "en", market = "IN", festival?: string) {
+  const fest = festival ? `&festival=${encodeURIComponent(festival)}` : "";
+  return listOrIndia(market, async (nextMarket) => {
+    const data = await apiGet<{ items: Product[] }>(
+      `/products?market=${nextMarket}&catalog=pooja-samagri&type=PUJA_KIT${fest}`,
+      locale,
+    );
+    return data?.items ?? [];
+  });
 }
 
 export async function listSamagri(locale: Locale = "en", market = "IN") {
-  const data = await apiGet<{ items: Product[] }>(
-    `/products?market=${market}&catalog=pooja-samagri`,
-    locale,
-  );
-  return data?.items ?? [];
+  return listOrIndia(market, async (nextMarket) => {
+    const data = await apiGet<{ items: Product[] }>(
+      `/products?market=${nextMarket}&catalog=pooja-samagri`,
+      locale,
+    );
+    return data?.items ?? [];
+  });
 }
 
 export async function getProduct(slug: string, locale: Locale = "en") {
@@ -62,8 +78,10 @@ export async function getProduct(slug: string, locale: Locale = "en") {
 }
 
 export async function listPriests(locale: Locale = "en", market = "IN") {
-  const data = await apiGet<{ items: Priest[] }>(`/priests?market=${market}`, locale);
-  return data?.items ?? [];
+  return listOrIndia(market, async (nextMarket) => {
+    const data = await apiGet<{ items: Priest[] }>(`/priests?market=${nextMarket}`, locale);
+    return data?.items ?? [];
+  });
 }
 
 export async function getPriest(slug: string, locale: Locale = "en") {
@@ -71,11 +89,13 @@ export async function getPriest(slug: string, locale: Locale = "en") {
 }
 
 export async function listPackages(locale: Locale = "en", market = "IN") {
-  const data = await apiGet<{ items: PujaPackage[] }>(
-    `/packages?market=${market}`,
-    locale,
-  );
-  return data?.items ?? [];
+  return listOrIndia(market, async (nextMarket) => {
+    const data = await apiGet<{ items: PujaPackage[] }>(
+      `/packages?market=${nextMarket}`,
+      locale,
+    );
+    return data?.items ?? [];
+  });
 }
 
 export async function getPackage(slug: string, locale: Locale = "en") {

@@ -24,6 +24,7 @@ export type FestivalGuide = {
   kitPrice: number;
   kitSlug?: string;
   kitTabs: FestivalKitTab[];
+  guideId?: string;
 };
 
 const GANESH_HOMAM_STEPS = [
@@ -76,28 +77,51 @@ export const upcomingFestivals: FestivalGuide[] = [
       "Immerse the idol in water on the chosen day (visarjan).",
     ],
     items: [
-      "Turmeric 100g",
-      "Kumkum 100g",
-      "Gandham",
-      "Incense",
-      "Camphor",
-      "Dhoti 9×5",
-      "Sela",
-      "Navadhanyalu",
-      "Clay akhanda deepam",
+      "Turmeric 50g",
+      "Kumkum 50g",
+      "Bukka gulal 50g",
+      "Large wick",
+      "Incense 1 packet",
+      "Oil 500 ml",
+      "Camphor 25g",
+      "Cotton vastra",
+      "Betel nuts ×12",
+      "Dates ×12",
+      "Sambrani 50g",
+      "Attar",
+      "Rose water",
+      "Honey",
+      "Ghee",
+      "Gandham 30g",
+      "White cloth",
+      "Kankana thread",
+      "Turmeric roots ×11",
+      "Kudukalu ×2",
+      "Coconuts ×2",
     ],
-    kitName: "Ganesh Chaturthi Pooja Samagri",
-    kitPrice: 149900,
-    kitSlug: "ganesh-chaturthi-pooja-samagri",
+    kitName: "Ganesh Chaturthi Home Puja Kit",
+    kitPrice: 75000,
+    kitSlug: "ganesh-chaturthi-home-puja",
     kitTabs: [
       {
-        slug: "ganesh-chaturthi-pooja-samagri",
-        labelEn: "Ganesh Puja kit",
-        labelTe: "గణేష్ పూజ కిట్",
+        slug: "ganesh-chaturthi-home-puja",
+        labelEn: "Home Puja kit",
+        labelTe: "ఇంటి పూజ కిట్",
         specialityEn:
           "Ganesh Chaturthi is the homecoming of Vighnaharta — families welcome a clay Ganesha, treat him as an honoured guest for 1.5, 3, 5, 7 or 11 days, then return him to water. The speciality is this living hospitality: 21 durva blades, modak or undrallu, an akhanda deepam, daily aarti, and visarjan as a lesson in letting obstacles go so new work can begin.",
         specialityTe:
           "వినాయక చవితి అంటే విఘ్నహర్తను ఇంటికి ఆహ్వానించడం. మట్టి గణేశుని 1.5, 3, 5, 7 లేదా 11 రోజులు అతిథిగా సేవించి, నీటిలో నిమజ్జనం చేస్తారు. ప్రత్యేకత ఈ ఆతిథ్యమే: 21 గరిక పత్రాలు, ఉండ్రాళ్లు/మోదకం, అఖండ దీపం, ప్రతిరోజూ హారతి, ఆటంకాలు వదిలి కొత్త పని మొదలుపెట్టే సంకేతంగా విసర్జన.",
+        processDetailEn: GANESH_PUJA_DETAIL_EN,
+        processDetailTe: GANESH_PUJA_DETAIL_TE,
+      },
+      {
+        slug: "ganesh-chaturthi-pooja-samagri",
+        labelEn: "Ganesh Mandapam Kit",
+        labelTe: "గణేష్ మండపం కిట్",
+        specialityEn:
+          "The mandapam kit is for a larger shrine or public setup — dhoti, sela, clay akhanda deepam, navadhanyalu, and the fuller Chaturthi diary list.",
+        specialityTe:
+          "మండపం కిట్ పెద్ద గృహ లేదా బహిరంగ ఏర్పాటుకు — దోవతి, శేల, మట్టి అఖండ దీపం, నవధాన్యాలు, పూర్తి చవితి సామగ్రి.",
         processDetailEn: GANESH_PUJA_DETAIL_EN,
         processDetailTe: GANESH_PUJA_DETAIL_TE,
       },
@@ -199,14 +223,150 @@ export const upcomingFestivals: FestivalGuide[] = [
       },
     ],
   },
+  {
+    id: "janmashtami",
+    name: "Krishna Janmashtami",
+    nameTe: "కృష్ణ జన్మాష్టమి",
+    date: "4 Sep 2026",
+    dateTe: "4 సెప్టెంబర్ 2026",
+    target: "2026-09-04",
+    description:
+      "Janmashtami marks the birth of Lord Krishna. Families fast, sing, and keep vigil until midnight.",
+    speciality:
+      "Midnight worship, butter and flutes, and reading from the Bhagavata are common household customs.",
+    steps: ["Clean the shrine", "Offer butter and tulasi", "Keep vigil until midnight"],
+    items: ["Tulasi", "Butter", "Flute decoration"],
+    kitName: "Janmashtami samagri",
+    kitPrice: 0,
+    kitTabs: [],
+    guideId: "janmashtami",
+  },
+  {
+    id: "dussehra",
+    name: "Dussehra",
+    nameTe: "దసరా",
+    date: "20 Oct 2026",
+    dateTe: "20 అక్టోబర్ 2026",
+    target: "2026-10-20",
+    description:
+      "Vijayadashami closes Navratri — the victory of dharma. Many families do ayudha pooja for tools and books.",
+    speciality: "Ayudha pooja, vidya arambham, and community processions mark the day.",
+    steps: ["Complete Navratri vratham", "Ayudha pooja", "Share prasad"],
+    items: ["Kumkum", "Flowers", "Books or tools"],
+    kitName: "Navratri kit",
+    kitPrice: 0,
+    kitTabs: [],
+    guideId: "vijayadashami",
+  },
+  {
+    id: "ugadi",
+    name: "Ugadi",
+    nameTe: "ఉగాది",
+    date: "30 Mar 2027",
+    dateTe: "30 మార్చి 2027",
+    target: "2027-03-30",
+    description:
+      "Ugadi is the Telugu and Kannada new year — a fresh calendar, a neem-jaggery tasting, and household pooja for the year ahead.",
+    speciality:
+      "Ugadi pachadi mixes six tastes as a reminder that the year holds joy, sorrow, and everything between.",
+    steps: ["Clean the home shrine", "Prepare ugadi pachadi", "Read the panchangam / panchanga sravanam"],
+    items: ["Mango leaves toran", "Neem flowers", "Jaggery", "Raw mango"],
+    kitName: "Ugadi samagri",
+    kitPrice: 0,
+    kitTabs: [],
+    guideId: "ugadi",
+  },
+  {
+    id: "sankranti",
+    name: "Makara Sankranti",
+    nameTe: "మకర సంక్రాంతి",
+    date: "15 Jan 2027",
+    dateTe: "15 జనవరి 2027",
+    target: "2027-01-15",
+    description:
+      "Sankranti marks the sun’s transit into Makara. Homes offer til-jaggery, kites, and harvest thanks.",
+    speciality: "Sesame and jaggery sweets, charity, and a harvest blessing.",
+    steps: ["Offer til and jaggery", "Give to neighbours", "Light a lamp at dusk"],
+    items: ["Sesame", "Jaggery", "Sugarcane"],
+    kitName: "Sankranti samagri",
+    kitPrice: 0,
+    kitTabs: [],
+  },
+  {
+    id: "shivaratri",
+    name: "Maha Shivaratri",
+    nameTe: "మహా శివరాత్రి",
+    date: "6 Mar 2027",
+    dateTe: "6 మార్చి 2027",
+    target: "2027-03-06",
+    description:
+      "Maha Shivaratri is an all-night vigil for Lord Shiva — bilva, abhishekam, and fasting in many households.",
+    speciality: "Night-long worship and bilva offerings.",
+    steps: ["Fast as your family custom allows", "Offer bilva and water or milk", "Keep a lamp through the night if you can"],
+    items: ["Bilva leaves", "Milk", "Vibhuti"],
+    kitName: "Shiva pooja samagri",
+    kitPrice: 0,
+    kitTabs: [],
+    guideId: "shiva",
+  },
+  {
+    id: "rama-navami",
+    name: "Rama Navami",
+    nameTe: "శ్రీ రామ నవమి",
+    date: "15 Apr 2027",
+    dateTe: "15 ఏప్రిల్ 2027",
+    target: "2027-04-15",
+    description:
+      "Rama Navami celebrates the birth of Lord Rama. Homes read the Ramayana and offer panakam and vadapappu.",
+    speciality: "Noon worship, panakam, and Ramayana recitation.",
+    steps: ["Clean the shrine", "Offer panakam and vadapappu", "Read a passage from the Ramayana"],
+    items: ["Panakam", "Vadapappu", "Flowers"],
+    kitName: "Rama Navami samagri",
+    kitPrice: 0,
+    kitTabs: [],
+    guideId: "rama-navami",
+  },
+  {
+    id: "varalakshmi",
+    name: "Varalakshmi Vratham",
+    nameTe: "వరలక్ష్మీ వ్రతం",
+    date: "20 Aug 2027",
+    dateTe: "20 ఆగస్టు 2027",
+    target: "2027-08-20",
+    description:
+      "Varalakshmi Vratham is kept on a Friday in Shravan for Goddess Lakshmi — a kalash, thread, and family blessing.",
+    speciality: "Kalash sthapana, thoram, and a Friday vratam observed by many South Indian households.",
+    steps: ["Set the kalash", "Tie the sacred thread", "Offer sweets and perform aarti"],
+    items: ["Kalash", "Red thread", "Bangles", "Sweets"],
+    kitName: "Varalakshmi samagri",
+    kitPrice: 0,
+    kitTabs: [],
+    guideId: "varalakshmi",
+  },
 ];
 
 export function festivalById(id: string) {
-  return upcomingFestivals.find((f) => f.id === id) ?? upcomingFestivals[0]!;
+  return upcomingFestivals.find((f) => f.id === id);
 }
 
 export function festivalShopHref(fest: FestivalGuide) {
-  return `/festivals/${fest.id}`;
+  if (fest.kitTabs.length) return `/festivals/${fest.id}`;
+  if (fest.guideId) return `/poojas/${fest.guideId}`;
+  return "/festivals";
+}
+
+export function upcomingFromToday(limit = 4, now = new Date()) {
+  return [...upcomingFestivals]
+    .filter((fest) => new Date(fest.target).getTime() + 86_400_000 >= now.getTime())
+    .sort((a, b) => new Date(a.target).getTime() - new Date(b.target).getTime())
+    .slice(0, limit);
+}
+
+export function festivalThemeActive(now = new Date()) {
+  const next = upcomingFromToday(1, now)[0];
+  if (!next) return false;
+  const days = (new Date(next.target).getTime() - now.getTime()) / 86_400_000;
+  return days <= 10 && days >= -1;
 }
 
 export function festivalForKitSlug(slug: string) {

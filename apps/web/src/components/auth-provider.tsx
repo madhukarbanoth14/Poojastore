@@ -28,7 +28,7 @@ type AuthState = {
   user: AuthUser | null;
   cart: Cart | null;
   ready: boolean;
-  login: (params: { email: string; password: string }) => Promise<void>;
+  login: (params: { email: string; password: string }) => Promise<AuthUser>;
   register: (params: {
     email: string;
     password: string;
@@ -126,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ ...params, deviceId: deviceId() }),
       });
       await persist(data);
+      return data.user;
     },
     [persist],
   );

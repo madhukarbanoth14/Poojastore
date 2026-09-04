@@ -1,131 +1,209 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { HomeFestivalCampaign } from "@/components/home-festival-campaign";
+import { HomeGuidanceCards } from "@/components/home-guidance";
 import { HomeHero } from "@/components/home-hero";
+import { HomeRasiCard } from "@/components/home-rasi";
 import { ProductCard } from "@/components/product-card";
 import { SectionTitle } from "@/components/ui";
 import { listFestivalKits, listKits, listPackages, listPriests, getTodayPanchang } from "@/lib/api";
-import { serviceImage } from "@/lib/catalog-images";
+import { festivalImage } from "@/lib/catalog-images";
 import { t } from "@/lib/copy";
-import { formatMoney, initials } from "@/lib/format";
-import { getLocale } from "@/lib/locale";
+import {
+  campaignText,
+  filterCampaignKits,
+  getActiveFestivalCampaign,
+} from "@/lib/festival-campaign";
+import { upcomingFromToday } from "@/lib/festivals";
+import { formatMoney, initials, daysUntil } from "@/lib/format";
+import { getCity, getLocale } from "@/lib/locale";
+import { marketForCity } from "@/lib/location";
 
-const STEPS = [
-  {
-    n: "01",
-    label: "Festival kit",
-    title: "Complete Pooja kits",
-    desc: "Curated kits for every festival and family function — nothing missing, nothing extra.",
-  },
-  {
-    n: "02",
-    label: "Poojari",
-    title: "Verified poojaris",
-    desc: "Book experienced, background-verified priests for home visits or online consultations.",
-  },
-  {
-    n: "03",
-    label: "Delivery",
-    title: "Same-day delivery",
-    desc: "Fresh flowers, agarbatti and ritual items from nearby pooja stores, delivered fast.",
-  },
-  {
-    n: "04",
-    label: "Calendar",
-    title: "Never miss a festival",
-    desc: "Panchang, muhurats, and reminders for every auspicious date — right on time.",
-  },
-];
+const DEFAULT_HOME_TITLE = "Pavitra Seva · Your Divine Companion";
+const DEFAULT_HOME_DESCRIPTION =
+  "Wake up to today’s panchangam, rasi guidance, and ritual — then book a Pooja or shop a kit. For families in India, USA, and Canada.";
 
-const ASSURANCES = [
-  "Verified priests",
-  "Same-day delivery",
-  "Secure payments",
-  "India · USA · Canada",
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const campaign = getActiveFestivalCampaign();
+  if (!campaign) {
+    return {
+      title: { absolute: DEFAULT_HOME_TITLE },
+      description: DEFAULT_HOME_DESCRIPTION,
+    };
+  }
+  return {
+    title: { absolute: campaign.seoTitle.en },
+    description: campaign.seoDescription.en,
+    openGraph: {
+      title: campaign.seoTitle.en,
+      description: campaign.seoDescription.en,
+    },
+  };
+}
 
 export default async function HomePage() {
   const locale = await getLocale();
+  const city = await getCity();
+  const market = marketForCity(city);
+  const campaign = getActiveFestivalCampaign();
   const [kits, festivalKits, priests, packages, panchang] = await Promise.all([
-    listKits(locale),
-    listFestivalKits(locale),
-    listPriests(locale),
-    listPackages(locale),
-    getTodayPanchang(locale),
+    listKits(locale, market),
+    listFestivalKits(locale, market),
+    listPriests(locale, market),
+    listPackages(locale, market),
+    getTodayPanchang(locale, city),
   ]);
   const featured = [...festivalKits, ...kits].filter(
     (product, index, list) => list.findIndex((item) => item.id === product.id) === index,
   );
+  const campaignKits = campaign ? filterCampaignKits(featured, campaign) : [];
   const featuredPriests = priests.slice(0, 3);
   const festivalIds = new Set(festivalKits.map((kit) => kit.id));
+  const festivals = upcomingFromToday(3);
 
   return (
     <div className="mandala-fade">
-      <HomeHero locale={locale} panchang={panchang} />
+      <HomeHero
+        locale={locale}
+        panchang={panchang}
+        city={city}
+        shopCta={
+          campaign
+            ? {
+                href: campaign.shopHref,
+                label: campaignText(locale, campaign.heroShopCta),
+              }
+            : undefined
+        }
+      />
 
-      <div className="border-y border-divider bg-paper/70">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-5 py-4 text-[11px] font-semibold tracking-[0.16em] text-maroon uppercase">
-          {ASSURANCES.map((item, i) => (
-            <span key={item} className="flex items-center gap-8">
-              {i > 0 ? <span className="hidden h-1 w-1 rounded-full bg-orange sm:block" /> : null}
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
+      {campaign ? (
+        <HomeFestivalCampaign locale={locale} campaign={campaign} kits={campaignKits} />
+      ) : null}
 
-      <div className="mx-auto max-w-6xl px-5 py-16">
-        <SectionTitle
-          kicker="Shop"
-          title={t(locale, "featuredKits")}
-          action={
-            <div className="flex gap-4">
-              <Link href="/poojas" className="text-sm link-brand">
-                {t(locale, "navPoojas")}
+      <div className="mx-auto max-w-6xl space-y-16 px-5 py-14">
+        <section>
+          <SectionTitle kicker={t(locale, "tagline")} title={t(locale, "spiritualGuidance")} />
+          <div className="grid gap-6 lg:grid-cols-3">
+            <HomeGuidanceCards locale={locale} city={city} />
+            <HomeRasiCard locale={locale} />
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            {locale === "te"
+              ? "సాంప్రదాయిక మార్గదర్శకం. ఫలితాలు హామీ కావు."
+              : "Traditional spiritual guidance — not a guarantee of outcomes."}
+          </p>
+        </section>
+
+        <section>
+          <SectionTitle
+            kicker={t(locale, "upcoming")}
+            title={locale === "te" ? "రాబోయే పండుగ" : "Upcoming festival"}
+            action={
+              <Link href="/festivals" className="text-sm link-brand">
+                {t(locale, "viewAll")}
               </Link>
+            }
+          />
+          {festivals.length ? (
+            <div className="grid gap-5 sm:grid-cols-3">
+              {festivals.map((fest) => {
+                const href = `/festivals/${fest.id}`;
+                return (
+                  <article key={fest.id} className="card-temple overflow-hidden">
+                    <Link href={href} className="block">
+                      <div className="relative h-32">
+                        <Image
+                          src={festivalImage(fest.id)}
+                          alt={locale === "te" ? fest.nameTe : fest.name}
+                          fill
+                          className="object-cover"
+                        />
+                        <span className="absolute right-3 top-3 rounded-full bg-maroon/90 px-2.5 py-1 text-[10px] font-semibold text-gold-bright uppercase">
+                          {daysUntil(new Date(fest.target))}
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-display text-xl text-maroon">
+                          {locale === "te" ? fest.nameTe : fest.name}
+                        </h3>
+                        <p className="mt-1 text-sm text-muted">
+                          {locale === "te" ? fest.dateTe : fest.date}
+                        </p>
+                      </div>
+                    </Link>
+                    <div className="flex flex-wrap gap-2 px-4 pb-4">
+                      <Link href={href} className="btn-orange btn-orange-sm">
+                        {locale === "te" ? "పండుగ చూడండి" : "View festival"}
+                      </Link>
+                      <Link href="/priests" className="text-sm font-semibold text-maroon">
+                        {t(locale, "bookPooja")}
+                      </Link>
+                      {fest.kitTabs.length ? (
+                        <Link href={href} className="text-sm font-semibold text-maroon">
+                          {locale === "te" ? "కిట్" : "Shop kit"}
+                        </Link>
+                      ) : null}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="card-temple p-6 text-sm text-muted">
+              {locale === "te" ? "రాబోయే పండుగలు త్వరలో చూపిస్తాం." : "Upcoming festivals will appear here."}
+            </p>
+          )}
+        </section>
+
+        <section className="grid gap-3 sm:grid-cols-4">
+          {[
+            { href: "/poojas", label: t(locale, "bookPooja") },
+            { href: "/priests", label: t(locale, "bookPriest") },
+            { href: "/kits", label: t(locale, "shopKits") },
+            { href: "/panchang", label: t(locale, "todayPanchang") },
+          ].map((item) => (
+            <Link key={item.href} href={item.href} className="card-temple px-4 py-5 text-center font-semibold">
+              {item.label}
+            </Link>
+          ))}
+        </section>
+
+        <section>
+          <SectionTitle
+            kicker="Shop"
+            title={t(locale, "featuredKits")}
+            action={
               <Link href="/kits" className="text-sm link-brand">
                 {t(locale, "viewAll")}
               </Link>
+            }
+          />
+          {featured.length ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {featured.slice(0, 4).map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  badge={festivalIds.has(p.id) ? "Festival" : undefined}
+                />
+              ))}
             </div>
-          }
-        />
-        {featured.length ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featured.slice(0, 4).map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                badge={festivalIds.has(p.id) ? "Festival" : undefined}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="card-temple p-8 text-sm text-muted">
-            Kits will appear here when the API is running. Start `apps/api` or point{" "}
-            <code>API_BASE_URL</code> at staging.
-          </p>
-        )}
+          ) : (
+            <p className="card-temple p-8 text-sm text-muted">
+              {locale === "te"
+                ? "ఈ ప్రాంతంలో కిట్‌లు అందుబాటులో లేవు. ప్రదేశం మార్చి చూడండి."
+                : "No kits for this region yet. Try another location, or start the API."}
+            </p>
+          )}
+        </section>
 
-        <div className="mt-20">
-          <SectionTitle kicker="Seva" title={t(locale, "howTitle")} />
-          <div className="grid gap-5 md:grid-cols-4">
-            {STEPS.map((step) => (
-              <div key={step.label} className="card-temple p-6">
-                <p className="font-display text-3xl text-gold">{step.n}</p>
-                <p className="mt-3 text-[11px] font-semibold tracking-[0.18em] text-maroon uppercase">
-                  {step.label}
-                </p>
-                <h3 className="mt-2 font-display text-xl text-maroon">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-20 grid gap-10 lg:grid-cols-2">
+        <div className="grid gap-10 lg:grid-cols-2">
           <div>
             <SectionTitle
-              kicker="Priests"
-              title="Book a verified poojari"
+              kicker={t(locale, "navPriests")}
+              title={locale === "te" ? "పూజారిని బుక్ చేయండి" : "Book a poojari"}
               action={
                 <Link href="/priests" className="text-sm link-brand">
                   {t(locale, "viewAll")}
@@ -135,11 +213,7 @@ export default async function HomePage() {
             <div className="space-y-3">
               {featuredPriests.length ? (
                 featuredPriests.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/priests/${p.slug}`}
-                    className="card-temple flex items-center gap-4 p-4"
-                  >
+                  <Link key={p.id} href={`/priests/${p.slug}`} className="card-temple flex items-center gap-4 p-4">
                     <div className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-gold-bright to-orange font-semibold text-maroon">
                       {initials(p.fullName)}
                     </div>
@@ -153,14 +227,18 @@ export default async function HomePage() {
                   </Link>
                 ))
               ) : (
-                <p className="text-sm text-muted">Priest listings load from the live catalog.</p>
+                <p className="text-sm text-muted">
+                  {locale === "te"
+                    ? "ఈ ప్రాంతంలో పూజారులు ఇంకా జాబితా కాలేదు."
+                    : "No poojaris listed for this region yet."}
+                </p>
               )}
             </div>
           </div>
           <div>
             <SectionTitle
-              kicker="Bundles"
-              title="Pooja packages"
+              kicker={t(locale, "navPackages")}
+              title={t(locale, "navPackages")}
               action={
                 <Link href="/packages" className="text-sm link-brand">
                   {t(locale, "viewAll")}
@@ -175,18 +253,9 @@ export default async function HomePage() {
                 </Link>
               ))}
               {!packages.length ? (
-                <div className="card-temple overflow-hidden">
-                  <Image
-                    src={serviceImage("packages")}
-                    alt=""
-                    width={800}
-                    height={320}
-                    className="h-40 w-full object-cover"
-                  />
-                  <p className="p-5 text-sm text-muted">
-                    Combine kit, priest, and prasad in one booking.
-                  </p>
-                </div>
+                <p className="card-temple p-5 text-sm text-muted">
+                  {locale === "te" ? "ప్యాకేజీలు API నుంచి లోడ్ అవుతాయి." : "Packages load from the live catalog."}
+                </p>
               ) : null}
             </div>
           </div>

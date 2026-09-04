@@ -10,11 +10,28 @@ import { MockPaymentGateway } from '../infrastructure/mock.gateway';
 import { RazorpayGateway } from '../infrastructure/razorpay.gateway';
 import { StripeGateway } from '../infrastructure/stripe.gateway';
 
+function gatewayFailureDetail(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object') {
+    const body = err as {
+      error?: { description?: string };
+      message?: string;
+      statusCode?: number;
+    };
+    const description = body.error?.description || body.message;
+    if (description) {
+      return body.statusCode
+        ? `${description} (${body.statusCode})`
+        : description;
+    }
+  }
+  return String(err);
+}
+
 @Injectable()
 export class PaymentOrchestratorService {
   private readonly logger = new Logger(PaymentOrchestratorService.name);
   private readonly gateways: PaymentGateway[];
-  private readonly mock: MockPaymentGateway;
 
   constructor(
     private readonly config: ConfigService,
@@ -22,7 +39,6 @@ export class PaymentOrchestratorService {
     razorpay: RazorpayGateway,
     stripe: StripeGateway,
   ) {
-    this.mock = mock;
     this.gateways = [razorpay, stripe, mock];
   }
 
@@ -49,21 +65,31 @@ export class PaymentOrchestratorService {
   async createSession(
     input: CreatePaymentSessionInput,
   ): Promise<CreatePaymentSessionResult> {
-    const mode = this.config.get<string>('payments.mode') ?? 'mock';
     const gateway = this.resolveGateway(input.market);
+    this.logger.log(
+      `Creating ${gateway.provider} session for market ${input.market}`,
+    );
     try {
       return await gateway.createSession(input);
     } catch (err) {
+      const detail = gatewayFailureDetail(err);
       this.logger.error(
-        `Payment session failed via ${gateway.provider}`,
-        err instanceof Error ? err.stack : String(err),
+        `Payment session failed via ${gateway.provider}: ${detail}`,
+        err instanceof Error ? err.stack : undefined,
       );
-      if (mode === 'live' || gateway.provider === PaymentProvider.MOCK) {
+      const nodeEnv = this.config.get<string>('nodeEnv') ?? 'development';
+      if (
+        nodeEnv !== 'production' &&
+        gateway.provider === PaymentProvider.RAZORPAY &&
+        /authentication failed/i.test(detail)
+      ) {
         throw new BadGatewayException(
-          'Could not start payment. Please try again in a moment.',
+          'Razorpay authentication failed. The Test Key ID and Key Secret in apps/api/.env are loaded, but Razorpay rejected that pair. Generate a new Test mode pair (both values from the same generation), replace RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET, kill the process on port 3000, then start the API once.',
         );
       }
-      return this.mock.createSession(input);
+      throw new BadGatewayException(
+        'Could not start payment. Please try again in a moment.',
+      );
     }
   }
 }

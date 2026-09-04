@@ -55,6 +55,15 @@ async function bootstrap() {
   await app.listen(port);
   logger.log(`API listening on http://localhost:${port}/${prefix}/v1`);
   logger.log(`Swagger at http://localhost:${port}/docs`);
+  const razorpayKey =
+    config.get<string>('payments.razorpay.keyId') ||
+    process.env.RAZORPAY_KEY_ID ||
+    '';
+  logger.log(
+    razorpayKey
+      ? `Payments: Razorpay ${razorpayKey.startsWith('rzp_live') ? 'live' : 'test'} ready`
+      : 'Payments: Razorpay keys missing; India checkout uses mock',
+  );
 }
 
 void bootstrap();

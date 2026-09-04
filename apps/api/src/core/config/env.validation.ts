@@ -113,6 +113,14 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   STRIPE_WEBHOOK_SECRET?: string;
+
+  @IsString()
+  @IsOptional()
+  VENDOR_NAME?: string;
+
+  @IsString()
+  @IsOptional()
+  VENDOR_PHONE_E164?: string;
 }
 
 function assertTwilioConfigured(env: EnvironmentVariables) {
@@ -195,5 +203,7 @@ export function validateEnv(config: Record<string, unknown>) {
   assertProductionSafety(validated);
   assertTwilioConfigured(validated);
   assertLivePaymentsConfigured(validated);
-  return validated;
+  // Return the original env map so Razorpay/Stripe keys stay available to
+  // ConfigModule (class instances omit keys that were not enumerated).
+  return config;
 }

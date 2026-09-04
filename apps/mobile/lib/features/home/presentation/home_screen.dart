@@ -433,9 +433,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   if (featured.isEmpty) {
                     const fallback = [
                       (
-                        'Ganesh Chaturthi Pooja Samagri',
-                        1499,
-                        'ganesh-chaturthi-pooja-samagri',
+                        'Ganesh Chaturthi Home Puja Kit',
+                        750,
+                        'ganesh-chaturthi-home-puja',
                       ),
                       (
                         'Satyanarayan Puja Samagri',

@@ -27,8 +27,12 @@ export function LoginForm({
     setBusy(true);
     setError(null);
     try {
-      await login({ email: email.trim(), password });
-      router.replace(next);
+      const signedIn = await login({ email: email.trim(), password });
+      const dest =
+        signedIn.role === "ADMIN" && (next === "/" || next.startsWith("/admin"))
+          ? "/admin"
+          : next;
+      router.replace(dest);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not sign in");
     } finally {

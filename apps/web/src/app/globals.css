@@ -1,22 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --maroon: #4a0f1d;
-  --maroon-deep: #6e1423;
-  --maroon-ink: #2e0a12;
-  --orange: #e85d04;
-  --orange-deep: #c44c03;
-  --gold: #c9a227;
-  --gold-bright: #e9ce6e;
-  --cream: #fbf0dc;
-  --bg: #f6efe4;
-  --paper: #fff9e3;
+  --maroon: #8f1724;
+  --maroon-deep: #7a101b;
+  --maroon-ink: #4a241c;
+  --orange: #f28c00;
+  --orange-deep: #d97700;
+  --gold: #d4a72c;
+  --gold-bright: #f5c542;
+  --cream: #fff9ef;
+  --bg: #fff9ef;
+  --paper: #fffdf6;
   --blush: #fce8d6;
-  --body: #5a4038;
+  --body: #4a241c;
   --muted: #8a6b63;
   --border: #e4c48a;
   --divider: #efdbb8;
   --chip: #f3dcc0;
+}
+
+html[data-theme="festival"] {
+  --maroon: #7a101b;
+  --maroon-deep: #5c0c14;
+  --gold: #f5c542;
+  --gold-bright: #ffd966;
+  --orange: #f28c00;
 }
 
 @theme inline {
@@ -145,14 +153,14 @@ html[lang="te"] .font-display {
 
 .hero-home {
   background:
-    radial-gradient(ellipse 70% 55% at 82% 28%, rgba(232, 93, 4, 0.22), transparent 52%),
+    radial-gradient(ellipse 70% 55% at 82% 22%, rgba(232, 93, 4, 0.22), transparent 52%),
     radial-gradient(ellipse 45% 40% at 8% 88%, rgba(233, 206, 110, 0.14), transparent 48%),
     linear-gradient(158deg, #6e1626 0%, #4a0f1d 46%, #2a0911 100%);
 }
 
 .hero-home::after {
-  height: 120px;
-  background: linear-gradient(180deg, transparent 0%, var(--bg) 92%);
+  height: 5px;
+  background: linear-gradient(90deg, #8f1724, #d4a72c, #f28c00, #d4a72c, #8f1724);
 }
 
 .hero-grid {
@@ -163,7 +171,7 @@ html[lang="te"] .font-display {
     linear-gradient(rgba(233, 206, 110, 0.055) 1px, transparent 1px),
     linear-gradient(90deg, rgba(233, 206, 110, 0.055) 1px, transparent 1px);
   background-size: 72px 72px;
-  mask-image: radial-gradient(ellipse at 78% 36%, black 12%, transparent 68%);
+  mask-image: radial-gradient(ellipse at 78% 28%, black 12%, transparent 68%);
 }
 
 .hero-shrine {
@@ -204,13 +212,19 @@ html[lang="te"] .font-display {
 .hero-almanac {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.95rem 1.4rem;
+  gap: 0.75rem 1.1rem;
   margin-top: 1.6rem;
-  padding: 1.15rem 1.25rem;
+  padding: 1.05rem 1.15rem;
   border: 1px solid rgba(233, 206, 110, 0.32);
   background: rgba(46, 10, 18, 0.42);
   border-radius: 1.15rem;
   backdrop-filter: blur(12px);
+}
+
+@media (min-width: 640px) {
+  .hero-almanac {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
 }
 
 .hero-almanac div {
@@ -227,14 +241,16 @@ html[lang="te"] .font-display {
 
 .hero-almanac dd {
   margin: 0.2rem 0 0;
-  font-family: var(--font-cormorant), Georgia, serif;
-  font-size: 1.2rem;
-  line-height: 1.2;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
   color: var(--cream);
 }
 
 html[lang="te"] .hero-almanac dd {
-  font-family: var(--font-telugu), var(--font-cormorant), serif;
+  font-family: var(--font-telugu), var(--font-inter), sans-serif;
 }
 
 .yantra-spin {
@@ -314,14 +330,28 @@ html[lang="te"] .hero-almanac dd {
 }
 
 .btn-outline-gold {
-  border: 1px solid rgba(233, 206, 110, 0.8);
-  background: transparent;
-  color: var(--cream);
-  box-shadow: inset 0 0 0 1px rgba(233, 206, 110, 0.15);
+  border: 1px solid var(--gold);
+  background: var(--paper);
+  color: var(--maroon);
+  box-shadow: inset 0 0 0 1px rgba(212, 167, 44, 0.12);
 }
 
 .btn-outline-gold:hover {
-  background: rgba(233, 206, 110, 0.14);
+  background: var(--chip);
+}
+
+.hero-wash .btn-outline-gold,
+.hero-home .btn-outline-gold {
+  background: rgba(245, 197, 66, 0.08);
+  color: var(--gold-bright);
+  border-color: var(--gold-bright);
+  box-shadow: inset 0 0 0 1px rgba(245, 197, 66, 0.18);
+}
+
+.hero-wash .btn-outline-gold:hover,
+.hero-home .btn-outline-gold:hover {
+  background: rgba(245, 197, 66, 0.2);
+  color: #ffe9a0;
 }
 
 .btn-outline {
@@ -594,6 +624,57 @@ a.card-temple:hover {
   padding: 0.7rem 1rem 1rem;
   font-size: 0.82rem;
   color: var(--orange-deep);
+}
+
+html[data-theme="festival"] .toran {
+  height: 6px;
+  background: linear-gradient(90deg, #7a101b, #f5c542, #f28c00, #ffd966, #7a101b);
+}
+
+html[data-theme="festival"] body {
+  background-image:
+    radial-gradient(ellipse at 0% 100%, rgba(122, 16, 27, 0.08), transparent 38%),
+    radial-gradient(ellipse at 100% 0%, rgba(245, 197, 66, 0.12), transparent 34%);
+}
+
+html[data-theme="festival"] .paper-grain {
+  opacity: 0.06;
+}
+
+.festival-campaign-band {
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(242, 140, 0, 0.08), transparent 42%),
+    linear-gradient(180deg, #f3e2c4 0%, #f7ead4 55%, #f4e4c8 100%);
+  border-bottom: 1px solid rgba(201, 162, 39, 0.38);
+}
+
+.festival-kits-scroll {
+  display: flex;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 0.35rem;
+  scrollbar-width: thin;
+}
+
+.festival-kits-scroll > * {
+  flex: 0 0 16.5rem;
+}
+
+@media (min-width: 1024px) {
+  .festival-kits-scroll {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .festival-kits-scroll > * {
+    flex: none;
+    min-width: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -26,14 +26,28 @@ type Payment = {
   };
 };
 
-function loadRazorpay() {
+export function loadRazorpay() {
   return new Promise<void>((resolve, reject) => {
     if (window.Razorpay) {
       resolve();
       return;
     }
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+    );
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener(
+        "error",
+        () => reject(new Error("Could not load Razorpay")),
+        { once: true },
+      );
+      if (window.Razorpay) resolve();
+      return;
+    }
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
     script.onload = () => resolve();
     script.onerror = () => reject(new Error("Could not load Razorpay"));
     document.body.appendChild(script);
@@ -66,7 +80,7 @@ export async function completePayment(payment: Payment) {
         description: payment.metadata?.description ?? "Order",
         order_id: orderId,
         prefill: payment.metadata?.prefill ?? {},
-        theme: { color: "#6E1423" },
+        theme: { color: "#8F1724" },
         handler: (res: {
           razorpay_order_id: string;
           razorpay_payment_id: string;

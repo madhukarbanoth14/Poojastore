@@ -241,6 +241,12 @@ export const CITY_PRESETS = [
     timezone: 'America/New_York',
   },
   {
+    name: 'New Jersey',
+    latitude: 40.7357,
+    longitude: -74.1724,
+    timezone: 'America/New_York',
+  },
+  {
     name: 'Toronto',
     latitude: 43.6532,
     longitude: -79.3832,

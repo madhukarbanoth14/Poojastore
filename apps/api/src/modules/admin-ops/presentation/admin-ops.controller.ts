@@ -4,13 +4,12 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../../auth/domain/authenticated-user';
@@ -18,30 +17,20 @@ import { AdminOpsService } from '../application/admin-ops.service';
 import { PackagesService } from '../../packages/application/packages.service';
 import { PriestApplicationService } from '../../priests/application/priest-application.service';
 import { PriestBookingService } from '../../priests/application/priest-booking.service';
+import { OrderLifecycleService } from '../../orders/application/order-lifecycle.service';
+import { PromoService } from '../../promos/application/promo.service';
 import {
   CancelBookingDto,
   ListPriestApplicationsQueryDto,
   ReviewPriestApplicationDto,
 } from '../../priests/presentation/dto/priest.dto';
-
-class AdminListQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  pageSize?: number = 20;
-
-  @IsOptional()
-  @IsString()
-  status?: string;
-}
+import {
+  AdminDispatchVendorDto,
+  AdminFulfillDto,
+  AdminListQueryDto,
+  CreatePromoDto,
+  UpdatePromoDto,
+} from './dto/admin-ops.dto';
 
 @ApiTags('Admin Ops')
 @ApiBearerAuth()
@@ -53,6 +42,8 @@ export class AdminOpsController {
     private readonly packages: PackagesService,
     private readonly priests: PriestBookingService,
     private readonly priestApplications: PriestApplicationService,
+    private readonly lifecycle: OrderLifecycleService,
+    private readonly promos: PromoService,
   ) {}
 
   @Get('ops/summary')
@@ -66,6 +57,97 @@ export class AdminOpsController {
   @ApiOperation({ summary: 'List orders (admin)' })
   async orders(@Query() query: AdminListQueryDto) {
     const data = await this.ops.listOrders(query);
+    return { success: true, data };
+  }
+
+  @Get('orders/:id')
+  @ApiOperation({ summary: 'Order detail with customer tracking' })
+  async order(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const data = await this.lifecycle.getOwned(id, user.id, true);
+    return { success: true, data };
+  }
+
+  @Post('orders/:id/confirm')
+  @ApiOperation({ summary: 'Confirm a paid order before sending it to a vendor' })
+  async confirm(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const data = await this.lifecycle.adminConfirm(id, user.id);
+    return { success: true, data };
+  }
+
+  @Post('orders/:id/dispatch-vendor')
+  @ApiOperation({ summary: 'SMS the packing slip to the vendor who delivers to the customer' })
+  async dispatchVendor(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: AdminDispatchVendorDto,
+  ) {
+    const data = await this.lifecycle.adminDispatchVendor(id, user.id, body);
+    return { success: true, data };
+  }
+
+  @Get('vendors')
+  @ApiOperation({ summary: 'Active packing vendors' })
+  async vendors() {
+    const data = await this.ops.listVendors();
+    return { success: true, data };
+  }
+
+  @Post('orders/:id/fulfillment')
+  @ApiOperation({ summary: 'Mark packing / shipping / delivery for customer tracking' })
+  async fulfill(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: AdminFulfillDto,
+  ) {
+    const data = await this.lifecycle.adminFulfill(id, user.id, body);
+    return { success: true, data };
+  }
+
+  @Get('payments')
+  @ApiOperation({ summary: 'List payment transactions' })
+  async payments(@Query() query: AdminListQueryDto) {
+    const data = await this.ops.listPayments(query);
+    return { success: true, data };
+  }
+
+  @Get('audit-logs')
+  @ApiOperation({ summary: 'Store activity log' })
+  async auditLogs(@Query() query: AdminListQueryDto) {
+    const data = await this.ops.listAuditLogs(query);
+    return { success: true, data };
+  }
+
+  @Get('promos')
+  @ApiOperation({ summary: 'List promo codes' })
+  async listPromos() {
+    const data = await this.promos.list();
+    return { success: true, data };
+  }
+
+  @Post('promos')
+  @ApiOperation({ summary: 'Create a promo code' })
+  async createPromo(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: CreatePromoDto,
+  ) {
+    const data = await this.promos.create(user.id, body);
+    return { success: true, data };
+  }
+
+  @Patch('promos/:id')
+  @ApiOperation({ summary: 'Update a promo code' })
+  async updatePromo(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdatePromoDto,
+  ) {
+    const data = await this.promos.update(user.id, id, body);
     return { success: true, data };
   }
 

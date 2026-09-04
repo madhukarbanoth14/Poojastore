@@ -5,7 +5,8 @@ import { LotusDivider } from "@/components/ornaments";
 import { GoldButton, Kicker } from "@/components/ui";
 import { PanchangDateField, usePanchangDate } from "@/components/panchang-almanac-card";
 import { t } from "@/lib/copy";
-import { localizeTerm, tithiShort } from "@/lib/panchang-copy";
+import { cityLabel, timezoneForCity } from "@/lib/location";
+import { localizeTerm, tithiShort, windowPhrase } from "@/lib/panchang-copy";
 import type { Locale, PanchangToday } from "@/lib/types";
 
 function panchangLabel(value?: string, fallback = "—") {
@@ -15,21 +16,23 @@ function panchangLabel(value?: string, fallback = "—") {
 export function HomePanchangPanel({
   locale,
   initial,
+  city,
+  shopCta,
 }: {
   locale: Locale;
   initial: PanchangToday | null;
+  city: string;
+  shopCta?: { href: string; label: string };
 }) {
-  const city = initial?.cityName ?? "Hyderabad";
   const { date, setDate, panchang, loading, today, min, max } = usePanchangDate(
     initial,
     city,
+    timezoneForCity(city),
   );
   const tithi = tithiShort(panchang?.tithi, locale);
   const labeled =
     panchang && typeof panchang.dateLabel === "string" ? panchang.dateLabel : null;
-  const dateLine = [labeled || panchang?.date, panchang?.cityName ?? city]
-    .filter(Boolean)
-    .join(" · ");
+  const dateLine = [labeled || panchang?.date, cityLabel(city)].filter(Boolean).join(" · ");
   const isToday = date === today;
 
   return (
@@ -48,16 +51,24 @@ export function HomePanchangPanel({
           light
         />
       </div>
-      <h1 className="font-display mt-5 text-[2.7rem] leading-[1.05] text-cream md:text-[3.6rem]">
+      <h1 className="font-display mt-5 text-[2.4rem] leading-[1.08] text-cream md:text-[3.2rem]">
         {loading ? "…" : tithi}
       </h1>
-      <LotusDivider light className="mt-5" />
-      <p className="mt-4 text-base text-cream/80 md:text-lg">
+      <LotusDivider light className="mt-4" />
+      <p className="mt-3 text-base text-cream/80 md:text-lg">
         {localizeTerm(panchang?.nakshatra, locale)}
         {dateLine ? ` · ${dateLine}` : ""}
       </p>
 
       <dl className="hero-almanac">
+        <div>
+          <dt>{locale === "te" ? "యోగం" : "Yoga"}</dt>
+          <dd>{localizeTerm(panchang?.yoga, locale)}</dd>
+        </div>
+        <div>
+          <dt>{locale === "te" ? "కరణం" : "Karana"}</dt>
+          <dd>{localizeTerm(panchang?.karana, locale)}</dd>
+        </div>
         <div>
           <dt>{locale === "te" ? "సూర్యోదయం" : "Sunrise"}</dt>
           <dd>{panchangLabel(panchang?.sunrise)}</dd>
@@ -67,20 +78,40 @@ export function HomePanchangPanel({
           <dd>{panchangLabel(panchang?.sunset)}</dd>
         </div>
         <div>
-          <dt>{locale === "te" ? "యోగం" : "Yoga"}</dt>
-          <dd>{localizeTerm(panchang?.yoga, locale)}</dd>
+          <dt>{locale === "te" ? "వర్జ్యం" : "Varjyam"}</dt>
+          <dd>{windowPhrase(panchang?.varjyam, locale)}</dd>
         </div>
         <div>
-          <dt>{locale === "te" ? "కరణం" : "Karana"}</dt>
-          <dd>{localizeTerm(panchang?.karana, locale)}</dd>
+          <dt>{locale === "te" ? "దుర్ముహూర్తం" : "Durmuhurtham"}</dt>
+          <dd>{windowPhrase(panchang?.durmuhurtham, locale)}</dd>
+        </div>
+        <div>
+          <dt>Rahu Kalam</dt>
+          <dd>{windowPhrase(panchang?.rahuKalam, locale)}</dd>
+        </div>
+        <div>
+          <dt>Yamagandam</dt>
+          <dd>{windowPhrase(panchang?.yamagandam, locale)}</dd>
+        </div>
+        <div>
+          <dt>Gulika</dt>
+          <dd>{windowPhrase(panchang?.gulikaKalam, locale)}</dd>
+        </div>
+        <div>
+          <dt>Abhijit</dt>
+          <dd>{windowPhrase(panchang?.abhijitMuhurtham, locale)}</dd>
         </div>
       </dl>
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Link href={`/panchang?date=${date}`} className="btn-orange">
-          {locale === "te" ? "పూర్తి పంచాంగం" : "Full panchang"}
+          {locale === "te" ? "పూర్తి పంచాంగం" : "View full Panchangam"}
         </Link>
-        <GoldButton href="/kits">{t(locale, "shopKits")}</GoldButton>
+        {shopCta ? (
+          <GoldButton href={shopCta.href}>{shopCta.label}</GoldButton>
+        ) : (
+          <GoldButton href="/poojas">{t(locale, "bookPooja")}</GoldButton>
+        )}
       </div>
     </div>
   );

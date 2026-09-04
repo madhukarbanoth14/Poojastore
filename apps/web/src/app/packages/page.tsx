@@ -2,13 +2,14 @@ import Link from "next/link";
 import { EmptyNote, PageHero } from "@/components/ui";
 import { listPackages } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
-import { getLocale } from "@/lib/locale";
+import { getCity, getLocale } from "@/lib/locale";
+import { marketForCity } from "@/lib/location";
 
 export const metadata = { title: "Pooja packages" };
 
 export default async function PackagesPage() {
   const locale = await getLocale();
-  const packages = await listPackages(locale);
+  const packages = await listPackages(locale, marketForCity(await getCity()));
   return (
     <>
       <PageHero

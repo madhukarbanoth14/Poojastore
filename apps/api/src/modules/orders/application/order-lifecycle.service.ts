@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,6 +14,15 @@ import {
 import { PrismaService } from '../../../core/database/prisma.service';
 import { RefundPaymentService } from '../../payments/application/refund-payment.service';
 import { PushNotificationService } from '../../notifications/application/push-notification.service';
+import {
+  SMS_SENDER,
+  type SmsSenderPort,
+} from '../../auth/application/ports/sms-sender.port';
+import {
+  InvalidPhoneError,
+  parseMobileInput,
+} from '../../auth/domain/phone';
+import { formatVendorDispatchSms } from './vendor-dispatch-message';
 
 const TERMINAL: OrderStatus[] = [
   OrderStatus.CANCELLED,
@@ -35,6 +45,7 @@ export class OrderLifecycleService {
     private readonly refunds: RefundPaymentService,
     private readonly config: ConfigService,
     private readonly push: PushNotificationService,
+    @Inject(SMS_SENDER) private readonly sms: SmsSenderPort,
   ) {}
 
   async getOwned(orderId: string, userId: string, isAdmin = false) {
@@ -44,10 +55,12 @@ export class OrderLifecycleService {
         items: true,
         payments: { orderBy: { createdAt: 'desc' } },
         shippingAddress: true,
+        promoCode: { select: { id: true, code: true, discountType: true } },
+        vendor: true,
       },
     });
     if (!order) throw new NotFoundException('Order not found');
-    return this.withTracking(order);
+    return this.withTracking(order, isAdmin);
   }
 
   async listMine(userId: string) {
@@ -127,8 +140,17 @@ export class OrderLifecycleService {
 
   async requestReturn(orderId: string, userId: string, reason?: string) {
     const order = await this.getOwned(orderId, userId);
+    if (
+      order.status === OrderStatus.REFUNDED ||
+      order.returnStatus === ReturnStatus.REFUNDED
+    ) {
+      return this.getOwned(orderId, userId);
+    }
     if (order.status !== OrderStatus.DELIVERED) {
       throw new BadRequestException('Return is only available after delivery');
+    }
+    if (order.returnStatus === ReturnStatus.REJECTED) {
+      throw new BadRequestException('This return was already rejected');
     }
     const deliveredAt = order.deliveredAt ?? order.paidAt ?? order.createdAt;
     const windowMs = 7 * 24 * 60 * 60 * 1000;
@@ -141,7 +163,7 @@ export class OrderLifecycleService {
       data: {
         returnStatus: ReturnStatus.REQUESTED,
         returnReason: reason ?? 'customer_return',
-        returnRequestedAt: new Date(),
+        returnRequestedAt: order.returnRequestedAt ?? new Date(),
       },
     });
 
@@ -152,6 +174,269 @@ export class OrderLifecycleService {
     });
     await this.audit(userId, 'ORDER_RETURNED', order.id, { reason });
     return this.getOwned(orderId, userId);
+  }
+
+  async adminFulfill(
+    orderId: string,
+    adminUserId: string,
+    input: {
+      step: 'PACKED' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'DELIVERED';
+      trackingNumber?: string;
+      courierName?: string;
+    },
+  ) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('Order not found');
+    if (TERMINAL.includes(order.status) || order.status === OrderStatus.PENDING_PAYMENT) {
+      throw new BadRequestException('This order cannot be moved in fulfillment');
+    }
+    if (!order.confirmedAt && !order.packedAt && !order.shippedAt) {
+      throw new BadRequestException('Confirm the order before packing or shipping');
+    }
+    if (!order.vendorNotifiedAt && !order.packedAt && !order.shippedAt) {
+      throw new BadRequestException(
+        'Send the order to a vendor before packing or shipping',
+      );
+    }
+
+    const now = new Date();
+    const trackingNumber =
+      input.trackingNumber?.trim() ||
+      order.trackingNumber ||
+      `PS${order.orderNumber.replace(/\W/g, '').slice(-10)}`;
+    const courierName =
+      input.courierName?.trim() || order.courierName || 'Pooja Store Delivery';
+    const rank = { PACKED: 1, SHIPPED: 2, OUT_FOR_DELIVERY: 3, DELIVERED: 4 }[
+      input.step
+    ];
+
+    const data: Prisma.OrderUpdateInput = {
+      trackingNumber,
+      courierName,
+      packedAt: order.packedAt ?? now,
+    };
+    if (rank >= 1) {
+      data.status = OrderStatus.FULFILLING;
+    }
+    if (rank >= 2) {
+      data.status = OrderStatus.SHIPPED;
+      data.shippedAt = order.shippedAt ?? now;
+    }
+    if (rank >= 3) {
+      data.outForDeliveryAt = order.outForDeliveryAt ?? now;
+    }
+    if (rank >= 4) {
+      data.status = OrderStatus.DELIVERED;
+      data.deliveredAt = order.deliveredAt ?? now;
+    }
+
+    await this.prisma.order.update({ where: { id: order.id }, data });
+    await this.audit(adminUserId, 'ORDER_FULFILLMENT_UPDATED', order.id, {
+      step: input.step,
+      trackingNumber,
+    });
+
+    if (rank >= 2 && !order.shippedAt) {
+      void this.push
+        .notifyOrderShipped(order.userId, {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          trackingNumber,
+        })
+        .catch(() => undefined);
+    }
+
+    return this.getOwned(orderId, adminUserId, true);
+  }
+
+  async adminConfirm(orderId: string, adminUserId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('Order not found');
+    if (TERMINAL.includes(order.status) || order.status === OrderStatus.PENDING_PAYMENT) {
+      throw new BadRequestException('This order cannot be confirmed');
+    }
+    if (!order.paidAt) {
+      throw new BadRequestException('Payment is not confirmed yet');
+    }
+    if (!order.confirmedAt) {
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { confirmedAt: new Date() },
+      });
+      await this.audit(adminUserId, 'ORDER_CONFIRMED', order.id, {});
+    }
+    return this.getOwned(orderId, adminUserId, true);
+  }
+
+  async adminDispatchVendor(
+    orderId: string,
+    adminUserId: string,
+    input: { vendorId?: string; vendorPhone?: string; vendorName?: string },
+  ) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+        shippingAddress: true,
+        user: {
+          select: { fullName: true, phoneE164: true, email: true },
+        },
+        vendor: true,
+      },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (TERMINAL.includes(order.status) || order.status === OrderStatus.PENDING_PAYMENT) {
+      throw new BadRequestException('This order cannot be sent to a vendor');
+    }
+    if (!order.paidAt) {
+      throw new BadRequestException('Payment is not confirmed yet');
+    }
+    if (!order.confirmedAt) {
+      throw new BadRequestException('Confirm the order before sending it to a vendor');
+    }
+
+    const vendor = await this.resolveVendor(order.vendorId, input);
+    const message = formatVendorDispatchSms({
+      orderNumber: order.orderNumber,
+      deliverySlot: order.deliverySlot,
+      totalMinor: order.totalMinor,
+      currency: order.currency,
+      user: order.user,
+      shippingAddress: order.shippingAddress,
+      items: order.items,
+    });
+
+    try {
+      await this.sms.sendMessage(vendor.phoneE164, message);
+    } catch (error) {
+      const detail =
+        error instanceof Error ? error.message : 'SMS provider failed';
+      throw new BadRequestException(`Could not SMS the vendor: ${detail}`);
+    }
+
+    const now = new Date();
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: {
+        vendorId: vendor.id,
+        vendorNotifiedAt: now,
+        status:
+          order.status === OrderStatus.PAID
+            ? OrderStatus.FULFILLING
+            : order.status,
+      },
+    });
+    await this.audit(adminUserId, 'ORDER_SENT_TO_VENDOR', order.id, {
+      vendorId: vendor.id,
+      vendorPhone: vendor.phoneE164,
+      vendorName: vendor.name,
+    });
+
+    const updated = await this.getOwned(orderId, adminUserId, true);
+    return {
+      ...updated,
+      vendorSlip: {
+        phoneE164: vendor.phoneE164,
+        vendorName: vendor.name,
+        message,
+        sentAt: now.toISOString(),
+      },
+    };
+  }
+
+  private async resolveVendor(
+    currentVendorId: string | null,
+    input: { vendorId?: string; vendorPhone?: string; vendorName?: string },
+  ) {
+    let phoneE164: string | undefined;
+    if (input.vendorPhone?.trim()) {
+      try {
+        phoneE164 = parseMobileInput(input.vendorPhone).phoneE164;
+      } catch (error) {
+        if (error instanceof InvalidPhoneError) {
+          throw new BadRequestException(error.message);
+        }
+        throw error;
+      }
+    }
+
+    if (input.vendorId) {
+      const chosen = await this.prisma.vendor.findFirst({
+        where: { id: input.vendorId, isActive: true },
+      });
+      if (!chosen) throw new BadRequestException('Vendor not found');
+      if (phoneE164 && phoneE164 !== chosen.phoneE164) {
+        return this.prisma.vendor.update({
+          where: { id: chosen.id },
+          data: {
+            phoneE164,
+            name: input.vendorName?.trim() || chosen.name,
+          },
+        });
+      }
+      return chosen;
+    }
+
+    if (phoneE164) {
+      const byPhone = await this.prisma.vendor.findUnique({
+        where: { phoneE164 },
+      });
+      if (byPhone) {
+        if (input.vendorName?.trim() && input.vendorName.trim() !== byPhone.name) {
+          return this.prisma.vendor.update({
+            where: { id: byPhone.id },
+            data: { name: input.vendorName.trim(), isActive: true },
+          });
+        }
+        return byPhone;
+      }
+      return this.prisma.vendor.create({
+        data: {
+          name: input.vendorName?.trim() || 'Packing vendor',
+          phoneE164,
+          isActive: true,
+        },
+      });
+    }
+
+    if (currentVendorId) {
+      const current = await this.prisma.vendor.findFirst({
+        where: { id: currentVendorId, isActive: true },
+      });
+      if (current) return current;
+    }
+
+    const fallback = await this.prisma.vendor.findFirst({
+      where: { isActive: true },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+    });
+    if (fallback) return fallback;
+
+    const envPhone = this.config.get<string>('vendor.phoneE164')?.trim();
+    if (envPhone) {
+      try {
+        const parsed = parseMobileInput(envPhone);
+        return this.prisma.vendor.create({
+          data: {
+            name: this.config.get<string>('vendor.name') || 'Packing vendor',
+            phoneE164: parsed.phoneE164,
+            isDefault: true,
+            isActive: true,
+          },
+        });
+      } catch (error) {
+        if (error instanceof InvalidPhoneError) {
+          throw new BadRequestException(
+            'VENDOR_PHONE_E164 is not a valid mobile number',
+          );
+        }
+        throw error;
+      }
+    }
+
+    throw new BadRequestException(
+      'Enter the vendor mobile number so we can SMS the packing slip',
+    );
   }
 
   async startFulfillment(orderId: string) {
@@ -171,7 +456,10 @@ export class OrderLifecycleService {
     });
   }
 
-  async withTracking<T extends { id: string; status: OrderStatus }>(order: T) {
+  async withTracking<T extends { id: string; status: OrderStatus }>(
+    order: T,
+    includeVendor = false,
+  ) {
     const advanced = await this.maybeAdvance(order.id);
     const current = advanced ?? order;
     const full = await this.prisma.order.findUniqueOrThrow({
@@ -180,10 +468,15 @@ export class OrderLifecycleService {
         items: true,
         payments: { orderBy: { createdAt: 'desc' } },
         shippingAddress: true,
+        promoCode: { select: { id: true, code: true, discountType: true } },
+        user: { select: { id: true, fullName: true, phoneE164: true, email: true } },
+        vendor: true,
       },
     });
+    const { vendor, ...rest } = full;
     return {
-      ...full,
+      ...rest,
+      ...(includeVendor ? { vendor } : {}),
       tracking: this.buildTracking(full),
     };
   }
@@ -191,6 +484,9 @@ export class OrderLifecycleService {
   private async maybeAdvance(orderId: string) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) return null;
+    if (!this.config.get<boolean>('orders.autoAdvance')) {
+      return order;
+    }
     if (
       TERMINAL.includes(order.status) ||
       order.status === OrderStatus.PENDING_PAYMENT
@@ -288,6 +584,8 @@ export class OrderLifecycleService {
     status: OrderStatus;
     createdAt: Date;
     paidAt: Date | null;
+    confirmedAt: Date | null;
+    vendorNotifiedAt: Date | null;
     packedAt: Date | null;
     shippedAt: Date | null;
     outForDeliveryAt: Date | null;
@@ -322,11 +620,25 @@ export class OrderLifecycleService {
         done: !!order.paidAt,
       },
       {
+        code: 'CONFIRMED',
+        label: 'Order confirmed',
+        at: order.confirmedAt?.toISOString() ?? null,
+        eta: null,
+        done: !!order.confirmedAt || !!order.packedAt || !!order.shippedAt,
+      },
+      {
+        code: 'VENDOR_ASSIGNED',
+        label: 'Being prepared',
+        at: order.vendorNotifiedAt?.toISOString() ?? null,
+        eta: null,
+        done: !!order.vendorNotifiedAt || !!order.packedAt,
+      },
+      {
         code: 'PACKED',
         label: 'Packed',
         at: order.packedAt?.toISOString() ?? null,
         eta: order.packedAt ? null : paidAt.toISOString(),
-        done: !!order.packedAt || order.status === OrderStatus.FULFILLING,
+        done: !!order.packedAt,
       },
       {
         code: 'SHIPPED',
@@ -359,13 +671,55 @@ export class OrderLifecycleService {
         eta: null,
         done: true,
       });
+    } else if (order.returnStatus === ReturnStatus.REQUESTED) {
+      steps.push({
+        code: 'RETURN_REQUESTED',
+        label: 'Return requested',
+        at: null,
+        eta: null,
+        done: true,
+      });
     }
+
+    const nextFulfillment = (():
+      | 'CONFIRMED'
+      | 'DISPATCH_VENDOR'
+      | 'PACKED'
+      | 'SHIPPED'
+      | 'OUT_FOR_DELIVERY'
+      | 'DELIVERED'
+      | null => {
+      if (TERMINAL.includes(order.status) || order.status === OrderStatus.PENDING_PAYMENT) {
+        return null;
+      }
+      const fulfillmentStarted = !!(
+        order.packedAt ||
+        order.shippedAt ||
+        order.status === OrderStatus.SHIPPED ||
+        order.status === OrderStatus.DELIVERED
+      );
+      if (!order.confirmedAt && !fulfillmentStarted) return 'CONFIRMED';
+      if (!order.vendorNotifiedAt && !fulfillmentStarted) return 'DISPATCH_VENDOR';
+      if (!order.packedAt) return 'PACKED';
+      if (!order.shippedAt) return 'SHIPPED';
+      if (!order.outForDeliveryAt) return 'OUT_FOR_DELIVERY';
+      if (order.status !== OrderStatus.DELIVERED) return 'DELIVERED';
+      return null;
+    })();
 
     return {
       trackingNumber: order.trackingNumber,
       courierName: order.courierName,
       deliverySlot: order.deliverySlot,
       returnStatus: order.returnStatus,
+      nextFulfillment,
+      canConfirm:
+        !!order.paidAt && !order.confirmedAt && nextFulfillment === 'CONFIRMED',
+      canDispatchVendor:
+        !!order.confirmedAt &&
+        !TERMINAL.includes(order.status) &&
+        order.status !== OrderStatus.SHIPPED &&
+        order.status !== OrderStatus.DELIVERED,
       canCancel:
         !TERMINAL.includes(order.status) &&
         order.status !== OrderStatus.SHIPPED &&
@@ -373,7 +727,9 @@ export class OrderLifecycleService {
       canRefund:
         order.status === OrderStatus.PAID ||
         order.status === OrderStatus.FULFILLING,
-      canReturn: order.status === OrderStatus.DELIVERED,
+      canReturn:
+        order.status === OrderStatus.DELIVERED &&
+        order.returnStatus !== ReturnStatus.REFUNDED,
       steps,
     };
   }
@@ -384,20 +740,33 @@ export class OrderLifecycleService {
     reason: string,
   ) {
     const payment = await this.prisma.payment.findFirst({
-      where: { orderId, status: PaymentStatus.SUCCEEDED },
+      where: {
+        orderId,
+        status: { in: [PaymentStatus.SUCCEEDED, PaymentStatus.REFUNDED] },
+      },
       orderBy: { createdAt: 'desc' },
     });
     if (!payment) {
+      const order = await this.prisma.order.findUnique({
+        where: { id: orderId },
+      });
+      const delivered = order?.status === OrderStatus.DELIVERED;
       await this.prisma.order.update({
         where: { id: orderId },
-        data: {
-          status: OrderStatus.CANCELLED,
-          cancelledAt: new Date(),
-          cancelReason: reason,
-        },
+        data: delivered
+          ? {
+              status: OrderStatus.REFUNDED,
+              returnStatus: ReturnStatus.REFUNDED,
+            }
+          : {
+              status: OrderStatus.CANCELLED,
+              cancelledAt: new Date(),
+              cancelReason: reason,
+            },
       });
       return;
     }
+    if (payment.status === PaymentStatus.REFUNDED) return;
     await this.refunds.refund({
       paymentId: payment.id,
       reason,

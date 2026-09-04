@@ -1,4 +1,4 @@
-import { generateNumericOtp, normalizePhone } from './phone';
+import { generateNumericOtp, normalizePhone, parseMobileInput } from './phone';
 
 describe('normalizePhone', () => {
   it('normalizes Indian mobiles', () => {
@@ -32,5 +32,12 @@ describe('generateNumericOtp', () => {
   it('generates OTP of requested length', () => {
     const otp = generateNumericOtp(6);
     expect(otp).toMatch(/^\d{6}$/);
+  });
+});
+
+describe('parseMobileInput', () => {
+  it('accepts 10-digit Indian and E.164', () => {
+    expect(parseMobileInput('9876543210').phoneE164).toBe('+919876543210');
+    expect(parseMobileInput('+919876543210').phoneE164).toBe('+919876543210');
   });
 });

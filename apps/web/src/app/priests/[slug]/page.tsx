@@ -104,10 +104,15 @@ export default function PriestDetailPage() {
           {initials(priest.fullName)}
         </div>
         <div>
-          <p className="text-[11px] font-semibold tracking-[0.22em] text-maroon uppercase">Verified poojari</p>
+          <p className="text-[11px] font-semibold tracking-[0.22em] text-maroon uppercase">
+            {priest.city}, {priest.state}
+          </p>
           <h1 className="font-display mt-1 text-4xl text-maroon">{priest.fullName}</h1>
           <p className="text-sm text-muted">
-            {priest.city}, {priest.state} · {priest.yearsExperience} years · ★ {priest.ratingAvg.toFixed(1)}
+            {priest.yearsExperience} years
+            {priest.ratingCount > 0
+              ? ` · ★ ${priest.ratingAvg.toFixed(1)} (${priest.ratingCount})`
+              : ""}
           </p>
           <p className="mt-2 text-xl price">
             {formatMoney(priest.basePriceMinor, priest.currency)}

@@ -25,6 +25,13 @@ export class TwilioSmsSender implements SmsSenderPort {
   }
 
   async sendOtp(phoneE164: string, code: string): Promise<void> {
+    await this.sendMessage(
+      phoneE164,
+      `Pavitra Seva OTP: ${code}. Valid for a few minutes. Do not share.`,
+    );
+  }
+
+  async sendMessage(phoneE164: string, body: string): Promise<void> {
     if (!this.client) {
       throw new Error('Twilio is not configured');
     }
@@ -34,8 +41,6 @@ export class TwilioSmsSender implements SmsSenderPort {
       );
     }
 
-    const body = `Pooja Store OTP: ${code}. Valid for a few minutes. Do not share.`;
-
     const message = await this.client.messages.create({
       to: phoneE164,
       body,
@@ -44,6 +49,6 @@ export class TwilioSmsSender implements SmsSenderPort {
         : { from: this.fromNumber }),
     });
 
-    this.logger.log(`OTP SMS queued sid=${message.sid} to=${phoneE164}`);
+    this.logger.log(`SMS queued sid=${message.sid} to=${phoneE164}`);
   }
 }

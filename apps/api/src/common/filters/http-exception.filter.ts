@@ -7,6 +7,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import {
+  providerErrorMessage,
+  providerHttpStatus,
+} from '../errors/provider-error';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -17,13 +21,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    const exceptionResponse =
+      exception instanceof HttpException ? exception.getResponse() : null;
+
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
-
-    const exceptionResponse =
-      exception instanceof HttpException ? exception.getResponse() : null;
+        : (providerHttpStatus(exception) ?? HttpStatus.INTERNAL_SERVER_ERROR);
 
     const message = (() => {
       if (exception instanceof HttpException) {
@@ -33,8 +37,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         if (Array.isArray(nested)) return nested.join(', ');
         if (typeof nested === 'string') return nested;
       }
-      if (exception instanceof Error && exception.message) return exception.message;
-      return 'Internal server error';
+      return providerErrorMessage(exception, 'Internal server error');
     })();
 
     const error =
@@ -45,9 +48,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (status >= 500) {
       this.logger.error(
-        `${request.method} ${request.url}`,
-        exception instanceof Error ? exception.stack : String(exception),
+        `${request.method} ${request.url}: ${message}`,
+        exception instanceof Error
+          ? exception.stack
+          : JSON.stringify(exception),
       );
+    } else {
+      this.logger.warn(`${request.method} ${request.url}: ${message}`);
     }
 
     response.status(status).json({

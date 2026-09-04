@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PaymentProvider, PaymentStatus } from '@prisma/client';
+import { providerErrorMessage } from '../../../common/errors/provider-error';
 import { PrismaService } from '../../../core/database/prisma.service';
 import { ConfirmPaymentService } from './confirm-payment.service';
 import { MockPaymentGateway } from '../infrastructure/mock.gateway';
@@ -52,14 +53,24 @@ export class RefundPaymentService {
     }
 
     const gateway = this.resolveGateway(payment.provider);
-    const result = await gateway.refund({
-      providerPaymentId:
-        payment.providerPaymentId ?? `mock_pay_${payment.id}`,
-      amountMinor: amount,
-      currency: payment.currency,
-      reason: params.reason,
-      idempotencyKey: `refund_${payment.id}_${amount}`,
-    });
+    let result;
+    try {
+      result = await gateway.refund({
+        providerPaymentId:
+          payment.providerPaymentId ?? `mock_pay_${payment.id}`,
+        amountMinor: amount,
+        currency: payment.currency,
+        reason: params.reason,
+        idempotencyKey: `refund_${payment.id}_${amount}`,
+      });
+    } catch (err) {
+      throw new BadRequestException(
+        providerErrorMessage(
+          err,
+          'The payment provider could not refund this order.',
+        ),
+      );
+    }
 
     if (result.status === 'failed') {
       throw new BadRequestException('Provider rejected the refund');
@@ -69,12 +80,13 @@ export class RefundPaymentService {
       paymentId: payment.id,
       providerRefundId: result.providerRefundId,
       amountMinor: result.amountMinor,
-          raw: {
-            refund: result.raw,
-            adminUserId: params.adminUserId,
-            actorUserId: params.actorUserId ?? params.adminUserId,
-            reason: params.reason,
-          },
+      raw: {
+        refundId: result.providerRefundId,
+        refundStatus: result.status,
+        adminUserId: params.adminUserId,
+        actorUserId: params.actorUserId ?? params.adminUserId,
+        reason: params.reason,
+      },
     });
 
     return updated;

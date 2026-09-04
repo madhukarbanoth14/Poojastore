@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Market, Prisma, ProductType } from '@prisma/client';
-import { IsEnum, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsIn, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import { Public } from '../../../common/decorators/public.decorator';
 import {
   localizeProduct,
@@ -35,6 +35,12 @@ class ListProductsQuery {
   @MaxLength(64)
   @IsIn(['pooja-samagri'])
   catalog?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  @Matches(/^[a-z0-9-]+$/)
+  festival?: string;
 }
 
 type ProductRow = Prisma.ProductGetPayload<{
@@ -54,7 +60,7 @@ export class ProductsController {
     @Headers('accept-language') acceptLanguage?: string,
   ) {
     const locale = resolveLocale(undefined, acceptLanguage);
-    const type = query.type ?? (query.catalog ? undefined : ProductType.PUJA_KIT);
+    const type = query.type ?? (query.catalog || query.festival ? undefined : ProductType.PUJA_KIT);
     const where: Prisma.ProductWhereInput = {
       isActive: true,
       market: query.market ?? Market.IN,
@@ -62,15 +68,24 @@ export class ProductsController {
     if (type) {
       where.type = type;
     }
+    const metadataFilters: Prisma.ProductWhereInput[] = [];
     if (query.catalog) {
-      where.metadata = { path: ['catalog'], equals: query.catalog };
+      metadataFilters.push({ metadata: { path: ['catalog'], equals: query.catalog } });
+    }
+    if (query.festival) {
+      metadataFilters.push({ metadata: { path: ['festival'], equals: query.festival } });
+    }
+    if (metadataFilters.length === 1) {
+      Object.assign(where, metadataFilters[0]);
+    } else if (metadataFilters.length > 1) {
+      where.AND = metadataFilters;
     }
     const items = await this.prisma.product.findMany({
       where,
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
       include: { kitItems: { orderBy: { sortOrder: 'asc' } } },
     });
-    const visible = !query.catalog && type === ProductType.PUJA_KIT
+    const visible = !query.catalog && !query.festival && type === ProductType.PUJA_KIT
       ? items.filter((item) => {
           const metadata = item.metadata as { catalog?: string } | null;
           return metadata?.catalog !== 'pooja-samagri';
@@ -121,19 +136,16 @@ export class ProductsController {
 
     return items.map((item) => {
       const localized = localizeProduct(item, locale);
+      const meta = item.metadata as { festival?: string } | null;
       const selectableItems = buildSelectableKitItems({
         product: item,
         locale,
         pricedBySlug: bySlug,
       });
-      if (!selectableItems.length) {
-        return localized;
-      }
-      const meta = item.metadata as { festival?: string } | null;
       return {
         ...localized,
         festival: meta?.festival,
-        selectableItems,
+        ...(selectableItems.length ? { selectableItems } : {}),
       };
     });
   }

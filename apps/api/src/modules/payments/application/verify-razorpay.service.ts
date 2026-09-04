@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { PaymentProvider } from '@prisma/client';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../../../core/database/prisma.service';
+import { razorpayKeySecret } from '../infrastructure/payment-credentials';
 import { ConfirmPaymentService } from './confirm-payment.service';
 
 @Injectable()
@@ -42,7 +43,7 @@ export class VerifyRazorpayService {
       throw new BadRequestException('Razorpay order mismatch');
     }
 
-    const secret = this.config.get<string>('payments.razorpay.keySecret') ?? '';
+    const secret = razorpayKeySecret(this.config);
     if (!secret) {
       throw new BadRequestException('Razorpay is not configured');
     }

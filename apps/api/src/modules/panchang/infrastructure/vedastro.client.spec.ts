@@ -25,5 +25,8 @@ describe('VedAstro mappers', () => {
     expect(vedastroStdTime('2026-08-15', 'Asia/Kolkata')).toBe(
       '12:00 15/08/2026 +05:30',
     );
+    expect(vedastroStdTime('2026-08-15', 'Asia/Kolkata', '10:00:00')).toBe(
+      '10:00 15/08/2026 +05:30',
+    );
   });
 });

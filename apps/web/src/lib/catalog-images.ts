@@ -8,7 +8,9 @@ const KIT_FILES = new Set([
 ]);
 
 const KIT_FALLBACKS: [string, string][] = [
+  ["ganesh-chaturthi-home", "/images/kits/ganesh-chaturthi-kit.png"],
   ["ganesh-chaturthi-pooja", "/images/kits/ganesh-chaturthi-kit.png"],
+  ["mandapam", "/images/kits/ganesh-chaturthi-kit.png"],
   ["ganapati", "/images/kits/ganesh-chaturthi-kit.png"],
   ["ganesh", "/images/kits/ganesh-chaturthi-kit.png"],
   ["homam", "/images/kits/ganesh-chaturthi-kit.png"],
@@ -49,8 +51,21 @@ export function kitImage(slug?: string | null, name?: string | null) {
   return "/images/kits/daily-puja-kit.png";
 }
 
+const FESTIVAL_FILES: Record<string, string> = {
+  ganesh: "/images/festivals/ganesh.png",
+  navratri: "/images/festivals/navratri.png",
+  dussehra: "/images/festivals/navratri.png",
+  diwali: "/images/festivals/diwali.png",
+  janmashtami: "/images/kits/satyanarayan-puja-kit.png",
+  "rama-navami": "/images/kits/satyanarayan-puja-kit.png",
+  ugadi: "/images/festivals/navratri.png",
+  sankranti: "/images/festivals/diwali.png",
+  shivaratri: "/images/kits/daily-puja-kit.png",
+  varalakshmi: "/images/festivals/navratri.png",
+};
+
 export function festivalImage(id: string) {
-  return `/images/festivals/${id}.png`;
+  return FESTIVAL_FILES[id] ?? "/images/festivals/ganesh.png";
 }
 
 export function serviceImage(id: string) {

@@ -44,6 +44,16 @@ export function writeLocale(locale: Locale) {
   document.cookie = `ps_locale=${locale}; path=/; max-age=31536000; SameSite=Lax`;
 }
 
+export function readCity() {
+  if (typeof document === "undefined") return "Hyderabad";
+  const match = document.cookie.match(/(?:^|; )ps_city=([^;]*)/);
+  return match ? decodeURIComponent(match[1]!) : "Hyderabad";
+}
+
+export function writeCity(city: string) {
+  document.cookie = `ps_city=${encodeURIComponent(city)}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
 export function saveTokens(access: string, refresh: string) {
   localStorage.setItem(TOKEN_ACCESS, access);
   localStorage.setItem(TOKEN_REFRESH, refresh);
@@ -77,11 +87,25 @@ export async function clientFetch<T>(
   headers.set("Accept-Language", readLocale());
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(`${BASE}${path}`, {
-    ...init,
-    headers,
-    signal: init.signal ?? AbortSignal.timeout(8000),
-  });
+  const method = (init.method ?? "GET").toUpperCase();
+  const waitMs = method === "GET" || method === "HEAD" ? 12_000 : 45_000;
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...init,
+      headers,
+      signal: init.signal ?? AbortSignal.timeout(waitMs),
+    });
+  } catch (err) {
+    const name = err instanceof DOMException ? err.name : "";
+    if (name === "TimeoutError" || name === "AbortError") {
+      throw new Error(
+        "The request took too long. Please try Pay now again in a moment.",
+      );
+    }
+    throw err;
+  }
   const json = await parseJson(res);
 
   if (res.status === 401 && retry && getRefreshToken() && path !== "/auth/refresh") {

@@ -27,8 +27,8 @@ export default function AboutPage() {
             poojari, and the right muhurat — without last-minute shop runs.
           </p>
           <p>
-            Families can order complete kits, book verified priests for home or online seva, follow
-            daily panchang, and learn vidhi step by step. Pujaris can join the platform through a
+            Families can order complete kits, book a poojari for home or online seva, follow
+            daily panchangam, and learn vidhi step by step. Pujaris can join the platform through a
             short onboarding form.
           </p>
           <p>

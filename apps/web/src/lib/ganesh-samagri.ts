@@ -8,6 +8,30 @@ export type GaneshSamagriLine = {
   optional?: boolean;
 };
 
+export const ganeshHomePujaItems: GaneshSamagriLine[] = [
+  { slug: "samagri-turmeric", nameEn: "Turmeric", nameTe: "పసుపు", packEn: "50g", packTe: "50 గ్రాములు" },
+  { slug: "samagri-kumkum", nameEn: "Kumkum", nameTe: "కుంకుమ", packEn: "50g", packTe: "50 గ్రాములు" },
+  { slug: "samagri-bukka-gulal", nameEn: "Bukka gulal", nameTe: "బుక్కా గులాల్", packEn: "50g", packTe: "50 గ్రాములు" },
+  { slug: "samagri-large-wick", nameEn: "Large wick", nameTe: "పెద్ద వత్తి" },
+  { slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", packEn: "1 packet", packTe: "1 ప్యాకెట్" },
+  { slug: "samagri-oil", nameEn: "Oil", nameTe: "నూనె", packEn: "500 ml", packTe: "500 మి.లీ." },
+  { slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", packEn: "25g", packTe: "25 గ్రాములు" },
+  { slug: "samagri-cotton-vastra", nameEn: "Cotton vastra", nameTe: "పత్తి వస్త్రం" },
+  { slug: "samagri-betel-nuts", nameEn: "Betel nuts", nameTe: "వక్కలు", quantity: 12 },
+  { slug: "samagri-dates", nameEn: "Dates", nameTe: "ఖర్జూరాలు", quantity: 12 },
+  { slug: "samagri-sambrani", nameEn: "Sambrani", nameTe: "సాంబ్రాణి", packEn: "50g", packTe: "50 గ్రాములు" },
+  { slug: "samagri-attar", nameEn: "Attar", nameTe: "అత్తరు" },
+  { slug: "samagri-rose-water", nameEn: "Rose water", nameTe: "పన్నీరు" },
+  { slug: "samagri-honey", nameEn: "Honey", nameTe: "తేనె" },
+  { slug: "samagri-ghee", nameEn: "Ghee", nameTe: "నెయ్యి" },
+  { slug: "samagri-gandham", nameEn: "Sandal paste (Gandham)", nameTe: "గంధం", packEn: "30g", packTe: "30 గ్రాములు" },
+  { slug: "samagri-white-cloth", nameEn: "White cloth", nameTe: "తెల్ల బట్ట" },
+  { slug: "samagri-kankana-thread", nameEn: "Kankana thread", nameTe: "కంకణాల దారం" },
+  { slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", quantity: 11 },
+  { slug: "samagri-dried-coconut", nameEn: "Dried coconut halves", nameTe: "కుడుకలు", quantity: 2 },
+  { slug: "samagri-coconuts", nameEn: "Coconuts", nameTe: "కొబ్బరికాయలు", quantity: 2 },
+];
+
 export const ganeshPoojaItems: GaneshSamagriLine[] = [
   { slug: "samagri-turmeric", nameEn: "Turmeric", nameTe: "పసుపు", packEn: "100g", packTe: "100గ్రా" },
   { slug: "samagri-kumkum", nameEn: "Kumkum", nameTe: "కుంకుమ", packEn: "100g", packTe: "100గ్రా" },

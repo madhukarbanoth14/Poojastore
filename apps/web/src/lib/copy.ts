@@ -3,8 +3,8 @@ import type { Locale } from "./types";
 const dict = {
   brand: { en: "Pavitra Seva", te: "పవిత్ర సేవ" },
   tagline: {
-    en: "Sacred kits. Verified priests. Delivered with devotion.",
-    te: "పవిత్ర కిట్‌లు. ధృవీకరించిన పూజారులు. భక్తితో డెలివరీ.",
+    en: "Your Divine Companion",
+    te: "మీ దైవిక సహచరుడు",
   },
   navHome: { en: "Home", te: "హోమ్" },
   navKits: { en: "Pooja Kits", te: "పూజా కిట్‌లు" },
@@ -21,15 +21,20 @@ const dict = {
   cart: { en: "Cart", te: "కార్ట్" },
   shopKits: { en: "Shop Pooja kits", te: "పూజా కిట్‌లు చూడండి" },
   bookPriest: { en: "Book a priest", te: "పూజారిని బుక్ చేయండి" },
-  todayPanchang: { en: "Today's Panchang", te: "నేటి పంచాంగం" },
+  todayPanchang: { en: "Today's Panchangam", te: "నేటి పంచాంగం" },
+  rasiPhalalu: { en: "Today's Rasi Phalalu", te: "నేటి రాశి ఫలాలు" },
+  spiritualGuidance: { en: "Today's spiritual guidance", te: "నేటి ఆధ్యాత్మిక మార్గదర్శకం" },
+  todaysRitual: { en: "Today's ritual", te: "నేటి ఆచారం" },
+  selectLocation: { en: "Select your location", te: "మీ ప్రాంతం ఎంచుకోండి" },
+  bookPooja: { en: "Book a Pooja", te: "పూజ బుక్ చేయండి" },
   upcoming: { en: "Upcoming festivals", te: "రాబోయే పండుగలు" },
   featuredKits: { en: "Featured Pooja kits", te: "ప్రత్యేక పూజా కిట్‌లు" },
   addToCart: { en: "Add to cart", te: "కార్ట్‌కు జోడించు" },
   viewAll: { en: "View all", te: "అన్నీ చూడండి" },
   howTitle: { en: "How Pavitra Seva works", te: "పవిత్ర సేవ ఎలా పనిచేస్తుంది" },
   footerNote: {
-    en: "A Hindu spiritual marketplace for India, USA, and Canada.",
-    te: "భారతదేశం, అమెరికా, కెనడా కోసం హిందూ ఆధ్యాత్మిక మార్కెట్‌ప్లేస్.",
+    en: "Traditional at heart. Modern in experience. Global by design — for India, USA, and Canada.",
+    te: "సాంప్రదాయం హృదయంలో. ఆధునిక అనుభవం. భారతదేశం, అమెరికా, కెనడా కోసం.",
   },
 } as const;
 

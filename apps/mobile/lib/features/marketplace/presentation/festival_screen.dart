@@ -23,14 +23,22 @@ class FestivalScreen extends ConsumerStatefulWidget {
 }
 
 class _FestivalScreenState extends ConsumerState<FestivalScreen> {
-  /// 0 = Ganesh Pooja items (default), 1 = Homam.
+  /// 0 = Home Puja (default), 1 = Mandapam, 2 = Homam.
   int _ganeshTab = 0;
   final Set<String> _chosenOptional = {};
 
   bool get _isGanesh => widget.festivalId == 'ganesh';
 
-  SamagriFestivalList get _ganeshList =>
-      _ganeshTab == 0 ? ganeshPoojaList : ganeshHomamList;
+  SamagriFestivalList get _ganeshList {
+    switch (_ganeshTab) {
+      case 0:
+        return ganeshHomePujaList;
+      case 1:
+        return ganeshPoojaList;
+      default:
+        return ganeshHomamList;
+    }
+  }
 
   List<String> get _ganeshSelectedKeys => _ganeshList.items
       .where((item) => !item.optional || _chosenOptional.contains(item.slug))
@@ -134,16 +142,18 @@ class _FestivalScreenState extends ConsumerState<FestivalScreen> {
                     children: [
                       if (_isGanesh) ...[
                         _GaneshTabs(
-                          poojaLabel: l10n.ganeshPoojaItemsTab,
-                          homamLabel: l10n.ganeshHomamTab,
+                          labels: te
+                              ? const ['ఇంటి పూజ', 'మండపం', 'హోమం']
+                              : const ['Home Puja', 'Mandapam', 'Homam'],
                           index: _ganeshTab,
-                          onChanged: (i) => setState(() => _ganeshTab = i),
+                          onChanged: (i) => setState(() {
+                            _ganeshTab = i;
+                            _chosenOptional.clear();
+                          }),
                         ),
                         const SizedBox(height: 16),
                         PpTitle(
-                          _ganeshTab == 0
-                              ? l10n.ganeshPoojaListTitle
-                              : l10n.ganeshHomamListTitle,
+                          _ganeshList.title(te),
                           size: 14.5,
                         ),
                         const SizedBox(height: 10),
@@ -391,14 +401,12 @@ class _FestivalScreenState extends ConsumerState<FestivalScreen> {
 
 class _GaneshTabs extends StatelessWidget {
   const _GaneshTabs({
-    required this.poojaLabel,
-    required this.homamLabel,
+    required this.labels,
     required this.index,
     required this.onChanged,
   });
 
-  final String poojaLabel;
-  final String homamLabel;
+  final List<String> labels;
   final int index;
   final ValueChanged<int> onChanged;
 
@@ -413,8 +421,7 @@ class _GaneshTabs extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _tab(poojaLabel, 0),
-          _tab(homamLabel, 1),
+          for (var i = 0; i < labels.length; i++) _tab(labels[i], i),
         ],
       ),
     );
@@ -426,7 +433,7 @@ class _GaneshTabs extends StatelessWidget {
       child: GestureDetector(
         onTap: () => onChanged(value),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           decoration: BoxDecoration(
             color: selected ? AppColors.maroon : Colors.transparent,
             borderRadius: BorderRadius.circular(11),
@@ -434,8 +441,9 @@ class _GaneshTabs extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             label,
+            textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 11.5,
               fontWeight: FontWeight.w700,
               color: selected ? AppColors.cream : AppColors.maroonDeep,
             ),

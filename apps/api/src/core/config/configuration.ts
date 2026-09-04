@@ -53,6 +53,7 @@ export default () => ({
     apiUrl:
       process.env.VEDASTRO_API_URL ??
       'https://api.vedastro.org/api/Calculate',
+    apiKey: process.env.VEDASTRO_API_KEY ?? '',
   },
   meetings: {
     provider: process.env.MEETING_PROVIDER ?? 'jitsi',
@@ -92,5 +93,12 @@ export default () => ({
   push: {
     provider: process.env.PUSH_PROVIDER ?? 'console',
     fcmServiceAccountJson: process.env.FCM_SERVICE_ACCOUNT_JSON ?? '',
+  },
+  orders: {
+    autoAdvance: process.env.ORDER_AUTO_ADVANCE === 'true',
+  },
+  vendor: {
+    name: process.env.VENDOR_NAME ?? 'Packing vendor',
+    phoneE164: process.env.VENDOR_PHONE_E164 ?? '',
   },
 });

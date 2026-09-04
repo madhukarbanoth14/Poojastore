@@ -4,16 +4,29 @@ import { PrismaService } from '../../../core/database/prisma.service';
 
 const FESTIVAL_KITS = [
   {
-    slug: 'ganesh-chaturthi-pooja-samagri',
-    name: 'Ganesh Chaturthi Pooja Samagri Kit',
-    nameTe: 'వినాయక చవితి పూజా సామాగ్రి కిట్',
+    slug: 'ganesh-chaturthi-home-puja',
+    name: 'Ganesh Chaturthi Home Puja Kit',
+    nameTe: 'వినాయక చవితి ఇంటి పూజ కిట్',
     description:
-      'Vinayaka Chavithi home pooja samagri — turmeric, kumkum, dhoti, clay akhanda deepam, and the diary list. Optional items are chosen at checkout. Homam is a separate kit.',
+      'Home puja samagri for Vinayaka Chavithi — turmeric, kumkum, oil, camphor, vastra, and daily offerings.',
     descriptionTe:
-      'వినాయక చవితి ఇంటి పూజా సామాగ్రి — పసుపు, కుంకుమ, దోవతి, మట్టి అఖండ దీపం.',
+      'వినాయక చవితి ఇంటి పూజా సామగ్రి — పసుపు, కుంకుమ, నూనె, కర్పూరం, వస్త్రం.',
+    priceMinor: 75000,
+    mrpMinor: 99900,
+    sortOrder: 11,
+    festival: 'ganesh',
+  },
+  {
+    slug: 'ganesh-chaturthi-pooja-samagri',
+    name: 'Ganesh Mandapam Kit',
+    nameTe: 'గణేష్ మండపం కిట్',
+    description:
+      'Mandapam / larger Vinayaka Chavithi samagri — dhoti, sela, clay akhanda deepam, and the full diary list.',
+    descriptionTe:
+      'మండపం / పెద్ద వినాయక చవితి సామగ్రి — దోవతి, శేల, మట్టి అఖండ దీపం.',
     priceMinor: 149900,
     mrpMinor: 189900,
-    sortOrder: 11,
+    sortOrder: 12,
     festival: 'ganesh',
   },
   {
@@ -62,7 +75,46 @@ export class CatalogSyncService implements OnModuleInit {
       const existing = await this.prisma.product.findUnique({
         where: { slug: kit.slug },
       });
-      if (existing) continue;
+      const metadataBase = {
+        catalog: 'pooja-samagri',
+        festival: kit.festival,
+        i18n: {
+          te: {
+            name: kit.nameTe,
+            description: kit.descriptionTe,
+          },
+        },
+      };
+      if (existing) {
+        const metadata = (existing.metadata ?? {}) as Record<string, unknown>;
+        const i18n = (metadata.i18n ?? {}) as Record<string, unknown>;
+        const te = (i18n.te ?? {}) as Record<string, unknown>;
+        await this.prisma.product.update({
+          where: { id: existing.id },
+          data: {
+            name: kit.name,
+            description: kit.description,
+            priceMinor: kit.priceMinor,
+            mrpMinor: kit.mrpMinor,
+            sortOrder: kit.sortOrder,
+            isActive: true,
+            metadata: {
+              ...metadata,
+              catalog: 'pooja-samagri',
+              festival: kit.festival,
+              i18n: {
+                ...i18n,
+                te: {
+                  ...te,
+                  name: kit.nameTe,
+                  description: kit.descriptionTe,
+                },
+              },
+            },
+          },
+        });
+        continue;
+      }
       await this.prisma.product.create({
         data: {
           slug: kit.slug,
@@ -75,16 +127,7 @@ export class CatalogSyncService implements OnModuleInit {
           mrpMinor: kit.mrpMinor,
           sortOrder: kit.sortOrder,
           isActive: true,
-          metadata: {
-            catalog: 'pooja-samagri',
-            festival: kit.festival,
-            i18n: {
-              te: {
-                name: kit.nameTe,
-                description: kit.descriptionTe,
-              },
-            },
-          },
+          metadata: metadataBase,
         },
       });
       this.logger.log(`Created missing catalog kit ${kit.slug}`);

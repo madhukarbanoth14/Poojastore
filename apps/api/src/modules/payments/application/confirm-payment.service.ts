@@ -137,6 +137,20 @@ export class ConfirmPaymentService {
       }),
     ]);
 
+    const purchased = await this.prisma.orderItem.findMany({
+      where: { orderId: payment.orderId },
+      select: { productId: true },
+    });
+    const productIds = [...new Set(purchased.map((item) => item.productId))];
+    if (productIds.length) {
+      await this.prisma.cartItem.deleteMany({
+        where: {
+          productId: { in: productIds },
+          cart: { userId: payment.order.userId },
+        },
+      });
+    }
+
     void this.notifyBookingsConfirmed(payment.orderId, payment.order.userId).catch(
       (error) =>
         this.logger.warn(`Booking confirmation push failed: ${error}`),

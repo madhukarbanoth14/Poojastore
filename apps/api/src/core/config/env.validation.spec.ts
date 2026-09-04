@@ -84,6 +84,16 @@ describe('validateEnv production gates', () => {
     ).toThrow(/Live payment/);
   });
 
+  it('keeps Razorpay keys on the returned config object', () => {
+    const result = validateEnv({
+      ...base,
+      RAZORPAY_KEY_ID: 'rzp_test_abc',
+      RAZORPAY_KEY_SECRET: 'secret',
+    });
+    expect(result.RAZORPAY_KEY_ID).toBe('rzp_test_abc');
+    expect(result.RAZORPAY_KEY_SECRET).toBe('secret');
+  });
+
   it('accepts safe production config', () => {
     expect(() =>
       validateEnv({

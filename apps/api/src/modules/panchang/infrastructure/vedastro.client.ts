@@ -8,6 +8,7 @@ import {
 
 const DEFAULT_URL = 'https://api.vedastro.org/api/Calculate';
 const TIMEOUT_MS = 2500;
+const PREDICTION_TIMEOUT_MS = 8000;
 
 export type VedAstroAngas = {
   paksha: 'Shukla' | 'Krishna';
@@ -165,7 +166,11 @@ export function mapVedAstroKarana(raw?: string): string | undefined {
   return lookupAlias(raw, KARANA_ALIASES, KARANAS);
 }
 
-export function vedastroStdTime(localDate: string, timeZone: string): string {
+export function vedastroStdTime(
+  localDate: string,
+  timeZone: string,
+  clock = '12:00',
+): string {
   const [year, month, day] = localDate.split('-');
   const instant = instantOnLocalDate(localDate, timeZone);
   const offsetName = new Intl.DateTimeFormat('en-US', {
@@ -178,17 +183,20 @@ export function vedastroStdTime(localDate: string, timeZone: string): string {
   const offset = match
     ? `${match[1]}${match[2].padStart(2, '0')}:${(match[3] ?? '00').padStart(2, '0')}`
     : '+05:30';
-  return `12:00 ${day}/${month}/${year} ${offset}`;
+  const hhmm = clock.slice(0, 5) || '12:00';
+  return `${hhmm} ${day}/${month}/${year} ${offset}`;
 }
 
 @Injectable()
 export class VedAstroClient {
   private readonly logger = new Logger(VedAstroClient.name);
   private readonly baseUrl: string;
+  private readonly apiKey: string;
 
   constructor(private readonly config: ConfigService) {
     this.baseUrl =
       this.config.get<string>('vedastro.apiUrl') || DEFAULT_URL;
+    this.apiKey = this.config.get<string>('vedastro.apiKey') ?? '';
   }
 
   async enrichAngas(params: {
@@ -245,25 +253,97 @@ export class VedAstroClient {
     };
   }
 
+  async dailyChart(params: {
+    birthDate: string;
+    birthClock?: string | null;
+    localDate: string;
+    birthLocation: PanchangLocation & { cityName?: string };
+    checkLocation: PanchangLocation & { cityName?: string };
+  }) {
+    const birthTime = this.timeBody(
+      params.birthDate,
+      params.birthLocation,
+      params.birthClock || '12:00',
+    );
+    const checkTime = this.timeBody(params.localDate, params.checkLocation, '12:00');
+    const ayanamsa = 'LAHIRI';
+
+    const [eventsPayload, gocharaPayload, dasaPayload] = await Promise.all([
+      this.call(
+        'EventsAtTime',
+        {
+          birthTime,
+          checkTime,
+          Ayanamsa: ayanamsa,
+          eventTagList: ['Personal', 'General'],
+        },
+        PREDICTION_TIMEOUT_MS,
+      ),
+      this.call(
+        'GocharaKakshas',
+        { birthTime, checkTime, Ayanamsa: ayanamsa },
+        PREDICTION_TIMEOUT_MS,
+      ),
+      this.call(
+        'DasaAtTime',
+        { birthTime, checkTime, Ayanamsa: ayanamsa, levels: 2 },
+        PREDICTION_TIMEOUT_MS,
+      ),
+    ]);
+
+    const events = asEventList(eventsPayload?.EventsAtTime);
+    const gochara = asGocharaList(gocharaPayload?.GocharaKakshas);
+    const dasa = asDasa(dasaPayload?.DasaAtTime);
+
+    if (!events.length && !gochara.length && !dasa) {
+      return null;
+    }
+
+    return { events, gochara, dasa };
+  }
+
+  private timeBody(
+    localDate: string,
+    location: PanchangLocation & { cityName?: string },
+    clock: string,
+  ) {
+    return {
+      StdTime: vedastroStdTime(localDate, location.timezone, clock),
+      Location: {
+        Name: location.cityName ?? 'Custom',
+        Latitude: location.latitude,
+        Longitude: location.longitude,
+      },
+    };
+  }
+
   private async call(
     method: string,
     body: Record<string, unknown>,
+    timeoutMs = TIMEOUT_MS,
   ): Promise<Record<string, unknown> | null> {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (this.apiKey) headers['x-api-key'] = this.apiKey;
       const response = await fetch(`${this.baseUrl}/${method}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(body),
         signal: controller.signal,
       });
       if (!response.ok) return null;
       const json = (await response.json()) as {
         Status?: string;
-        Payload?: Record<string, unknown>;
+        Payload?: Record<string, unknown> | unknown[];
       };
-      if (json.Status !== 'Pass' || !json.Payload) return null;
+      if (json.Status !== 'Pass' || json.Payload == null) return null;
+      if (Array.isArray(json.Payload)) {
+        return { [method]: json.Payload };
+      }
       return json.Payload;
     } catch (error) {
       this.logger.warn(
@@ -281,4 +361,53 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
     return value as Record<string, unknown>;
   }
   return undefined;
+}
+
+function asEventList(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => asRecord(item))
+    .filter((item): item is Record<string, unknown> => Boolean(item))
+    .map((item) => ({
+      name: String(item.Name ?? ''),
+      nature: String(item.Nature ?? ''),
+      description: typeof item.Description === 'string' ? item.Description : undefined,
+    }))
+    .filter((item) => item.name);
+}
+
+function asGocharaList(value: unknown) {
+  const record = asRecord(value);
+  if (!record) return [];
+  return Object.values(record)
+    .map((item) => asRecord(item))
+    .filter((item): item is Record<string, unknown> => Boolean(item))
+    .map((item) => ({
+      planet: String(item.Planet ?? ''),
+      sign: String(item.Sign ?? ''),
+      kakshaScore: Number(item.KakshaScore ?? 0),
+      ashtaka: typeof item.Ashtaka === 'number' ? item.Ashtaka : undefined,
+      sarvashtaka: typeof item.Sarvashtaka === 'number' ? item.Sarvashtaka : undefined,
+    }))
+    .filter((item) => item.planet && item.sign);
+}
+
+function asDasa(value: unknown) {
+  const record = asRecord(value);
+  if (!record) return null;
+  const first = Object.values(record)
+    .map((item) => asRecord(item))
+    .find((item): item is Record<string, unknown> => Boolean(item));
+  if (!first) return null;
+  const sub = asRecord(first.SubDasas);
+  const bhukti = sub
+    ? Object.values(sub)
+        .map((item) => asRecord(item))
+        .find((item): item is Record<string, unknown> => Boolean(item))
+    : undefined;
+  return {
+    lord: String(first.Lord ?? ''),
+    nature: typeof first.Nature === 'string' ? first.Nature : undefined,
+    bhuktiLord: bhukti ? String(bhukti.Lord ?? '') : undefined,
+  };
 }

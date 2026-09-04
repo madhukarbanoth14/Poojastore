@@ -63,4 +63,48 @@ describe('PaymentOrchestratorService', () => {
       /No live payment gateway/,
     );
   });
+
+  it('does not silently switch to MOCK when Razorpay fails', async () => {
+    const config = {
+      get: (key: string) => (key === 'payments.mode' ? 'mock' : undefined),
+    } as never;
+    const service = new PaymentOrchestratorService(
+      config,
+      new MockPaymentGateway(),
+      {
+        provider: PaymentProvider.RAZORPAY,
+        supports: () => true,
+        createSession: async () => {
+          throw new Error('razorpay unavailable');
+        },
+        refund: async () => ({
+          providerRefundId: 'rfnd',
+          amountMinor: 100,
+          status: 'succeeded' as const,
+        }),
+      } as unknown as RazorpayGateway,
+      {
+        provider: PaymentProvider.STRIPE,
+        supports: () => false,
+        createSession: async () => ({ provider: PaymentProvider.STRIPE }),
+        refund: async () => ({
+          providerRefundId: 're_1',
+          amountMinor: 100,
+          status: 'succeeded' as const,
+        }),
+      } as unknown as StripeGateway,
+    );
+
+    await expect(
+      service.createSession({
+        orderId: 'o1',
+        orderNumber: 'PS1',
+        amountMinor: 10000,
+        currency: 'INR',
+        market: Market.IN,
+        customer: { id: 'u1', phoneE164: '+919999999999' },
+        lineItems: [{ name: 'Kit', quantity: 1, unitAmountMinor: 10000 }],
+      }),
+    ).rejects.toThrow(/Could not start payment/);
+  });
 });

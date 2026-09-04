@@ -19,6 +19,7 @@ import {
   IsOptional,
   IsString,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -43,7 +44,18 @@ class ListUsersQueryDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(80)
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(24)
+  phone?: string;
 
   @IsOptional()
   @IsEnum(Role)
@@ -71,16 +83,31 @@ export class AdminUsersController {
   async list(@Query() query: ListUsersQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
+    const search = query.search?.trim();
+    const name = query.name?.trim();
+    const phoneDigits = query.phone?.replace(/\D/g, '') ?? '';
     const where = {
       deletedAt: null,
       ...(query.role ? { role: query.role } : {}),
       ...(query.status ? { status: query.status } : {}),
-      ...(query.search
+      ...(name
+        ? { fullName: { contains: name, mode: 'insensitive' as const } }
+        : {}),
+      ...(phoneDigits
         ? {
             OR: [
-              { phoneE164: { contains: query.search } },
-              { fullName: { contains: query.search, mode: 'insensitive' as const } },
-              { email: { contains: query.search, mode: 'insensitive' as const } },
+              { phoneE164: { contains: phoneDigits } },
+              { phoneNational: { contains: phoneDigits } },
+            ],
+          }
+        : {}),
+      ...(search && !name && !phoneDigits
+        ? {
+            OR: [
+              { phoneE164: { contains: search } },
+              { phoneNational: { contains: search.replace(/\D/g, '') || search } },
+              { fullName: { contains: search, mode: 'insensitive' as const } },
+              { email: { contains: search, mode: 'insensitive' as const } },
             ],
           }
         : {}),
@@ -100,9 +127,16 @@ export class AdminUsersController {
           fullName: true,
           role: true,
           status: true,
+          market: true,
           preferredLanguage: true,
           lastLoginAt: true,
           createdAt: true,
+          _count: { select: { orders: true } },
+          addresses: {
+            where: { isDefault: true },
+            take: 1,
+            select: { city: true, state: true },
+          },
         },
       }),
     ]);
@@ -110,7 +144,12 @@ export class AdminUsersController {
     return {
       success: true,
       data: {
-        items,
+        items: items.map(({ addresses, _count, ...user }) => ({
+          ...user,
+          orderCount: _count.orders,
+          city: addresses[0]?.city ?? null,
+          state: addresses[0]?.state ?? null,
+        })),
         page,
         limit,
         total,

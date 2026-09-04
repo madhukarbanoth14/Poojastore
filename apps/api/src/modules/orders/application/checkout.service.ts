@@ -6,29 +6,64 @@ import {
 import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/database/prisma.service';
 import { PaymentOrchestratorService } from '../../payments/application/payment-orchestrator.service';
+import { PromoService } from '../../promos/application/promo.service';
 
 @Injectable()
 export class CheckoutService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly payments: PaymentOrchestratorService,
+    private readonly promos: PromoService,
   ) {}
 
   async checkout(
     userId: string,
     shippingAddressId: string,
     deliverySlot?: string,
+    extra?: {
+      intent?: 'self' | 'family' | 'refer';
+      intents?: Array<'self' | 'family' | 'refer'>;
+      familyAddressId?: string;
+      recipientName?: string;
+      recipientPhone?: string;
+      promoCode?: string;
+    },
   ) {
     const address = await this.prisma.address.findFirst({
       where: { id: shippingAddressId, userId },
     });
     if (!address) throw new NotFoundException('Shipping address not found');
 
+    const selected = extra?.intents?.length
+      ? extra.intents
+      : extra?.intent
+        ? [extra.intent]
+        : ['self'];
+    const shipSelf = selected.includes('self');
+    const shipFamily = selected.includes('family');
+    if (!shipSelf && !shipFamily) {
+      throw new BadRequestException(
+        'Choose a delivery for yourself or a family member',
+      );
+    }
+
+    let familyAddress = null as typeof address | null;
+    if (shipFamily && extra?.familyAddressId) {
+      familyAddress = await this.prisma.address.findFirst({
+        where: { id: extra.familyAddressId, userId },
+      });
+      if (!familyAddress) {
+        throw new NotFoundException('Family address not found');
+      }
+    }
+
     const cart = await this.prisma.cart.findUnique({
       where: { userId },
       include: { items: { include: { product: true } } },
     });
     if (!cart || cart.items.length === 0) {
+      const resumed = await this.resumePending(userId);
+      if (resumed) return resumed;
       throw new BadRequestException('Cart is empty');
     }
 
@@ -43,13 +78,36 @@ export class CheckoutService {
       }
     }
 
-    const subtotalMinor = cart.items.reduce((sum, item) => {
+    const baseSubtotal = cart.items.reduce((sum, item) => {
       const unit = item.unitPriceOverrideMinor ?? item.product.priceMinor;
       return sum + item.quantity * unit;
     }, 0);
-    const shippingMinor = subtotalMinor >= 100000 && market === 'IN' ? 0 : market === 'IN' ? 4900 : 499;
-    const taxMinor = Math.round(subtotalMinor * (market === 'IN' ? 0 : 0.08));
-    const totalMinor = subtotalMinor + shippingMinor + taxMinor;
+    const destinations: Array<'self' | 'family'> = [
+      ...(shipSelf ? (['self'] as const) : []),
+      ...(shipFamily ? (['family'] as const) : []),
+    ];
+    const copies = destinations.length;
+    const perShip =
+      baseSubtotal >= 100000 && market === 'IN' ? 0 : market === 'IN' ? 4900 : 499;
+    const perTax = Math.round(baseSubtotal * (market === 'IN' ? 0 : 0.08));
+    const subtotalMinor = baseSubtotal * copies;
+    const shippingMinor = perShip * copies;
+    const taxMinor = perTax * copies;
+    let discountMinor = 0;
+    let promoId: string | undefined;
+    if (extra?.promoCode?.trim()) {
+      const quoted = await this.promos.quote(
+        extra.promoCode,
+        subtotalMinor,
+        currency,
+      );
+      discountMinor = quoted.discountMinor;
+      promoId = quoted.promoId;
+    }
+    const totalMinor = Math.max(
+      0,
+      subtotalMinor + shippingMinor + taxMinor - discountMinor,
+    );
 
     const orderNumber = `PS${Date.now().toString(36).toUpperCase()}${Math.floor(
       Math.random() * 1000,
@@ -71,23 +129,37 @@ export class CheckoutService {
         subtotalMinor,
         shippingMinor,
         taxMinor,
-        discountMinor: 0,
+        discountMinor,
         totalMinor,
+        promoCodeId: promoId,
         shippingAddressId: address.id,
         deliverySlot: deliverySlot?.trim() || null,
         items: {
-          create: cart.items.map((item) => {
-            const unit =
-              item.unitPriceOverrideMinor ?? item.product.priceMinor;
-            return {
-              productId: item.productId,
-              productName: item.product.name,
-              quantity: item.quantity,
-              unitPriceMinor: unit,
-              totalMinor: item.quantity * unit,
-              metadata: (item.metadata ?? {}) as Prisma.InputJsonValue,
-            };
-          }),
+          create: destinations.flatMap((fulfillment) =>
+            cart.items.map((item) => {
+              const unit =
+                item.unitPriceOverrideMinor ?? item.product.priceMinor;
+              return {
+                productId: item.productId,
+                productName: item.product.name,
+                quantity: item.quantity,
+                unitPriceMinor: unit,
+                totalMinor: item.quantity * unit,
+                metadata: {
+                  ...((item.metadata as Record<string, unknown> | null) ?? {}),
+                  fulfillment,
+                  recipientName:
+                    fulfillment === 'family' ? extra?.recipientName : undefined,
+                  recipientPhone:
+                    fulfillment === 'family' ? extra?.recipientPhone : undefined,
+                  shippingAddressId:
+                    fulfillment === 'family'
+                      ? (familyAddress?.id ?? address.id)
+                      : address.id,
+                } as Prisma.InputJsonValue,
+              };
+            }),
+          ),
         },
       },
       include: { items: true },
@@ -121,8 +193,6 @@ export class CheckoutService {
       throw err;
     }
 
-    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
-
     const payment = await this.prisma.payment.create({
       data: {
         orderId: order.id,
@@ -147,10 +217,96 @@ export class CheckoutService {
           orderId: order.id,
           paymentId: payment.id,
           provider: payment.provider,
+          intents: selected,
+          familyAddressId: familyAddress?.id,
+          recipientName: extra?.recipientName,
+          recipientPhone: extra?.recipientPhone,
+          promoCode: extra?.promoCode,
+          discountMinor,
         },
       },
     });
 
+    if (promoId) {
+      await this.prisma.$transaction([
+        this.prisma.promoRedemption.create({
+          data: {
+            promoCodeId: promoId,
+            orderId: order.id,
+            userId,
+            discountMinor,
+          },
+        }),
+        this.prisma.promoCode.update({
+          where: { id: promoId },
+          data: { redeemedCount: { increment: 1 } },
+        }),
+      ]);
+    }
+
+    return this.toCheckoutResult(order, payment);
+  }
+
+  private async resumePending(userId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        userId,
+        status: OrderStatus.PENDING_PAYMENT,
+        payments: { some: { status: PaymentStatus.REQUIRES_ACTION } },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        items: true,
+        payments: {
+          where: { status: PaymentStatus.REQUIRES_ACTION },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    const payment = order?.payments[0];
+    if (!order || !payment) return null;
+
+    const cart = await this.prisma.cart.upsert({
+      where: { userId },
+      create: { userId },
+      update: {},
+    });
+    const seen = new Set<string>();
+    for (const item of order.items) {
+      if (seen.has(item.productId)) continue;
+      seen.add(item.productId);
+      await this.prisma.cartItem.upsert({
+        where: {
+          cartId_productId: { cartId: cart.id, productId: item.productId },
+        },
+        create: {
+          cartId: cart.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPriceOverrideMinor: item.unitPriceMinor,
+        },
+        update: { quantity: item.quantity },
+      });
+    }
+
+    return this.toCheckoutResult(order, payment);
+  }
+
+  private toCheckoutResult(
+    order: { id: string },
+    payment: {
+      id: string;
+      provider: string;
+      status: string;
+      amountMinor: number;
+      currency: string;
+      providerOrderId: string | null;
+      clientSecret: string | null;
+      checkoutUrl: string | null;
+      metadata: Prisma.JsonValue;
+    },
+  ) {
     return {
       order,
       payment: {

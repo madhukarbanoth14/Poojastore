@@ -35,7 +35,7 @@ const festivalCopyTe = <String, FestivalCopy>{
       '\u0c07\u0c37\u0c1f\u0c02 \u0c28\u0c3f\u0c2e\u0c02\u0c1c\u0c28\u0c02 \u0c1a\u0c47\u0c38\u0c3f \u0c35\u0c3f\u0c17\u0c4d\u0c30\u0c39\u0c3e\u0c28\u0c3f\u0c28\u0c3f \u0c28\u0c40\u0c1f\u0c3f\u0c32\u0c4b \u0c2e\u0c41\u0c1a\u0c4d\u0c1a\u0c02\u0c21\u0c3f.',
     ],
     itemsTe: [],
-    kitNameTe: 'వినాయక చవితి పూజా సామగ్రి',
+    kitNameTe: 'వినాయక చవితి ఇంటి పూజ కిట్',
   ),
   'navratri': FestivalCopy(
     nameTe: '\u0c36\u0c30\u0c26\u0c4d \u0c28\u0c35\u0c30\u0c3e\u0c24\u0c4d\u0c30\u0c3f',

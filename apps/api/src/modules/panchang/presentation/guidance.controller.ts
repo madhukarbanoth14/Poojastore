@@ -35,7 +35,9 @@ export class GuidanceController {
   constructor(private readonly guidance: GuidanceService) {}
 
   @Get('today')
-  @ApiOperation({ summary: 'Personalized daily rasi guidance + panchang context' })
+  @ApiOperation({
+    summary: 'Personalized daily rasi phalalu from VedAstro (events, gochara, dasa)',
+  })
   async today(@CurrentUser() user: AuthenticatedUser) {
     const data = await this.guidance.todayForUser(user.id);
     return { success: true, data };

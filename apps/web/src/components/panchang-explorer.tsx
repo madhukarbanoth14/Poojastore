@@ -1,25 +1,29 @@
 "use client";
 
+import { LocationPicker } from "@/components/location-picker";
 import { EmptyNote, PageHero } from "@/components/ui";
 import {
   PanchangAlmanacCard,
   PanchangDateField,
   usePanchangDate,
 } from "@/components/panchang-almanac-card";
+import { timezoneForCity } from "@/lib/location";
 import { pl } from "@/lib/panchang-copy";
 import type { Locale, PanchangToday } from "@/lib/types";
 
 export function PanchangExplorer({
   locale,
+  city,
   initial,
 }: {
   locale: Locale;
+  city: string;
   initial: PanchangToday | null;
 }) {
-  const city = initial?.cityName ?? "Hyderabad";
   const { date, setDate, panchang, loading, today, min, max } = usePanchangDate(
     initial,
     city,
+    timezoneForCity(city),
   );
 
   return (
@@ -34,6 +38,7 @@ export function PanchangExplorer({
       />
       <div className="mx-auto max-w-xl px-5 py-10">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <LocationPicker locale={locale} city={city} />
           <PanchangDateField
             value={date}
             min={min}

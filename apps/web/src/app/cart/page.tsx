@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { LotusDivider } from "@/components/ornaments";
+import { kitImage } from "@/lib/catalog-images";
 import { clientFetch } from "@/lib/client";
 import { formatMoney } from "@/lib/format";
 
@@ -35,8 +37,9 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-12">
-      <p className="text-[11px] font-semibold tracking-[0.22em] text-maroon uppercase">Your seva</p>
-      <h1 className="font-display mt-2 text-4xl text-maroon">Cart</h1>
+      <p className="text-[11px] font-semibold tracking-[0.22em] text-maroon uppercase">Select products</p>
+      <h1 className="font-display mt-2 text-4xl text-maroon">Your kits</h1>
+      <p className="mt-2 text-muted">Update quantity, then continue to checkout.</p>
       <LotusDivider className="mt-4" />
       {!items.length ? (
         <div className="card-temple mt-8 px-6 py-14 text-center">
@@ -49,43 +52,52 @@ export default function CartPage() {
       ) : (
         <>
           <ul className="mt-8 space-y-3">
-            {items.map((item) => (
-              <li key={item.productId} className="card-temple flex items-center justify-between gap-4 p-5">
-                <div>
-                  <p className="font-display text-lg">{item.product.name}</p>
-                  <p className="text-sm text-muted">
-                    {formatMoney(item.unitPriceMinor, item.product.currency)} × {item.quantity}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="h-8 w-8 rounded-full border border-gold text-maroon"
-                    onClick={() => void updateQty(item.productId, item.quantity - 1)}
-                    aria-label="Decrease quantity"
-                  >
-                    −
-                  </button>
-                  <span className="w-6 text-center text-sm">{item.quantity}</span>
-                  <button
-                    type="button"
-                    className="h-8 w-8 rounded-full border border-gold text-maroon"
-                    onClick={() => void updateQty(item.productId, item.quantity + 1)}
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </button>
-                </div>
-              </li>
-            ))}
+            {items.map((item) => {
+              const src = item.product.imageUrl || kitImage(item.product.slug, item.product.name);
+              return (
+                <li key={item.productId} className="card-temple flex items-center gap-4 p-4 sm:p-5">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-blush">
+                    <Image src={src} alt="" fill className="object-cover" sizes="80px" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-lg leading-snug">{item.product.name}</p>
+                    <p className="text-sm text-muted">
+                      {formatMoney(item.unitPriceMinor, item.product.currency)} each
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-maroon">
+                      {formatMoney(item.lineTotalMinor, item.product.currency)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="h-8 w-8 rounded-full border border-gold text-maroon"
+                      onClick={() => void updateQty(item.productId, item.quantity - 1)}
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+                    <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
+                    <button
+                      type="button"
+                      className="h-8 w-8 rounded-full border border-gold text-maroon"
+                      onClick={() => void updateQty(item.productId, item.quantity + 1)}
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
-          <div className="card-temple mt-6 flex items-center justify-between p-5">
+          <div className="card-temple mt-6 flex flex-wrap items-center justify-between gap-3 p-5">
             <p className="font-display text-xl">
               Subtotal{" "}
               <span className="price">{formatMoney(cart?.subtotalMinor ?? 0, cart?.currency ?? "INR")}</span>
             </p>
             <Link href="/checkout" className="btn-orange">
-              Checkout
+              Continue to checkout
             </Link>
           </div>
         </>

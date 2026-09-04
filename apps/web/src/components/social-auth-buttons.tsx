@@ -52,16 +52,47 @@ declare global {
 const APPLE_REDIRECT = process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI ?? "";
 
 function loadScript(src: string, id: string) {
-  if (document.getElementById(id)) return Promise.resolve();
   return new Promise<void>((resolve, reject) => {
+    const existing = document.getElementById(id) as HTMLScriptElement | null;
+    if (existing) {
+      if (existing.dataset.loaded === "true" || window.google?.accounts?.id) {
+        existing.dataset.loaded = "true";
+        resolve();
+        return;
+      }
+      const done = () => {
+        existing.dataset.loaded = "true";
+        resolve();
+      };
+      existing.addEventListener("load", done, { once: true });
+      existing.addEventListener(
+        "error",
+        () => reject(new Error(`Failed to load ${src}`)),
+        { once: true },
+      );
+      return;
+    }
     const el = document.createElement("script");
     el.id = id;
     el.src = src;
     el.async = true;
-    el.onload = () => resolve();
+    el.onload = () => {
+      el.dataset.loaded = "true";
+      resolve();
+    };
     el.onerror = () => reject(new Error(`Failed to load ${src}`));
     document.head.appendChild(el);
   });
+}
+
+async function waitForGoogle(timeoutMs = 5000) {
+  const deadline = Date.now() + timeoutMs;
+  while (!window.google?.accounts?.id) {
+    if (Date.now() > deadline) {
+      throw new Error("Google Sign-In failed to load");
+    }
+    await new Promise((resolve) => setTimeout(resolve, 40));
+  }
 }
 
 export function SocialAuthButtons({
@@ -76,10 +107,14 @@ export function SocialAuthButtons({
   const { socialLogin } = useAuth();
   const router = useRouter();
   const next = useSearchParams().get("next") || "/";
-  const googleBtnRef = useRef<HTMLDivElement>(null);
+  const [googleHost, setGoogleHost] = useState<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<"google" | "apple" | null>(null);
   const [googleReady, setGoogleReady] = useState(false);
+  const socialLoginRef = useRef(socialLogin);
+  const nextRef = useRef(next);
+  socialLoginRef.current = socialLogin;
+  nextRef.current = next;
 
   useEffect(() => {
     void loadScript(
@@ -89,21 +124,18 @@ export function SocialAuthButtons({
   }, []);
 
   useEffect(() => {
-    if (!googleClientId) {
+    if (!googleClientId || !googleHost) {
       setGoogleReady(false);
       return;
     }
-    const host = googleBtnRef.current;
-    if (!host) return;
     let cancelled = false;
 
     void (async () => {
       try {
         await loadScript("https://accounts.google.com/gsi/client", "google-gsi");
-        if (cancelled || !window.google?.accounts.id) {
-          throw new Error("Google Sign-In failed to load");
-        }
-        window.google.accounts.id.initialize({
+        await waitForGoogle();
+        if (cancelled) return;
+        window.google!.accounts.id.initialize({
           client_id: googleClientId,
           ux_mode: "popup",
           auto_select: false,
@@ -111,38 +143,45 @@ export function SocialAuthButtons({
           callback: (response) => {
             setBusy("google");
             setError(null);
-            void socialLogin({ provider: "GOOGLE", idToken: response.credential })
-              .then(() => router.replace(next))
+            void socialLoginRef
+              .current({ provider: "GOOGLE", idToken: response.credential })
+              .then(() => router.replace(nextRef.current))
               .catch((err: unknown) => {
                 setError(err instanceof Error ? err.message : "Google Sign-In failed");
               })
               .finally(() => setBusy(null));
           },
         });
-        host.replaceChildren();
-        window.google.accounts.id.renderButton(host, {
+        googleHost.replaceChildren();
+        window.google!.accounts.id.renderButton(googleHost, {
           type: "standard",
           theme: "outline",
           size: "large",
           text: "continue_with",
           shape: "pill",
-          width: Math.min(Math.max(host.offsetWidth || 320, 240), 400),
+          width: Math.min(Math.max(googleHost.offsetWidth || 320, 240), 400),
           logo_alignment: "left",
         });
-        if (!cancelled) setGoogleReady(true);
+        if (!cancelled) {
+          setError(null);
+          setGoogleReady(true);
+        }
       } catch (err) {
         if (!cancelled) {
           setGoogleReady(false);
-          setError(err instanceof Error ? err.message : "Google Sign-In failed to load");
+          setError(
+            err instanceof Error && err.message.includes("Failed to load")
+              ? "Could not reach Google. Disable any ad blocker for this page and refresh."
+              : "Google Sign-In failed to load. Refresh the page, or use email and password.",
+          );
         }
       }
     })();
 
     return () => {
       cancelled = true;
-      host.replaceChildren();
     };
-  }, [googleClientId, next, router, socialLogin]);
+  }, [googleClientId, googleHost, router]);
 
   function googleUnconfigured() {
     setError("Google Sign-In is not configured yet. Use email and password.");
@@ -196,7 +235,7 @@ export function SocialAuthButtons({
       </div>
       {googleClientId ? (
         <div
-          ref={googleBtnRef}
+          ref={setGoogleHost}
           className={`flex min-h-[48px] w-full justify-center ${
             disabled || busy !== null ? "pointer-events-none opacity-50" : ""
           }`}

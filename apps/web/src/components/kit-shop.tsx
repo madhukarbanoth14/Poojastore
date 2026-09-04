@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import {
+  ganeshHomePujaItems,
   ganeshHomamItems,
   ganeshPoojaItems,
   ganeshSelectedKeys,
@@ -34,25 +35,22 @@ export type KitShopTab = {
 };
 
 function linesFromSlug(slug: string, locale: Locale): KitShopLine[] {
-  if (slug === "ganesh-chaturthi-pooja-samagri") {
-    return ganeshPoojaItems.map((item) => ({
-      key: item.slug,
-      name: locale === "te" ? item.nameTe : item.nameEn,
-      quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
-      pack: locale === "te" ? item.packTe : item.packEn,
-      optional: item.optional,
-    }));
-  }
-  if (slug === "ganesh-puja-homam-samagri") {
-    return ganeshHomamItems.map((item) => ({
-      key: item.slug,
-      name: locale === "te" ? item.nameTe : item.nameEn,
-      quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
-      pack: locale === "te" ? item.packTe : item.packEn,
-      optional: item.optional,
-    }));
-  }
-  return [];
+  const source =
+    slug === "ganesh-chaturthi-home-puja"
+      ? ganeshHomePujaItems
+      : slug === "ganesh-chaturthi-pooja-samagri"
+        ? ganeshPoojaItems
+        : slug === "ganesh-puja-homam-samagri"
+          ? ganeshHomamItems
+          : null;
+  if (!source) return [];
+  return source.map((item) => ({
+    key: item.slug,
+    name: locale === "te" ? item.nameTe : item.nameEn,
+    quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
+    pack: locale === "te" ? item.packTe : item.packEn,
+    optional: item.optional,
+  }));
 }
 
 function linesFromProduct(product: Product | null, locale: Locale, slug: string): KitShopLine[] {
@@ -105,10 +103,14 @@ export function KitShop({
   const optional = items.filter((item) => item.optional);
   const selectedKeys = useMemo(() => {
     if (!tab) return [];
-    if ((tab.product?.slug ?? tab.id) === "ganesh-chaturthi-pooja-samagri") {
+    const slug = tab.product?.slug ?? tab.id;
+    if (slug === "ganesh-chaturthi-home-puja") {
+      return ganeshSelectedKeys(ganeshHomePujaItems, chosenOptional);
+    }
+    if (slug === "ganesh-chaturthi-pooja-samagri") {
       return ganeshSelectedKeys(ganeshPoojaItems, chosenOptional);
     }
-    if ((tab.product?.slug ?? tab.id) === "ganesh-puja-homam-samagri") {
+    if (slug === "ganesh-puja-homam-samagri") {
       return ganeshSelectedKeys(ganeshHomamItems, chosenOptional);
     }
     return items
@@ -305,8 +307,8 @@ export function KitShop({
           </p>
           <p className="mt-1 font-display text-xl text-maroon">
             {locale === "te"
-              ? "ఈ పూజకు ధృవీకరించిన పూజారిని బుక్ చేయండి"
-              : "Book a verified poojari for this pooja"}
+              ? "ఈ పూజకు పూజారిని బుక్ చేయండి"
+              : "Book a poojari for this pooja"}
           </p>
         </div>
         <Link href="/priests" className="btn-outline mt-4 inline-flex justify-center md:mt-0">

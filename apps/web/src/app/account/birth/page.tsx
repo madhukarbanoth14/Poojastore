@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useAccountLocale } from "@/components/account/account-frame";
 import { ac } from "@/lib/account-copy";
-import { clientFetch } from "@/lib/client";
+import { clientFetch, writeCity } from "@/lib/client";
+import { LOCATION_PRESETS } from "@/lib/location";
 
 const RASI = [
   ["MESHA", "Mesha (Aries)"],
@@ -66,6 +68,7 @@ type BirthProfile = {
 export default function BirthProfilePage() {
   const { user } = useAuth();
   const locale = useAccountLocale();
+  const [welcome, setWelcome] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -81,6 +84,7 @@ export default function BirthProfilePage() {
   });
 
   useEffect(() => {
+    setWelcome(new URLSearchParams(window.location.search).get("welcome") === "1");
     if (!user) return;
     void (async () => {
       try {
@@ -128,6 +132,7 @@ export default function BirthProfilePage() {
           cityName: form.cityName,
         }),
       });
+      writeCity(form.cityName);
       setMessage(ac(locale, "saved"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save");
@@ -142,6 +147,22 @@ export default function BirthProfilePage() {
         {ac(locale, "groupSpiritual")}
       </p>
       <h1 className="font-display mt-2 text-4xl text-maroon">{ac(locale, "birth")}</h1>
+      {welcome ? (
+        <p className="mt-3 text-sm text-muted">
+          {locale === "te"
+            ? "ఐచ్ఛికం — ఇప్పుడు లేదా తర్వాత పూర్తి చేయవచ్చు."
+            : "Optional. Add what you know now; skip and complete later."}{" "}
+          <Link href="/" className="font-semibold text-maroon">
+            {locale === "te" ? "దాటవేయి" : "Skip for now"}
+          </Link>
+        </p>
+      ) : (
+        <p className="mt-3 text-sm text-muted">
+          {locale === "te"
+            ? "జనన సమయం, నక్షత్రం, గోత్రం ఐచ్ఛికం."
+            : "Birth time, nakshatra, and gotram are optional."}
+        </p>
+      )}
       <form className="card-temple mt-6 space-y-3 p-6" onSubmit={(e) => void onSubmit(e)}>
         <label className="block text-sm font-medium text-maroon">
           {ac(locale, "dob")}
@@ -214,13 +235,15 @@ export default function BirthProfilePage() {
             value={form.cityName}
             onChange={(e) => setForm((f) => ({ ...f, cityName: e.target.value }))}
           >
-            {(cities.length ? cities.map((c) => c.name) : ["Hyderabad", "Bengaluru", "Delhi", "Mumbai"]).map(
-              (name) => (
+            {(
+              cities.length
+                ? Array.from(new Set([...LOCATION_PRESETS.map((c) => c.name), ...cities.map((c) => c.name)]))
+                : LOCATION_PRESETS.map((c) => c.name)
+            ).map((name) => (
                 <option key={name} value={name}>
                   {name}
                 </option>
-              ),
-            )}
+              ))}
           </select>
         </label>
         {error ? <p className="text-sm text-orange">{error}</p> : null}

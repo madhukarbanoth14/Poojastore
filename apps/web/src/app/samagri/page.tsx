@@ -1,14 +1,15 @@
 import { ProductCard } from "@/components/product-card";
 import { EmptyNote, PageHero, PrimaryButton } from "@/components/ui";
 import { listSamagri } from "@/lib/api";
-import { getLocale } from "@/lib/locale";
+import { getCity, getLocale } from "@/lib/locale";
+import { marketForCity } from "@/lib/location";
 import { loc, poojaGuideCopy } from "@/lib/pooja-guides";
 
 export const metadata = { title: "Pooja Samagri" };
 
 export default async function SamagriPage() {
   const locale = await getLocale();
-  const items = await listSamagri(locale);
+  const items = await listSamagri(locale, marketForCity(await getCity()));
   const kits = items.filter((p) => p.type === "PUJA_KIT");
   const loose = items.filter((p) => p.type !== "PUJA_KIT");
   return (

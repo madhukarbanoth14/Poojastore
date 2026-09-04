@@ -77,6 +77,8 @@ export function AccountFrame({
       title: ac(locale, "groupSpiritual"),
       items: [
         { href: "/account/birth", label: ac(locale, "birth"), hint: ac(locale, "birthHint") },
+        { href: "/rasi", label: ac(locale, "rasiToday") },
+        { href: "/guidance", label: ac(locale, "guidanceToday") },
         { href: "/panchang", label: ac(locale, "panchangToday") },
         { href: "/account/notifications", label: ac(locale, "notifications"), hint: ac(locale, "notificationsHint") },
       ],
@@ -84,6 +86,9 @@ export function AccountFrame({
     {
       title: ac(locale, "groupHelp"),
       items: [
+        ...(user.role === "ADMIN"
+          ? [{ href: "/admin", label: "Store ops desk", hint: "Orders, tracking, payments, promo codes" }]
+          : []),
         { href: "/account/support", label: ac(locale, "support"), hint: ac(locale, "supportHint") },
         {
           href: "/priests/apply",

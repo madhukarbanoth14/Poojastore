@@ -12,7 +12,9 @@ class CatalogImages {
   static const _kitFallbacks = <String, String>{
     'ganesh': '$kitsPrefix/ganesh-chaturthi-kit.png',
     'ganesh-chaturthi': '$kitsPrefix/ganesh-chaturthi-kit.png',
+    'ganesh-chaturthi-home': '$kitsPrefix/ganesh-chaturthi-kit.png',
     'ganesh-chaturthi-pooja': '$kitsPrefix/ganesh-chaturthi-kit.png',
+    'mandapam': '$kitsPrefix/ganesh-chaturthi-kit.png',
     'ganesh-puja-homam': '$kitsPrefix/ganesh-chaturthi-kit.png',
     'homam': '$kitsPrefix/ganesh-chaturthi-kit.png',
     'satyanarayan': '$kitsPrefix/satyanarayan-puja-kit.png',

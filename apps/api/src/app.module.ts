@@ -24,6 +24,7 @@ import { PriestsModule } from './modules/priests/priests.module';
 import { ContentGuidesModule } from './modules/content-guides/content-guides.module';
 import { PackagesModule } from './modules/packages/packages.module';
 import { AdminOpsModule } from './modules/admin-ops/admin-ops.module';
+import { PromosModule } from './modules/promos/promos.module';
 import { SamagriScanModule } from './modules/samagri-scan/samagri-scan.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
@@ -67,6 +68,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     PriestsModule,
     ContentGuidesModule,
     PackagesModule,
+    PromosModule,
     AdminOpsModule,
     NotificationsModule,
     SamagriScanModule,

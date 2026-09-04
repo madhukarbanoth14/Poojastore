@@ -11,7 +11,10 @@ import {
   type PoojaKind,
 } from "@/lib/pooja-guides";
 
-export const metadata = { title: "Pooja samagri by pooja" };
+export const metadata = {
+  title: "Poojas",
+  description: "Daily, festival, and vratham Pooja guides with samagri lists and booking.",
+};
 
 const KINDS: PoojaKind[] = ["deity", "festival", "vratham"];
 
@@ -23,9 +26,14 @@ export default async function PoojasPage() {
     <>
       <PageHero kicker="Shop" title={loc(locale, copy.title)} subtitle={loc(locale, copy.subtitle)} />
       <div className="mx-auto max-w-6xl space-y-14 px-5 py-12">
-        <section className="card-temple p-6 md:p-8">
-          <PrimaryButton href={`/kits/${BASIC_KIT_SLUG}`}>{loc(locale, copy.basicKit)}</PrimaryButton>
-          <p className="mt-4 text-sm leading-relaxed text-muted">{loc(locale, copy.disclaimer)}</p>
+        <section className="card-temple flex flex-col gap-3 p-6 md:flex-row md:items-center md:justify-between md:p-8">
+          <div className="flex flex-wrap gap-3">
+            <PrimaryButton href={`/kits/${BASIC_KIT_SLUG}`}>{loc(locale, copy.basicKit)}</PrimaryButton>
+            <Link href="/priests" className="btn-orange">
+              {locale === "te" ? "పూజ బుక్ చేయండి" : "Book a Pooja"}
+            </Link>
+          </div>
+          <p className="max-w-xl text-sm leading-relaxed text-muted">{loc(locale, copy.disclaimer)}</p>
         </section>
 
         <section>

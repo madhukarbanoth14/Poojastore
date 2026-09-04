@@ -39,13 +39,18 @@ export function SiteFooter({ locale }: { locale: Locale }) {
               </Link>
             </li>
             <li>
-              <Link href="/priests" className="hover:text-gold-bright">
-                Book a priest
+              <Link href="/panchang" className="hover:text-gold-bright">
+                Panchangam
               </Link>
             </li>
             <li>
-              <Link href="/panchang" className="hover:text-gold-bright">
-                Panchang
+              <Link href="/rasi" className="hover:text-gold-bright">
+                Rasi Phalalu
+              </Link>
+            </li>
+            <li>
+              <Link href="/guidance" className="hover:text-gold-bright">
+                Daily guidance
               </Link>
             </li>
             <li>
@@ -56,6 +61,11 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             <li>
               <Link href="/festivals" className="hover:text-gold-bright">
                 Festivals
+              </Link>
+            </li>
+            <li>
+              <Link href="/priests" className="hover:text-gold-bright">
+                Book a poojari
               </Link>
             </li>
           </ul>

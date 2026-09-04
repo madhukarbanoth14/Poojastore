@@ -82,6 +82,11 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PromoDiscountType {
+  PERCENT
+  FIXED
+}
+
 model User {
   id                String     @id @default(uuid()) @db.Uuid
   phoneE164         String     @unique @map("phone_e164") @db.VarChar(20)
@@ -118,6 +123,8 @@ model User {
   socialIdentities   SocialIdentity[]
   savedSamagriLists           SavedSamagriList[]
   poojariSamagriListsCreated  PoojariSamagriList[] @relation("PoojariSamagriListCreatedBy")
+  promoRedemptions            PromoRedemption[]
+  promoCodesCreated           PromoCode[]          @relation("PromoCodeCreatedBy")
   poojariSamagriListsReceived PoojariSamagriList[] @relation("PoojariSamagriListRecipient")
   devicePushTokens            DevicePushToken[]
   notifications               UserNotification[]
@@ -383,7 +390,52 @@ model AuditLog {
 
   @@index([userId, createdAt])
   @@index([action, createdAt])
+  @@index([resource, createdAt])
   @@map("audit_logs")
+}
+
+model PromoCode {
+  id                String            @id @default(uuid()) @db.Uuid
+  code              String            @unique @db.VarChar(40)
+  description       String?           @db.VarChar(180)
+  discountType      PromoDiscountType @map("discount_type")
+  percentOff        Int?              @map("percent_off")
+  amountMinor       Int?              @map("amount_minor")
+  minSubtotalMinor  Int               @default(0) @map("min_subtotal_minor")
+  maxDiscountMinor  Int?              @map("max_discount_minor")
+  currency          CurrencyCode      @default(INR)
+  startsAt          DateTime?         @map("starts_at")
+  endsAt            DateTime?         @map("ends_at")
+  maxRedemptions    Int?              @map("max_redemptions")
+  redeemedCount     Int               @default(0) @map("redeemed_count")
+  isActive          Boolean           @default(true) @map("is_active")
+  createdByUserId   String?           @map("created_by_user_id") @db.Uuid
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  createdBy   User?             @relation("PromoCodeCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  orders      Order[]
+  redemptions PromoRedemption[]
+
+  @@index([isActive, currency])
+  @@map("promo_codes")
+}
+
+model PromoRedemption {
+  id            String   @id @default(uuid()) @db.Uuid
+  promoCodeId   String   @map("promo_code_id") @db.Uuid
+  orderId       String   @unique @map("order_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  discountMinor Int      @map("discount_minor")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  promoCode PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Restrict)
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([promoCodeId])
+  @@index([userId])
+  @@map("promo_redemptions")
 }
 
 model Product {
@@ -487,6 +539,7 @@ model Order {
   taxMinor          Int          @default(0) @map("tax_minor")
   discountMinor     Int          @default(0) @map("discount_minor")
   totalMinor        Int          @map("total_minor")
+  promoCodeId       String?      @map("promo_code_id") @db.Uuid
   shippingAddressId String       @map("shipping_address_id") @db.Uuid
   deliverySlot      String?      @map("delivery_slot") @db.VarChar(80)
   trackingNumber    String?      @map("tracking_number") @db.VarChar(40)
@@ -495,6 +548,9 @@ model Order {
   shippedAt         DateTime?    @map("shipped_at")
   outForDeliveryAt  DateTime?    @map("out_for_delivery_at")
   deliveredAt       DateTime?    @map("delivered_at")
+  confirmedAt       DateTime?    @map("confirmed_at")
+  vendorNotifiedAt  DateTime?    @map("vendor_notified_at")
+  vendorId          String?      @map("vendor_id") @db.Uuid
   cancelledAt       DateTime?    @map("cancelled_at")
   cancelReason      String?      @map("cancel_reason") @db.VarChar(255)
   returnStatus      ReturnStatus @default(NONE) @map("return_status")
@@ -506,6 +562,9 @@ model Order {
 
   user            User      @relation(fields: [userId], references: [id], onDelete: Restrict)
   shippingAddress Address   @relation(fields: [shippingAddressId], references: [id], onDelete: Restrict)
+  promoCode       PromoCode? @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
+  vendor          Vendor?    @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  promoRedemption PromoRedemption?
   items           OrderItem[]
   payments        Payment[]
   priestBooking   PriestBooking?
@@ -513,7 +572,27 @@ model Order {
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([promoCodeId])
+  @@index([vendorId])
   @@map("orders")
+}
+
+model Vendor {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String   @db.VarChar(120)
+  phoneE164  String   @map("phone_e164") @db.VarChar(20)
+  email      String?  @db.VarChar(255)
+  city       String?  @db.VarChar(80)
+  isDefault  Boolean  @default(false) @map("is_default")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  orders Order[]
+
+  @@unique([phoneE164])
+  @@index([isActive, isDefault])
+  @@map("vendors")
 }
 
 model OrderItem {

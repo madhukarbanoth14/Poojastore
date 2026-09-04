@@ -9,6 +9,7 @@ import {
   RefundPaymentInput,
   RefundPaymentResult,
 } from '../domain/payment.types';
+import { stripeSecretKey } from './payment-credentials';
 
 @Injectable()
 export class StripeGateway implements PaymentGateway {
@@ -16,25 +17,29 @@ export class StripeGateway implements PaymentGateway {
   private readonly logger = new Logger(StripeGateway.name);
   private client: Stripe | null = null;
 
-  constructor(private readonly config: ConfigService) {
-    const secret = this.config.get<string>('payments.stripe.secretKey') ?? '';
-    if (secret) {
-      this.client = new Stripe(secret);
-    }
-  }
+  constructor(private readonly config: ConfigService) {}
 
   supports(market: Market): boolean {
-    return (market === Market.US || market === Market.CA) && this.client !== null;
+    return (
+      (market === Market.US || market === Market.CA) &&
+      Boolean(stripeSecretKey(this.config))
+    );
+  }
+
+  private getClient(): Stripe {
+    if (this.client) return this.client;
+    const secret = stripeSecretKey(this.config);
+    if (!secret) {
+      throw new Error('Stripe is not configured');
+    }
+    this.client = new Stripe(secret);
+    return this.client;
   }
 
   async createSession(
     input: CreatePaymentSessionInput,
   ): Promise<CreatePaymentSessionResult> {
-    if (!this.client) {
-      throw new Error('Stripe is not configured');
-    }
-
-    const session = await this.client.checkout.sessions.create({
+    const session = await this.getClient().checkout.sessions.create({
       mode: 'payment',
       success_url: this.config.getOrThrow<string>('payments.stripe.successUrl'),
       cancel_url: this.config.getOrThrow<string>('payments.stripe.cancelUrl'),
@@ -67,11 +72,7 @@ export class StripeGateway implements PaymentGateway {
   }
 
   async refund(input: RefundPaymentInput): Promise<RefundPaymentResult> {
-    if (!this.client) {
-      throw new Error('Stripe is not configured');
-    }
-
-    const refund = await this.client.refunds.create(
+    const refund = await this.getClient().refunds.create(
       {
         payment_intent: input.providerPaymentId,
         amount: input.amountMinor,

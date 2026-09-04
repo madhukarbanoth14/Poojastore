@@ -6,6 +6,7 @@ import {
   PriestBookingStatus,
   PriestServiceMode,
   Rasi,
+  PromoDiscountType,
   Role,
   UserStatus,
   VidhiCategory,
@@ -159,33 +160,50 @@ async function upsertKit(input: {
 
 async function main() {
   const adminPhone = process.env.SEED_ADMIN_PHONE_E164 ?? '+919999999999';
-  const adminEmail = (process.env.SEED_ADMIN_EMAIL ?? 'admin@pavitraseva.in').toLowerCase();
+  const adminEmail = (
+    process.env.SEED_ADMIN_EMAIL ?? 'madhukar@techfylabs.com'
+  ).toLowerCase();
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'Admin@12345';
   const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
 
-  await prisma.user.upsert({
-    where: { phoneE164: adminPhone },
-    update: {
-      role: Role.ADMIN,
-      status: UserStatus.ACTIVE,
-      fullName: 'Platform Admin',
-      market: Market.IN,
-      email: adminEmail,
-      passwordHash: adminPasswordHash,
-    },
-    create: {
-      phoneE164: adminPhone,
-      countryCode: '91',
-      phoneNational: adminPhone.replace('+91', ''),
-      email: adminEmail,
-      passwordHash: adminPasswordHash,
-      fullName: 'Platform Admin',
-      role: Role.ADMIN,
-      status: UserStatus.ACTIVE,
-      preferredLanguage: 'en',
-      market: Market.IN,
-    },
+  const existingByEmail = await prisma.user.findUnique({
+    where: { email: adminEmail },
   });
+  if (existingByEmail) {
+    await prisma.user.update({
+      where: { id: existingByEmail.id },
+      data: {
+        role: Role.ADMIN,
+        status: UserStatus.ACTIVE,
+        passwordHash: adminPasswordHash,
+        fullName: existingByEmail.fullName || 'Store Admin',
+      },
+    });
+  } else {
+    await prisma.user.upsert({
+      where: { phoneE164: adminPhone },
+      update: {
+        role: Role.ADMIN,
+        status: UserStatus.ACTIVE,
+        fullName: 'Store Admin',
+        market: Market.IN,
+        email: adminEmail,
+        passwordHash: adminPasswordHash,
+      },
+      create: {
+        phoneE164: adminPhone,
+        countryCode: '91',
+        phoneNational: adminPhone.replace('+91', ''),
+        email: adminEmail,
+        passwordHash: adminPasswordHash,
+        fullName: 'Store Admin',
+        role: Role.ADMIN,
+        status: UserStatus.ACTIVE,
+        preferredLanguage: 'en',
+        market: Market.IN,
+      },
+    });
+  }
 
   await prisma.user.upsert({
     where: { phoneE164: '+919876543210' },
@@ -731,10 +749,48 @@ async function main() {
   await seedPackages();
   await seedTeluguContent();
   await seedPoojaSamagri(prisma);
+  await seedDefaultVendor();
 
   console.log(
-    'Seed completed: admin, kits, samagri, festivals, guidance, vidhis, kids, priests, prasad/vrat, packages, te locale',
+    'Seed completed: admin, kits, samagri, festivals, guidance, vidhis, kids, priests, prasad/vrat, packages, te locale, vendor',
   );
+}
+
+async function seedDefaultVendor() {
+  const vendorPhone = process.env.VENDOR_PHONE_E164 ?? '+919876543211';
+  const vendorName = process.env.VENDOR_NAME ?? 'Packing vendor';
+  const defaultVendor = await prisma.vendor.findFirst({
+    where: { isDefault: true },
+  });
+  if (defaultVendor) {
+    await prisma.vendor.update({
+      where: { id: defaultVendor.id },
+      data: {
+        name: vendorName,
+        phoneE164: vendorPhone,
+        isActive: true,
+      },
+    });
+    return;
+  }
+  const existingPhone = await prisma.vendor.findUnique({
+    where: { phoneE164: vendorPhone },
+  });
+  if (existingPhone) {
+    await prisma.vendor.update({
+      where: { id: existingPhone.id },
+      data: { name: vendorName, isDefault: true, isActive: true },
+    });
+    return;
+  }
+  await prisma.vendor.create({
+    data: {
+      name: vendorName,
+      phoneE164: vendorPhone,
+      isDefault: true,
+      isActive: true,
+    },
+  });
 }
 
 async function seedPriests() {
@@ -1810,6 +1866,32 @@ async function seedTeluguContent() {
         correctIndex: 1,
       },
     ],
+  });
+
+  await prisma.promoCode.upsert({
+    where: { code: 'PAVITRA10' },
+    update: {},
+    create: {
+      code: 'PAVITRA10',
+      description: '10% off kits and samagri',
+      discountType: PromoDiscountType.PERCENT,
+      percentOff: 10,
+      maxDiscountMinor: 20000,
+      minSubtotalMinor: 49900,
+      isActive: true,
+    },
+  });
+  await prisma.promoCode.upsert({
+    where: { code: 'GANESH50' },
+    update: {},
+    create: {
+      code: 'GANESH50',
+      description: '₹50 off festival kits',
+      discountType: PromoDiscountType.FIXED,
+      amountMinor: 5000,
+      minSubtotalMinor: 29900,
+      isActive: true,
+    },
   });
 }
 

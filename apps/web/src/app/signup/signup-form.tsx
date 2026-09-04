@@ -37,7 +37,7 @@ export function SignupForm({
         phone,
         fullName: fullName.trim() || undefined,
       });
-      router.replace(next);
+      router.replace(next === "/" ? "/account/birth?welcome=1" : next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create account");
     } finally {

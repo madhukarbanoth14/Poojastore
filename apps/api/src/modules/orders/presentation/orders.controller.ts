@@ -13,7 +13,8 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../auth/domain/authenticated-user';
 import { CheckoutService } from '../application/checkout.service';
 import { OrderLifecycleService } from '../application/order-lifecycle.service';
-import { CheckoutDto, OrderActionDto } from './dto/order.dto';
+import { ReferKitService } from '../application/refer-kit.service';
+import { CheckoutDto, OrderActionDto, ReferKitDto } from './dto/order.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth()
@@ -22,6 +23,7 @@ export class OrdersController {
   constructor(
     private readonly checkout: CheckoutService,
     private readonly lifecycle: OrderLifecycleService,
+    private readonly referrals: ReferKitService,
   ) {}
 
   @Post('checkout')
@@ -34,7 +36,31 @@ export class OrdersController {
       user.id,
       dto.shippingAddressId,
       dto.deliverySlot,
+      {
+        intent: dto.intent,
+        intents: dto.intents,
+        familyAddressId: dto.familyAddressId,
+        recipientName: dto.recipientName,
+        recipientPhone: dto.recipientPhone,
+        promoCode: dto.promoCode,
+      },
     );
+    return { success: true, data };
+  }
+
+  @Post('refer')
+  @ApiOperation({ summary: 'SMS a kit referral to a family member' })
+  async referKit(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ReferKitDto,
+  ) {
+    const data = await this.referrals.refer({
+      userId: user.id,
+      recipientName: dto.recipientName,
+      recipientPhone: dto.recipientPhone,
+      kitName: dto.kitName ?? 'a Pooja kit',
+      shopUrl: dto.shopUrl,
+    });
     return { success: true, data };
   }
 
