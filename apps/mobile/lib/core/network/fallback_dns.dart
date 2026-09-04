@@ -22,13 +22,15 @@ class FallbackDns {
       return cached.addresses;
     }
     try {
-      final system = await InternetAddress.lookup(host);
+      final system = await InternetAddress.lookup(host)
+          .timeout(const Duration(seconds: 2));
       if (system.isNotEmpty) {
+        final ordered = _ipv4First(system);
         _cache[host] = _DnsCacheEntry(
-          system,
+          ordered,
           DateTime.now().add(const Duration(minutes: 5)),
         );
-        return system;
+        return ordered;
       }
     } catch (_) {}
 
@@ -121,6 +123,13 @@ int _skipName(Uint8List msg, int offset) {
   return offset;
 }
 
+List<InternetAddress> _ipv4First(List<InternetAddress> addresses) {
+  return [
+    ...addresses.where((a) => a.type == InternetAddressType.IPv4),
+    ...addresses.where((a) => a.type != InternetAddressType.IPv4),
+  ];
+}
+
 class FallbackDnsHttpOverrides extends HttpOverrides {
   FallbackDnsHttpOverrides({FallbackDns? dns}) : _dns = dns ?? FallbackDns();
 
@@ -129,34 +138,28 @@ class FallbackDnsHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     final client = super.createHttpClient(context);
+    client.connectionTimeout = const Duration(seconds: 6);
+    client.idleTimeout = const Duration(seconds: 20);
     client.connectionFactory = (uri, proxyHost, proxyPort) async {
       if (proxyHost != null && proxyPort != null) {
         return Socket.startConnect(proxyHost, proxyPort);
       }
       final host = uri.host;
       final port = uri.hasPort ? uri.port : (uri.scheme == 'https' ? 443 : 80);
-      final https = uri.scheme == 'https';
       try {
-        if (https) {
-          return await SecureSocket.startConnect(
-            host,
-            port,
-            context: context,
-          );
+        final lookup = await InternetAddress.lookup(host)
+            .timeout(const Duration(seconds: 2));
+        final ordered = _ipv4First(lookup);
+        if (ordered.isNotEmpty) {
+          // Plain TCP; HttpClient wraps TLS using the original hostname.
+          return Socket.startConnect(ordered.first, port);
         }
-        return await Socket.startConnect(host, port);
-      } on SocketException {
-        final addresses = await _dns.lookup(host);
-        if (addresses.isEmpty) {
-          throw SocketException('Failed host lookup: $host');
-        }
-        final target = addresses.firstWhere(
-          (address) => address.type == InternetAddressType.IPv4,
-          orElse: () => addresses.first,
-        );
-        // Plain TCP here; HttpClient wraps TLS using the original hostname.
-        return Socket.startConnect(target, port);
+      } catch (_) {}
+      final fallback = await _dns.lookupA(host);
+      if (fallback.isEmpty) {
+        throw SocketException('Failed host lookup: $host');
       }
+      return Socket.startConnect(fallback.first, port);
     };
     return client;
   }

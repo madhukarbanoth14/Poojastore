@@ -93,7 +93,10 @@ export class PanchangService {
 
     let payload = overlayCivilCalendar(
       cached
-        ? { ...((cached.payload as Record<string, unknown>) ?? {}) }
+        ? {
+            ...computePanchang(date, location),
+            ...((cached.payload as Record<string, unknown>) ?? {}),
+          }
         : { ...computePanchang(date, location) },
       date,
       location.timezone,

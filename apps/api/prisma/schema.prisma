@@ -88,6 +88,7 @@ model User {
   countryCode       String     @map("country_code") @db.VarChar(5)
   phoneNational     String     @map("phone_national") @db.VarChar(20)
   email             String?    @unique @db.VarChar(255)
+  passwordHash      String?    @map("password_hash") @db.VarChar(255)
   fullName          String?    @map("full_name") @db.VarChar(120)
   googleSub         String?    @unique @map("google_sub") @db.VarChar(128)
   appleSub          String?    @unique @map("apple_sub") @db.VarChar(128)
@@ -115,6 +116,11 @@ model User {
   vratReminders      VratReminder[]
   packageBookings    PackageBooking[]
   socialIdentities   SocialIdentity[]
+  savedSamagriLists           SavedSamagriList[]
+  poojariSamagriListsCreated  PoojariSamagriList[] @relation("PoojariSamagriListCreatedBy")
+  poojariSamagriListsReceived PoojariSamagriList[] @relation("PoojariSamagriListRecipient")
+  devicePushTokens            DevicePushToken[]
+  notifications               UserNotification[]
 
   @@index([role, status])
   @@index([createdAt])
@@ -178,6 +184,97 @@ model BirthProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("birth_profiles")
+}
+
+model SavedSamagriList {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String   @db.VarChar(120)
+  rawText   String?  @map("raw_text") @db.Text
+  items     Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+  @@map("saved_samagri_lists")
+}
+
+enum PoojariSamagriListStatus {
+  SENT
+  VIEWED
+}
+
+model PoojariSamagriList {
+  id              String                   @id @default(uuid()) @db.Uuid
+  priestId        String                   @map("priest_id") @db.Uuid
+  createdByUserId String                   @map("created_by_user_id") @db.Uuid
+  recipientUserId String                   @map("recipient_user_id") @db.Uuid
+  bookingId       String                   @map("booking_id") @db.Uuid
+  title           String                   @db.VarChar(120)
+  rawText         String?                  @map("raw_text") @db.Text
+  items           Json
+  status          PoojariSamagriListStatus @default(SENT)
+  sentAt          DateTime                 @default(now()) @map("sent_at")
+  viewedAt        DateTime?                @map("viewed_at")
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+
+  priest    Priest        @relation(fields: [priestId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("PoojariSamagriListCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  recipient User          @relation("PoojariSamagriListRecipient", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  booking   PriestBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([recipientUserId, sentAt])
+  @@index([priestId, bookingId])
+  @@map("poojari_samagri_lists")
+}
+
+enum PushPlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+enum NotificationType {
+  POOJARI_SAMAGRI_LIST
+  BOOKING_CONFIRMED
+  ORDER_UPDATE
+  PROMO
+}
+
+model DevicePushToken {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  platform  PushPlatform
+  token     String       @db.VarChar(512)
+  deviceId  String?      @map("device_id") @db.VarChar(120)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, token])
+  @@index([userId])
+  @@map("device_push_tokens")
+}
+
+model UserNotification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String           @db.VarChar(180)
+  body      String           @db.Text
+  data      Json             @default("{}")
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@map("user_notifications")
 }
 
 model PanchangDay {
@@ -696,9 +793,10 @@ model Priest {
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt @map("updated_at")
 
-  user     User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  slots    PriestSlot[]
-  bookings PriestBooking[]
+  user         User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  slots        PriestSlot[]
+  bookings     PriestBooking[]
+  samagriLists PoojariSamagriList[]
 
   @@index([city, isActive, sortOrder])
   @@index([market, isActive])
@@ -782,8 +880,9 @@ model PriestBooking {
   priest         Priest          @relation(fields: [priestId], references: [id], onDelete: Restrict)
   slot           PriestSlot      @relation(fields: [slotId], references: [id], onDelete: Restrict)
   address        Address         @relation(fields: [addressId], references: [id], onDelete: Restrict)
-  order          Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  order          Order?               @relation(fields: [orderId], references: [id], onDelete: SetNull)
   packageBooking PackageBooking?
+  samagriLists   PoojariSamagriList[]
 
   @@index([userId, createdAt])
   @@index([priestId, status])

@@ -6,11 +6,13 @@ Hindu Spiritual Super App — production monorepo.
 |-----|-------|------|
 | API | NestJS 11 + Prisma 6 + PostgreSQL + Redis | `apps/api` |
 | Mobile | Flutter (Material 3) | `apps/mobile` |
+| Web | Next.js 15 (App Router) | `apps/web` |
 
 Living architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 Production bar: [`docs/PRODUCTION_READINESS.md`](docs/PRODUCTION_READINESS.md)  
 Roadmap: [`docs/PRODUCT_ROADMAP.md`](docs/PRODUCT_ROADMAP.md)  
-Staging deploy: [`docs/runbooks/staging-deploy.md`](docs/runbooks/staging-deploy.md)
+Staging deploy: [`docs/runbooks/staging-deploy.md`](docs/runbooks/staging-deploy.md)  
+Website on pavitraseva.in: [`docs/runbooks/godaddy-web-domain.md`](docs/runbooks/godaddy-web-domain.md)
 
 > The previous Expo prototype sources (`App.js`, `src/`) are legacy reference only. Production mobile is Flutter.
 
@@ -49,6 +51,17 @@ flutter run \
 ```
 
 On Android emulators use `http://10.0.2.2:3000/api/v1`.
+
+```bash
+# 4) Website
+cd apps/web
+cp .env.example .env.local   # already points at local API
+npm install
+npm run dev
+```
+
+- Web: http://localhost:3001  
+- Uses the same Nest API as mobile (`API_BASE_URL` / `NEXT_PUBLIC_API_BASE_URL`).
 
 ## Commerce + payments
 

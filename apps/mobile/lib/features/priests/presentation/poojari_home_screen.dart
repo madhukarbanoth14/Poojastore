@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/priests_api.dart';
+import '../../marketplace/presentation/samagri_scan_screen.dart';
 
 class PoojariHomeScreen extends ConsumerStatefulWidget {
   const PoojariHomeScreen({super.key});
@@ -323,6 +324,7 @@ class PoojariAppointmentScreen extends ConsumerStatefulWidget {
 class _PoojariAppointmentScreenState
     extends ConsumerState<PoojariAppointmentScreen> {
   Map<String, dynamic>? _booking;
+  List<Map<String, dynamic>> _sentLists = const [];
   String? _error;
   bool _loading = true;
   bool _joining = false;
@@ -336,9 +338,16 @@ class _PoojariAppointmentScreenState
   Future<void> _load() async {
     try {
       final booking = await ref.read(priestsApiProvider).bookingDetail(widget.id);
+      List<Map<String, dynamic>> sent = const [];
+      try {
+        sent = await ref
+            .read(samagriScanApiProvider)
+            .listSentForBooking(widget.id);
+      } catch (_) {}
       if (!mounted) return;
       setState(() {
         _booking = booking;
+        _sentLists = sent;
         _loading = false;
       });
     } catch (error) {
@@ -348,6 +357,21 @@ class _PoojariAppointmentScreenState
         _loading = false;
       });
     }
+  }
+
+  Future<void> _openCompose() async {
+    final booking = _booking;
+    if (booking == null) return;
+    final user = booking['user'] as Map<String, dynamic>? ?? const {};
+    final devotee = (user['fullName'] as String?)?.trim().isNotEmpty == true
+        ? user['fullName'] as String
+        : user['phoneE164'] as String? ?? 'Devotee';
+    final sent = await context.push<bool>(
+      '/poojari/appointments/${widget.id}/samagri'
+          '?devotee=${Uri.encodeComponent(devotee)}'
+          '&service=${Uri.encodeComponent(booking['serviceName'] as String? ?? 'Puja')}',
+    );
+    if (sent == true && mounted) _load();
   }
 
   Future<void> _join() async {
@@ -434,6 +458,39 @@ class _PoojariAppointmentScreenState
                         label: _joining ? 'Opening…' : 'Join video meeting',
                         loading: _joining,
                         onPressed: _joining ? null : _join,
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    Text(
+                      'Samagri list',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: AppColors.maroon,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Send the puja samagri list to this devotee in the app. They can review and add items to cart.',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMuted,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TerracottaButton(
+                      label: 'Send samagri list',
+                      onPressed: _openCompose,
+                    ),
+                    if (_sentLists.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        '${_sentLists.length} list(s) sent',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ],
                   ],

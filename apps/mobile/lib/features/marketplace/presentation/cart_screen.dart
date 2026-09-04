@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../../l10n/l10n.dart';
 import '../../../core/catalog/catalog_images.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -34,9 +37,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(localeControllerProvider, (_, __) => setState(_reload));
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.bg,
-      appBar: const PsHeader(title: 'Cart'),
+      appBar: PsHeader(title: l10n.cart),
       body: FutureBuilder(
         future: _future,
         builder: (context, snapshot) {
@@ -52,23 +57,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Your cart is empty',
-                      style: TextStyle(
+                    Text(
+                      l10n.emptyCart,
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                         color: AppColors.text,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Browse Pooja Samagri to get started.',
-                      style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                    Text(
+                      l10n.emptyCartBrowseSamagri,
+                      style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
                     ),
                     const SizedBox(height: 18),
                     FilledButton(
                       onPressed: () => context.go('/shop'),
-                      child: const Text('Browse Samagri'),
+                      child: Text(l10n.browseSamagri),
                     ),
                   ],
                 ),
@@ -121,7 +126,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              'Qty $qty · ${formatInr(product['priceMinor'] as int)}',
+                              l10n.cartQtyLine(qty, formatInr(product['priceMinor'] as int)),
                               style: const TextStyle(
                                 fontSize: 12.5,
                                 color: AppColors.textMuted,
@@ -132,9 +137,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       ),
                       TextButton(
                         onPressed: () => _remove(productId),
-                        child: const Text(
-                          'Remove',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.remove,
+                          style: const TextStyle(
                             color: AppColors.saffron,
                             fontSize: 12.5,
                             fontWeight: FontWeight.w600,
@@ -155,17 +160,28 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ),
                 child: Column(
                   children: [
-                    _row('Items subtotal', formatInr(subtotal)),
-                    _row('Delivery charge', formatInr(delivery)),
+                    _row(l10n.itemsSubtotal, formatInr(subtotal)),
+                    _row(l10n.deliveryCharge, formatInr(delivery)),
                     const Divider(height: 18, color: AppColors.border),
-                    _row('Total', formatInr(total), bold: true),
+                    _row(l10n.total, formatInr(total), bold: true),
                   ],
                 ),
               ),
               const SizedBox(height: 14),
               FilledButton(
-                onPressed: () => context.push('/checkout'),
-                child: const Text('Proceed to Checkout'),
+                onPressed: () async {
+                  if (!ref.read(authControllerProvider).isAuthenticated) {
+                    await context.push(
+                      '/login?next=${Uri.encodeComponent('/checkout')}',
+                    );
+                  }
+                  if (!context.mounted) return;
+                  if (!ref.read(authControllerProvider).isAuthenticated) {
+                    return;
+                  }
+                  context.push('/checkout');
+                },
+                child: Text(l10n.proceedToCheckout),
               ),
             ],
           );

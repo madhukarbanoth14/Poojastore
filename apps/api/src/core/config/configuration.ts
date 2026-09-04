@@ -86,4 +86,11 @@ export default () => ({
     googleClientIds: process.env.GOOGLE_CLIENT_IDS ?? '',
     appleClientId: process.env.APPLE_CLIENT_ID ?? '',
   },
+  ocr: {
+    googleVisionApiKey: process.env.GOOGLE_VISION_API_KEY ?? '',
+  },
+  push: {
+    provider: process.env.PUSH_PROVIDER ?? 'console',
+    fcmServiceAccountJson: process.env.FCM_SERVICE_ACCOUNT_JSON ?? '',
+  },
 });

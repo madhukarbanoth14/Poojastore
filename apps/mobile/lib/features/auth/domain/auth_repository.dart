@@ -13,15 +13,17 @@ class AuthSession {
 }
 
 abstract class AuthRepository {
-  Future<String?> requestOtp({
-    required String countryCode,
-    required String phone,
+  Future<AuthSession> login({
+    required String email,
+    required String password,
+    String? preferredLanguage,
   });
 
-  Future<AuthSession> verifyOtp({
+  Future<AuthSession> register({
+    required String email,
+    required String password,
     required String countryCode,
     required String phone,
-    required String code,
     String? fullName,
     String? preferredLanguage,
   });

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/auth/ensure_logged_in.dart';
+import '../../../core/catalog/catalog_l10n.dart';
+import '../../../core/catalog/panchang_terms_l10n.dart';
 import '../../../core/network/fallback_dns.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ps_widgets.dart';
@@ -11,35 +13,7 @@ import '../../auth/presentation/auth_controller.dart';
 import '../data/panchang_api.dart';
 import '../data/rasi_chart_service.dart';
 
-const _rasiOptions = [
-  'MESHA',
-  'VRISHABHA',
-  'MITHUNA',
-  'KARKA',
-  'SIMHA',
-  'KANYA',
-  'TULA',
-  'VRISHCHIKA',
-  'DHANU',
-  'MAKARA',
-  'KUMBHA',
-  'MEENA',
-];
-
-const _rasiLabels = {
-  'MESHA': 'Mesha (Aries)',
-  'VRISHABHA': 'Vrishabha (Taurus)',
-  'MITHUNA': 'Mithuna (Gemini)',
-  'KARKA': 'Karka (Cancer)',
-  'SIMHA': 'Simha (Leo)',
-  'KANYA': 'Kanya (Virgo)',
-  'TULA': 'Tula (Libra)',
-  'VRISHCHIKA': 'Vrishchika (Scorpio)',
-  'DHANU': 'Dhanu (Sagittarius)',
-  'MAKARA': 'Makara (Capricorn)',
-  'KUMBHA': 'Kumbha (Aquarius)',
-  'MEENA': 'Meena (Pisces)',
-};
+const _rasiOptions = rasiKeys;
 
 class BirthProfileScreen extends ConsumerStatefulWidget {
   const BirthProfileScreen({super.key});
@@ -88,7 +62,7 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
     final loggedIn = await ensureLoggedIn(
       context,
       ref,
-      message: 'Sign in to save your birth profile',
+      message: context.l10n.signInToSaveBirthProfile,
     );
     if (!loggedIn || !mounted) {
       if (mounted) context.pop();
@@ -198,6 +172,8 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
   }
 
   Future<void> _computeRasi() async {
+    final l10n = context.l10n;
+    final te = context.isTelugu;
     setState(() {
       _computing = true;
       _error = null;
@@ -206,11 +182,11 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
     try {
       final dob = DateTime.tryParse(_dob.text.trim());
       if (dob == null) {
-        throw StateError('Enter date of birth as YYYY-MM-DD');
+        throw StateError(l10n.enterDobFormat);
       }
       final time = _normalizeTime(_birthTime.text);
       if (time == null) {
-        throw StateError('Enter birth time as HH:MM');
+        throw StateError(l10n.enterBirthTimeFormat);
       }
       final parts = time.split(':');
       final placeName = _birthPlace.text.trim().isNotEmpty
@@ -218,7 +194,7 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
           : _city;
       final city = _cityByName(placeName) ?? _cityByName(_city) ?? (_cities.isNotEmpty ? _cities.first : null);
       if (city == null) {
-        throw StateError('Select a city for birth place coordinates');
+        throw StateError(l10n.selectCityCoordinates);
       }
       final result = await _chart.compute(
         dateOfBirth: dob,
@@ -235,8 +211,10 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
         if (_birthPlace.text.trim().isEmpty) {
           _birthPlace.text = city['name'] as String;
         }
-        _chartHint =
-            'Janma rāśi: ${result.rasiLabel} · Lagna: ${result.lagnaLabel}';
+        _chartHint = l10n.janmaRasiLagna(
+          localizeRasiDisplayLabel(result.rasiLabel, te),
+          localizeRasiDisplayLabel(result.lagnaLabel, te),
+        );
       });
     } catch (e) {
       if (!mounted) return;
@@ -247,10 +225,11 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = context.l10n;
     final loggedIn = await ensureLoggedIn(
       context,
       ref,
-      message: 'Sign in to save your birth profile',
+      message: context.l10n.signInToSaveBirthProfile,
     );
     if (!loggedIn || !mounted) return;
 
@@ -261,10 +240,10 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
     try {
       final time = _normalizeTime(_birthTime.text);
       if (DateTime.tryParse(_dob.text.trim()) == null) {
-        throw StateError('Enter a valid date of birth (YYYY-MM-DD)');
+        throw StateError(l10n.enterValidDob);
       }
       if (_birthTime.text.trim().isNotEmpty && time == null) {
-        throw StateError('Birth time must be HH:MM (24-hour)');
+        throw StateError(l10n.birthTimeHhMm);
       }
 
       final name = _name.text.trim();
@@ -295,9 +274,9 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
       final data = e.response?.data;
       String msg = friendlyNetworkError(e);
       if (status == 401) {
-        msg = 'Session expired. Please sign in again.';
+        msg = l10n.sessionExpired;
       } else if (status == 400) {
-        msg = 'Check date (YYYY-MM-DD) and time (HH:MM), then try again.';
+        msg = l10n.checkDateTimeRetry;
         if (data is Map && data['message'] != null) {
           msg = '$msg (${data['message']})';
         }
@@ -313,6 +292,7 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final te = context.isTelugu;
     final bottom = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
@@ -327,7 +307,7 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
               padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + bottom),
               children: [
                 Text(
-                  'Enter name, date, time and place. We compute your janma rāśi (Moon sign) and today’s guidance.',
+                  l10n.birthProfileIntro,
                   style: TextStyle(
                     color: AppColors.textMuted,
                     height: 1.45,
@@ -338,16 +318,17 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
                 TextField(
                   controller: _name,
                   textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(labelText: 'Full name'),
+                  decoration: InputDecoration(labelText: l10n.fullName),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _dob,
                   readOnly: true,
                   onTap: _pickDob,
-                  decoration: const InputDecoration(
-                    labelText: 'Date of birth',
-                    suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
+                  decoration: InputDecoration(
+                    labelText: l10n.dateOfBirth,
+                    suffixIcon:
+                        const Icon(Icons.calendar_today_outlined, size: 18),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -355,17 +336,17 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
                   controller: _birthTime,
                   readOnly: true,
                   onTap: _pickTime,
-                  decoration: const InputDecoration(
-                    labelText: 'Birth time',
-                    suffixIcon: Icon(Icons.schedule_outlined, size: 18),
+                  decoration: InputDecoration(
+                    labelText: l10n.birthTime,
+                    suffixIcon: const Icon(Icons.schedule_outlined, size: 18),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _birthPlace,
-                  decoration: const InputDecoration(
-                    labelText: 'Birth place (city)',
-                    hintText: 'Hyderabad, Bengaluru, …',
+                  decoration: InputDecoration(
+                    labelText: l10n.birthPlaceCity,
+                    hintText: l10n.birthPlaceHint,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -375,8 +356,8 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
                     initialValue: _cities.any((c) => c['name'] == _city)
                         ? _city
                         : _cities.first['name'] as String,
-                    decoration: const InputDecoration(
-                      labelText: 'City for daily panchang',
+                    decoration: InputDecoration(
+                      labelText: l10n.cityForDailyPanchang,
                     ),
                     items: _cities
                         .map(
@@ -399,7 +380,7 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
                         )
                       : const Icon(Icons.auto_awesome),
                   label: Text(
-                    _computing ? 'Computing rāśi…' : 'Fetch Rasi Palalu',
+                    _computing ? l10n.computingRasi : l10n.fetchRasiPalalu,
                   ),
                 ),
                 if (_chartHint != null) ...[
@@ -417,12 +398,12 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
                 DropdownButtonFormField<String>(
                   key: ValueKey('rasi-$_rasi'),
                   initialValue: _rasiOptions.contains(_rasi) ? _rasi : 'MESHA',
-                  decoration: const InputDecoration(labelText: 'Rāśi (Moon sign)'),
+                  decoration: InputDecoration(labelText: l10n.rasiMoonSign),
                   items: _rasiOptions
                       .map(
                         (r) => DropdownMenuItem(
                           value: r,
-                          child: Text(_rasiLabels[r] ?? r),
+                          child: Text(localizeRasiKey(r, te)),
                         ),
                       )
                       .toList(),
@@ -431,15 +412,15 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: _nakshatra,
-                  decoration: const InputDecoration(
-                    labelText: 'Nakshatra',
+                  decoration: InputDecoration(
+                    labelText: l10n.nakshatra,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _gotram,
-                  decoration: const InputDecoration(
-                    labelText: 'Gotram (optional)',
+                  decoration: InputDecoration(
+                    labelText: l10n.gotramOptional,
                   ),
                 ),
                 if (_error != null) ...[
@@ -458,16 +439,16 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
                 ),
                 if (_guidance != null) ...[
                   const SizedBox(height: 28),
-                  const Text(
-                    'Today for your rāśi',
-                    style: TextStyle(
+                  Text(
+                    l10n.todayForYourRasi,
+                    style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
                       color: AppColors.text,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _GuidanceCard(guidance: _guidance!),
+                  _GuidanceCard(guidance: _guidance!, te: te),
                 ],
               ],
             ),
@@ -476,24 +457,28 @@ class _BirthProfileScreenState extends ConsumerState<BirthProfileScreen> {
 }
 
 class _GuidanceCard extends StatelessWidget {
-  const _GuidanceCard({required this.guidance});
+  const _GuidanceCard({required this.guidance, required this.te});
 
   final Map<String, dynamic> guidance;
+  final bool te;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final g = guidance['guidance'] as Map<String, dynamic>? ?? guidance;
     final rows = <(String, String)>[
-      ('Summary', '${g['summary'] ?? ''}'),
-      ('Recommended puja', '${g['recommendedPuja'] ?? ''}'),
-      ('Lucky colour', '${g['luckyColor'] ?? ''}'),
-      ('Lucky direction', '${g['luckyDirection'] ?? ''}'),
-      ('Lucky number', '${g['luckyNumber'] ?? ''}'),
-      ('Career', '${g['career'] ?? ''}'),
-      ('Finance', '${g['finance'] ?? ''}'),
-      ('Health', '${g['health'] ?? ''}'),
-      ('Travel', '${g['travel'] ?? ''}'),
+      (l10n.guidanceSummary, '${g['summary'] ?? ''}'),
+      (l10n.guidanceRecommendedPuja, '${g['recommendedPuja'] ?? ''}'),
+      (l10n.guidanceLuckyColor, '${g['luckyColor'] ?? ''}'),
+      (l10n.guidanceLuckyDirection, '${g['luckyDirection'] ?? ''}'),
+      (l10n.guidanceLuckyNumber, '${g['luckyNumber'] ?? ''}'),
+      (l10n.guidanceCareer, '${g['career'] ?? ''}'),
+      (l10n.guidanceFinance, '${g['finance'] ?? ''}'),
+      (l10n.guidanceHealth, '${g['health'] ?? ''}'),
+      (l10n.guidanceTravel, '${g['travel'] ?? ''}'),
     ];
+    final rasiLabel =
+        localizeRasiDisplayLabel(guidance['rasiLabel'] as String?, te);
 
     return Container(
       width: double.infinity,
@@ -507,7 +492,7 @@ class _GuidanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            guidance['rasiLabel'] as String? ?? '',
+            rasiLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w700,
               color: AppColors.maroonDeep,

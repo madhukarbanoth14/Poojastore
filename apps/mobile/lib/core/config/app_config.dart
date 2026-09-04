@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+
 class AppConfig {
   const AppConfig._();
 
@@ -5,7 +7,7 @@ class AppConfig {
   /// Default targets staging HTTPS so accidental release builds are not localhost.
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://pooja-api-staging-tcjernzh5a-el.a.run.app/api/v1',
+    defaultValue: 'https://pooja-api-production-tcjernzh5a-el.a.run.app/api/v1',
   );
 
   /// Dev/test only. Must be false for release/store builds.
@@ -40,4 +42,46 @@ class AppConfig {
     'AGORA_TOKEN',
     defaultValue: '',
   );
+
+  /// Enable Firebase push notifications (requires dart-defines below).
+  static const enablePushNotifications = bool.fromEnvironment(
+    'ENABLE_PUSH_NOTIFICATIONS',
+    defaultValue: false,
+  );
+
+  static const firebaseApiKey = String.fromEnvironment(
+    'FIREBASE_API_KEY',
+    defaultValue: '',
+  );
+
+  static const firebaseAppId = String.fromEnvironment(
+    'FIREBASE_APP_ID',
+    defaultValue: '',
+  );
+
+  static const firebaseMessagingSenderId = String.fromEnvironment(
+    'FIREBASE_MESSAGING_SENDER_ID',
+    defaultValue: '',
+  );
+
+  static const firebaseProjectId = String.fromEnvironment(
+    'FIREBASE_PROJECT_ID',
+    defaultValue: '',
+  );
+
+  static FirebaseOptions? get firebaseOptions {
+    if (!enablePushNotifications) return null;
+    if (firebaseApiKey.isEmpty ||
+        firebaseAppId.isEmpty ||
+        firebaseMessagingSenderId.isEmpty ||
+        firebaseProjectId.isEmpty) {
+      return null;
+    }
+    return FirebaseOptions(
+      apiKey: firebaseApiKey,
+      appId: firebaseAppId,
+      messagingSenderId: firebaseMessagingSenderId,
+      projectId: firebaseProjectId,
+    );
+  }
 }

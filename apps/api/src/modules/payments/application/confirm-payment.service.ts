@@ -13,12 +13,16 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../../core/database/prisma.service';
+import { PushNotificationService } from '../../notifications/application/push-notification.service';
 
 @Injectable()
 export class ConfirmPaymentService {
   private readonly logger = new Logger(ConfirmPaymentService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly push: PushNotificationService,
+  ) {}
 
   /**
    * Returns true if this webhook event was already processed (idempotent).
@@ -133,7 +137,42 @@ export class ConfirmPaymentService {
       }),
     ]);
 
+    void this.notifyBookingsConfirmed(payment.orderId, payment.order.userId).catch(
+      (error) =>
+        this.logger.warn(`Booking confirmation push failed: ${error}`),
+    );
+
     return updated;
+  }
+
+  private async notifyBookingsConfirmed(orderId: string, userId: string) {
+    const priestBookings = await this.prisma.priestBooking.findMany({
+      where: { orderId, status: PriestBookingStatus.CONFIRMED },
+      include: { priest: { select: { fullName: true } } },
+    });
+    for (const booking of priestBookings) {
+      await this.push.notifyPriestBookingConfirmed(userId, {
+        bookingId: booking.id,
+        bookingNumber: booking.bookingNumber,
+        priestName: booking.priest.fullName,
+        serviceName: booking.serviceName,
+      });
+    }
+
+    const packageBookings = await this.prisma.packageBooking.findMany({
+      where: { orderId, status: PackageBookingStatus.CONFIRMED },
+      include: { package: { select: { title: true } } },
+    });
+    for (const booking of packageBookings) {
+      await this.push.notifyPackageBookingConfirmed(userId, {
+        bookingId: booking.id,
+        bookingNumber: booking.bookingNumber,
+        packageName:
+          booking.serviceName?.trim() ||
+          booking.package.title ||
+          'Puja package',
+      });
+    }
   }
 
   async markFailed(params: {

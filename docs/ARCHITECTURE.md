@@ -17,6 +17,7 @@ Pooja Store is a Hindu Spiritual Super App for India, USA, and Canada. The platf
 apps/
   api/          NestJS backend (Clean Architecture + feature modules)
   mobile/       Flutter customer (and role-gated admin) app
+  web/          Next.js customer website (catalog, panchang, priests, checkout)
   admin/        Reserved for dedicated admin web console
 packages/       Shared contracts (OpenAPI types, lint configs) — future
 docs/
@@ -33,6 +34,7 @@ The previous Expo/React Native prototype remains at the repo root for reference 
 | Layer | Choice |
 |-------|--------|
 | Mobile | Flutter (stable), Material 3, dark mode |
+| Web | Next.js 15, App Router, Tailwind |
 | API | NestJS 11, TypeScript strict |
 | DB | PostgreSQL 16 |
 | ORM | Prisma 6 |

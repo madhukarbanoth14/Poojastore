@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../l10n/l10n.dart';
 import '../../../core/i18n/language_switcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_controller.dart';
@@ -17,18 +18,19 @@ class ProfileScreen extends ConsumerWidget {
     final user = auth.user;
     final dark = ref.watch(themeControllerProvider) == ThemeMode.dark;
     final t = context.ps;
+    final l10n = context.l10n;
 
     if (!auth.isAuthenticated) {
       return Scaffold(
         backgroundColor: t.bg,
-        appBar: const PsHeader(title: 'Account', showBack: false),
+        appBar: PsHeader(title: l10n.navAccount, showBack: false),
         body: Padding(
           padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Explore freely',
+                l10n.profileGuestTitle,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 22,
@@ -37,18 +39,18 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Browse festivals and Pooja Samagri without signing in. Sign in when you are ready to checkout.',
+                l10n.profileGuestSubtitle,
                 style: TextStyle(fontSize: 14, color: t.textMuted, height: 1.45),
               ),
               const SizedBox(height: 28),
               FilledButton(
                 onPressed: () => context.push('/login'),
-                child: const Text('Sign in / Register'),
+                child: Text(l10n.signInRegister),
               ),
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: () => context.go('/shop'),
-                child: const Text('Browse Pooja Samagri'),
+                child: Text(l10n.browseSamagri),
               ),
               const SizedBox(height: 24),
               const LanguageSwitcher(),
@@ -60,13 +62,13 @@ class ProfileScreen extends ConsumerWidget {
 
     final name = user?.fullName?.trim().isNotEmpty == true
         ? user!.fullName!
-        : 'Devotee';
+        : l10n.devotee;
     final phone = user?.phoneE164 ?? '';
 
     return Scaffold(
       backgroundColor: t.bg,
       appBar: PsHeader(
-        title: 'Profile',
+        title: l10n.profileTitle,
         showBack: context.canPop(),
       ),
       body: ListView(
@@ -127,7 +129,7 @@ class ProfileScreen extends ConsumerWidget {
                         vertical: 8,
                       ),
                       child: Text(
-                        'Edit',
+                        l10n.edit,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -140,20 +142,20 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 18),
-            _row(context, 'Personal Details', () => context.push('/profile/personal')),
-            _row(context, 'Saved Addresses', () => context.push('/profile/addresses')),
-            _row(context, 'Family Members', () => context.push('/profile/family')),
-            _row(context, 'Order History', () => context.push('/orders')),
+            _row(context, l10n.personalDetails, () => context.push('/profile/personal')),
+            _row(context, l10n.savedAddresses, () => context.push('/profile/addresses')),
+            _row(context, l10n.familyMembers, () => context.push('/profile/family')),
+            _row(context, l10n.orderHistory, () => context.push('/orders')),
             if (user?.isPoojari == true)
-              _row(context, 'Pujari Desk', () => context.go('/poojari')),
+              _row(context, l10n.pujariDesk, () => context.go('/poojari')),
             if (user?.isPoojari != true)
-              _row(context, 'Join as a pujari', () => context.push('/poojari/apply')),
+              _row(context, l10n.joinAsPujari, () => context.push('/poojari/apply')),
             if (user?.isAdmin == true)
-              _row(context, 'Admin', () => context.push('/admin')),
-            _row(context, 'Priest Booking History', () => context.push('/bookings')),
-            _row(context, 'Notifications', () => context.push('/notifications')),
-            _row(context, 'Wishlist', () => context.push('/wishlist')),
-            _row(context, 'Support', () => context.push('/support')),
+              _row(context, l10n.admin, () => context.push('/admin')),
+            _row(context, l10n.priestBookingHistory, () => context.push('/bookings')),
+            _row(context, l10n.notifications, () => context.push('/notifications')),
+            _row(context, l10n.wishlist, () => context.push('/wishlist')),
+            _row(context, l10n.support, () => context.push('/support')),
             const SizedBox(height: 4),
             PsCard(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -161,7 +163,7 @@ class ProfileScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Language',
+                    l10n.language,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 13.5,
@@ -180,7 +182,7 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Dark Mode',
+                      l10n.darkMode,
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 13.5,
@@ -202,9 +204,9 @@ class ProfileScreen extends ConsumerWidget {
                 await ref.read(authControllerProvider.notifier).logout();
                 if (context.mounted) context.go('/login');
               },
-              child: const Text(
-                'Log Out',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+              child: Text(
+                l10n.logOut,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
               ),
             ),
           ],

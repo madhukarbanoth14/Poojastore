@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/catalog_l10n.dart';
+import '../../../core/catalog/panchang_terms_l10n.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ps_format.dart';
 import '../../../l10n/l10n.dart';
 import '../data/panchang_api.dart';
+import 'panchang_almanac_card.dart';
 
 class PanchangHubScreen extends ConsumerStatefulWidget {
   const PanchangHubScreen({super.key});
@@ -21,10 +24,13 @@ class _PanchangHubScreenState extends ConsumerState<PanchangHubScreen>
   Map<String, dynamic>? _calendar;
   String? _error;
   bool _loading = true;
+  late DateTime _selectedDay;
 
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    _selectedDay = DateTime(now.year, now.month, now.day);
     _tabs = TabController(length: 3, vsync: this);
     _load();
   }
@@ -43,7 +49,7 @@ class _PanchangHubScreenState extends ConsumerState<PanchangHubScreen>
     final api = ref.read(panchangApiProvider);
     final now = DateTime.now();
     try {
-      final today = await api.today();
+      final today = await api.forDate(isoDate(_selectedDay));
       Map<String, dynamic>? guidance;
       try {
         guidance = await api.guidanceToday();
@@ -69,11 +75,11 @@ class _PanchangHubScreenState extends ConsumerState<PanchangHubScreen>
     }
   }
 
-  String _window(dynamic value) {
-    if (value is Map) {
-      return '${value['start']} – ${value['end']}';
-    }
-    return '—';
+  Future<void> _pickDate() async {
+    final picked = await pickPanchangDate(context, selected: _selectedDay);
+    if (picked == null || !mounted) return;
+    setState(() => _selectedDay = DateTime(picked.year, picked.month, picked.day));
+    await _load(    );
   }
 
   @override
@@ -83,8 +89,13 @@ class _PanchangHubScreenState extends ConsumerState<PanchangHubScreen>
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text('Panchang & Zodiac'),
+        title: Text(l10n.panchangTitle),
         actions: [
+          IconButton(
+            tooltip: almanacLabel('pickDate', context.isTelugu),
+            onPressed: _loading ? null : _pickDate,
+            icon: const Icon(Icons.calendar_month, color: AppColors.maroonDeep),
+          ),
           IconButton(
             tooltip: l10n.refresh,
             onPressed: _load,
@@ -93,10 +104,10 @@ class _PanchangHubScreenState extends ConsumerState<PanchangHubScreen>
         ],
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [
-            Tab(text: 'Today'),
-            Tab(text: 'Guidance'),
-            Tab(text: 'Calendar'),
+          tabs: [
+            Tab(text: l10n.tabToday),
+            Tab(text: l10n.tabGuidance),
+            Tab(text: l10n.tabCalendar),
           ],
         ),
       ),
@@ -107,7 +118,11 @@ class _PanchangHubScreenState extends ConsumerState<PanchangHubScreen>
               : TabBarView(
                   controller: _tabs,
                   children: [
-                    _TodayTab(today: _today!, window: _window),
+                    _TodayTab(
+                      today: _today!,
+                      selected: _selectedDay,
+                      onPickDate: _pickDate,
+                    ),
                     _GuidanceTab(guidance: _guidance),
                     _CalendarTab(calendar: _calendar!),
                   ],
@@ -117,31 +132,52 @@ class _PanchangHubScreenState extends ConsumerState<PanchangHubScreen>
 }
 
 class _TodayTab extends StatelessWidget {
-  const _TodayTab({required this.today, required this.window});
+  const _TodayTab({
+    required this.today,
+    required this.selected,
+    required this.onPickDate,
+  });
 
   final Map<String, dynamic> today;
-  final String Function(dynamic) window;
+  final DateTime selected;
+  final VoidCallback onPickDate;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final te = context.isTelugu;
     final festivals = (today['festivals'] as List?) ?? [];
+    final now = DateTime.now();
+    final isToday = selected.year == now.year &&
+        selected.month == now.month &&
+        selected.day == now.day;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text(
-          panchangHeadline(today),
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 17,
-            color: AppColors.text,
+        OutlinedButton.icon(
+          onPressed: onPickDate,
+          icon: const Icon(Icons.calendar_month, color: AppColors.maroon),
+          label: Text(
+            isToday
+                ? almanacLabel('pickDate', te)
+                : isoDate(selected),
+            style: const TextStyle(
+              color: AppColors.maroon,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: Color(0xFFC9A227)),
+            backgroundColor: Colors.white,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(
           today['cityName'] as String? ?? 'Hyderabad',
           style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
         ),
+        const SizedBox(height: 14),
+        PanchangAlmanacCard(data: today),
         const SizedBox(height: 16),
         Container(
           width: double.infinity,
@@ -151,61 +187,26 @@ class _TodayTab extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFD9AE55)),
           ),
-          child: const Text(
-            'Panchang times are approximate civil calculations for general guidance. Consult your family priest for ritual muhurat timing.',
-            style: TextStyle(
+          child: Text(
+            l10n.panchangDisclaimer,
+            style: const TextStyle(
               fontSize: 12,
               height: 1.55,
               color: Color(0xFF7A5A2C),
             ),
           ),
         ),
-        const SizedBox(height: 18),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.blush,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(
-            children: [
-              _stat('Tithi', today['tithi']),
-              _stat('Nakshatra', today['nakshatra']),
-              _stat('Yoga', today['yoga']),
-              _stat('Karana', today['karana']),
-              _stat('Sunrise', today['sunrise']),
-              _stat('Sunset', today['sunset']),
-              _stat('Moonrise', today['moonrise'] ?? '—'),
-              _stat('Moonset', today['moonset'] ?? '—'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          'Muhurats',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14.5,
-            color: AppColors.text,
-          ),
-        ),
-        const SizedBox(height: 10),
-        _muhurat('Rahu Kalam', window(today['rahuKalam']), inauspicious: true),
-        _muhurat('Yamagandam', window(today['yamagandam']), inauspicious: true),
-        _muhurat('Gulika', window(today['gulikaKalam']), inauspicious: true),
-        _muhurat('Abhijit Muhurat', window(today['abhijitMuhurtham'])),
-        _muhurat('Amrit Kalam', window(today['amritKalam'])),
         if (today['specialNote'] != null) ...[
           const SizedBox(height: 12),
           Text(
-            'Note: ${today['specialNote']}',
+            l10n.panchangNote('${today['specialNote']}'),
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ],
         if (festivals.isNotEmpty) ...[
           const SizedBox(height: 12),
-          Text(l10n.festivals, style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(l10n.festivals,
+              style: const TextStyle(fontWeight: FontWeight.w700)),
           ...festivals.map(
             (f) => ListTile(
               contentPadding: EdgeInsets.zero,
@@ -215,71 +216,6 @@ class _TodayTab extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-
-  Widget _stat(String label, Object? value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textMuted)),
-          Flexible(
-            child: Text(
-              '$value',
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.text,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _muhurat(String name, String time, {bool inauspicious = false}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 7,
-            height: 7,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: inauspicious ? AppColors.saffron : AppColors.gold,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-                color: AppColors.text,
-              ),
-            ),
-          ),
-          Text(
-            time,
-            style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -292,6 +228,7 @@ class _GuidanceTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final te = context.isTelugu;
 
     if (guidance == null) {
       return Center(
@@ -300,14 +237,15 @@ class _GuidanceTab extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Save your birth profile (rasi + city) to unlock personalized daily guidance.',
+              Text(
+                l10n.guidanceEmptyPrompt,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () => context.push('/panchang/profile'),
-                style: FilledButton.styleFrom(backgroundColor: AppColors.maroon),
+                style:
+                    FilledButton.styleFrom(backgroundColor: AppColors.maroon),
                 child: Text(l10n.setBirthProfile),
               ),
             ],
@@ -317,13 +255,15 @@ class _GuidanceTab extends StatelessWidget {
     }
 
     final g = guidance!['guidance'] as Map<String, dynamic>;
+    final rasiLabel =
+        localizeRasiDisplayLabel(guidance!['rasiLabel'] as String?, te);
     return ListView(
       padding: const EdgeInsets.fromLTRB(0, 18, 0, 20),
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            guidance!['rasiLabel'] as String? ?? '',
+            rasiLabel,
             style: const TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 19,
@@ -361,10 +301,10 @@ class _GuidanceTab extends StatelessWidget {
               crossAxisSpacing: 16,
               mainAxisSpacing: 12,
               children: [
-                _gstat('Recommended puja', g['recommendedPuja']),
-                _gstat('Lucky color', g['luckyColor']),
-                _gstat('Direction', g['luckyDirection']),
-                _gstat('Number', '${g['luckyNumber']}'),
+                _gstat(l10n.guidanceRecommendedPuja, g['recommendedPuja']),
+                _gstat(l10n.guidanceLuckyColor, g['luckyColor']),
+                _gstat(l10n.guidanceDirection, g['luckyDirection']),
+                _gstat(l10n.guidanceNumber, '${g['luckyNumber']}'),
               ],
             ),
           ),
@@ -374,10 +314,10 @@ class _GuidanceTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _section('Career', g['career']),
-              _section('Finance', g['finance']),
-              _section('Health', g['health']),
-              _section('Travel', g['travel']),
+              _section(l10n.guidanceCareer, g['career']),
+              _section(l10n.guidanceFinance, g['finance']),
+              _section(l10n.guidanceHealth, g['health']),
+              _section(l10n.guidanceTravel, g['travel']),
             ],
           ),
         ),
@@ -389,7 +329,9 @@ class _GuidanceTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted)),
+        Text(label,
+            style:
+                const TextStyle(fontSize: 11.5, color: AppColors.textMuted)),
         const SizedBox(height: 2),
         Text(
           '$value',
@@ -409,9 +351,15 @@ class _GuidanceTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: AppColors.maroonDeep)),
+          Text(title,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                  color: AppColors.maroonDeep)),
           const SizedBox(height: 3),
-          Text('$body', style: const TextStyle(fontSize: 13, height: 1.5, color: AppColors.textMuted)),
+          Text('$body',
+              style: const TextStyle(
+                  fontSize: 13, height: 1.5, color: AppColors.textMuted)),
         ],
       ),
     );
@@ -425,6 +373,8 @@ class _CalendarTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final te = context.isTelugu;
     final days = (calendar['days'] as List).cast<Map<String, dynamic>>();
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -432,12 +382,17 @@ class _CalendarTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final day = days[index];
         final iso = day['date'] as String? ?? '';
-        final weekday = day['weekday'] as String? ?? '';
+        final weekday = localizeWeekday(day['weekday'] as String?, te);
         final dateLabel =
             (day['dateLabel'] as String?)?.trim().isNotEmpty == true
-            ? day['dateLabel'] as String
-            : formatIsoDateLabel(iso);
+                ? localizeDateLabel(day['dateLabel'] as String, te)
+                : localizeDateLabel(formatIsoDateLabel(iso), te);
         final isToday = iso == localIsoDate();
+        final tithiLine = localizeTithiNakshatraLine(
+          day['tithi'] as String?,
+          day['nakshatra'] as String?,
+          te,
+        );
         return Container(
           padding: const EdgeInsets.fromLTRB(12, 13, 4, 13),
           decoration: BoxDecoration(
@@ -465,22 +420,24 @@ class _CalendarTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${day['tithi']} · ${day['nakshatra']}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                      tithiLine,
+                      style: const TextStyle(
+                          fontSize: 12, color: AppColors.textMuted),
                     ),
                   ],
                 ),
               ),
               if (isToday)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColors.saffron,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    'TODAY',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.todayBadge,
+                    style: const TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,

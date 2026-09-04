@@ -25,11 +25,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const exceptionResponse =
       exception instanceof HttpException ? exception.getResponse() : null;
 
-    const message =
-      typeof exceptionResponse === 'string'
-        ? exceptionResponse
-        : ((exceptionResponse as { message?: string | string[] })?.message ??
-          'Internal server error');
+    const message = (() => {
+      if (exception instanceof HttpException) {
+        const body = exception.getResponse();
+        if (typeof body === 'string') return body;
+        const nested = (body as { message?: string | string[] }).message;
+        if (Array.isArray(nested)) return nested.join(', ');
+        if (typeof nested === 'string') return nested;
+      }
+      if (exception instanceof Error && exception.message) return exception.message;
+      return 'Internal server error';
+    })();
 
     const error =
       typeof exceptionResponse === 'object' && exceptionResponse

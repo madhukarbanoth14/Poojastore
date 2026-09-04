@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_widgets.dart';
@@ -158,6 +159,11 @@ class _PoojariApplyScreenState extends ConsumerState<PoojariApplyScreen> {
   }
 
   String _describeError(DioException error) {
+    if (error.response?.statusCode == 404) {
+      return 'Pujari signup is not available on this server. '
+          'Reinstall the latest app or point the API to staging '
+          '(${AppConfig.apiBaseUrl}).';
+    }
     final data = error.response?.data;
     if (data is Map) {
       final message = data['message'];

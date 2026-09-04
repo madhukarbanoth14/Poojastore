@@ -12,6 +12,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../../../core/database/prisma.service';
 import { RefundPaymentService } from '../../payments/application/refund-payment.service';
+import { PushNotificationService } from '../../notifications/application/push-notification.service';
 
 const TERMINAL: OrderStatus[] = [
   OrderStatus.CANCELLED,
@@ -33,6 +34,7 @@ export class OrderLifecycleService {
     private readonly prisma: PrismaService,
     private readonly refunds: RefundPaymentService,
     private readonly config: ConfigService,
+    private readonly push: PushNotificationService,
   ) {}
 
   async getOwned(orderId: string, userId: string, isAdmin = false) {
@@ -205,18 +207,27 @@ export class OrderLifecycleService {
         order.status === OrderStatus.FULFILLING) &&
       now - paidAt.getTime() >= shipAfterMs
     ) {
+      const trackingNumber =
+        order.trackingNumber ??
+        `PS${order.orderNumber.replace(/\W/g, '').slice(-10)}`;
       await this.prisma.order.update({
         where: { id: order.id },
         data: {
           status: OrderStatus.SHIPPED,
           packedAt: order.packedAt ?? paidAt,
           shippedAt: order.shippedAt ?? new Date(paidAt.getTime() + shipAfterMs),
-          trackingNumber:
-            order.trackingNumber ??
-            `PS${order.orderNumber.replace(/\W/g, '').slice(-10)}`,
+          trackingNumber,
           courierName: order.courierName ?? 'Pooja Store Delivery',
         },
       });
+
+      void this.push
+        .notifyOrderShipped(order.userId, {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          trackingNumber,
+        })
+        .catch(() => undefined);
     }
 
     const latest = await this.prisma.order.findUniqueOrThrow({

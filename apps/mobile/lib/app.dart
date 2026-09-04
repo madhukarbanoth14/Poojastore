@@ -11,11 +11,16 @@ import 'features/admin/presentation/admin_orders_screen.dart';
 import 'features/admin/presentation/admin_users_screen.dart';
 import 'features/auth/presentation/auth_controller.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'features/auth/presentation/signup_screen.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/marketplace/presentation/cart_screen.dart';
 import 'features/marketplace/presentation/checkout_screen.dart';
 import 'features/marketplace/presentation/festival_screen.dart';
 import 'features/marketplace/presentation/kit_detail_screen.dart';
+import 'features/marketplace/presentation/samagri_scan_screen.dart';
+import 'features/marketplace/presentation/poojari_samagri_screens.dart';
+import 'features/marketplace/presentation/pooja_guides_screen.dart';
+import 'features/marketplace/presentation/pooja_guide_detail_screen.dart';
 import 'features/marketplace/presentation/samagri_screen.dart';
 import 'features/marketplace/presentation/order_confirm_screen.dart';
 import 'features/marketplace/presentation/order_detail_screen.dart';
@@ -53,6 +58,7 @@ import 'features/profile/presentation/wishlist_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/shell/app_shell.dart';
+import 'core/notifications/push_notifications.dart';
 
 final _routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
@@ -67,9 +73,6 @@ final _routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final auth = ref.read(authControllerProvider);
       final loc = state.matchedLocation;
-      if (auth.bootstrapping) {
-        return loc == '/splash' ? null : '/splash';
-      }
 
       // Guests may browse the store; only account/checkout flows require login.
       final isPoojariApply = loc == '/poojari/apply';
@@ -105,13 +108,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
       if (auth.isAuthenticated && (loc == '/splash' || loc == '/onboarding')) {
         return auth.user?.isPoojari == true ? '/poojari' : '/';
       }
-      // Stay on /login after auth so LoginScreen can pop (guest add-to-cart)
-      // or honor ?next= when redirected from a gated route.
-      if (auth.isAuthenticated && loc == '/login') {
-        final next = state.uri.queryParameters['next'];
-        if (next != null && next.isNotEmpty) return next;
-        return null;
-      }
+      // Post-login navigation is handled by LoginScreen (_finishLogin).
       if (auth.user?.isPoojari == true && loc == '/') return '/poojari';
       return null;
     },
@@ -122,6 +119,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const OnboardingScreen(),
       ),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      GoRoute(path: '/signup', builder: (_, __) => const SignupScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);
@@ -168,6 +166,22 @@ final _routerProvider = Provider<GoRouter>((ref) {
         path: '/samagri',
         builder: (_, state) => SamagriScreen(
           festival: state.uri.queryParameters['festival'],
+        ),
+      ),
+      GoRoute(path: '/poojas', builder: (_, __) => const PoojaGuidesScreen()),
+      GoRoute(
+        path: '/poojas/:id',
+        builder: (_, state) =>
+            PoojaGuideDetailScreen(id: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/samagri/scan',
+        builder: (_, __) => const SamagriScanScreen(),
+      ),
+      GoRoute(
+        path: '/samagri/received/:id',
+        builder: (_, state) => SamagriReceivedScreen(
+          listId: state.pathParameters['id']!,
         ),
       ),
       GoRoute(path: '/cart', builder: (_, __) => const CartScreen()),
@@ -262,6 +276,14 @@ final _routerProvider = Provider<GoRouter>((ref) {
           id: state.pathParameters['id']!,
         ),
       ),
+      GoRoute(
+        path: '/poojari/appointments/:id/samagri',
+        builder: (_, state) => PoojariSamagriComposeScreen(
+          bookingId: state.pathParameters['id']!,
+          devoteeName: state.uri.queryParameters['devotee'],
+          serviceName: state.uri.queryParameters['service'],
+        ),
+      ),
       GoRoute(path: '/bookings', builder: (_, __) => const BookingsScreen()),
       GoRoute(
         path: '/booking-confirm',
@@ -330,17 +352,41 @@ final _routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class PoojaStoreApp extends ConsumerWidget {
+class PoojaStoreApp extends ConsumerStatefulWidget {
   const PoojaStoreApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PoojaStoreApp> createState() => _PoojaStoreAppState();
+}
+
+class _PoojaStoreAppState extends ConsumerState<PoojaStoreApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      pushRouteHandler = (link) => ref.read(_routerProvider).push(link);
+      await ref.read(pushNotificationServiceProvider).initialize();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      final push = ref.read(pushNotificationServiceProvider);
+      if (previous?.isAuthenticated == true && !next.isAuthenticated) {
+        push.unregister();
+      } else if (next.isAuthenticated &&
+          previous?.isAuthenticated != true) {
+        push.syncTokenIfLoggedIn();
+      }
+    });
+
     final router = ref.watch(_routerProvider);
     final locale = ref.watch(localeControllerProvider);
     final themeMode = ref.watch(themeControllerProvider);
 
     return MaterialApp.router(
-      title: 'Pooja Panchang',
+      title: 'Pavitra Seva',
       debugShowCheckedModeBanner: false,
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,

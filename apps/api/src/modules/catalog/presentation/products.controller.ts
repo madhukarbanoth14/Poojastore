@@ -76,10 +76,19 @@ export class ProductsController {
           return metadata?.catalog !== 'pooja-samagri';
         })
       : items;
-    const withLines = await this.withSelectableItems(visible, locale);
+    const kits = visible.filter((item) => item.type === ProductType.PUJA_KIT);
+    const enrichedKits = kits.length
+      ? await this.withSelectableItems(kits, locale)
+      : [];
+    const kitById = new Map(enrichedKits.map((item) => [item.id, item]));
+    const payload = visible.map((item) =>
+      item.type === ProductType.PUJA_KIT
+        ? kitById.get(item.id)!
+        : localizeProduct(item, locale),
+    );
     return {
       success: true,
-      data: { items: withLines },
+      data: { items: payload },
     };
   }
 

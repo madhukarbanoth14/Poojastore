@@ -14,6 +14,18 @@ class MarketplaceApi {
     return (res.data['data']['items'] as List).cast<Map<String, dynamic>>();
   }
 
+  Future<List<Map<String, dynamic>>> listFestivalKits({String market = 'IN'}) async {
+    final res = await _api.dio.get(
+      '/products',
+      queryParameters: {
+        'market': market,
+        'catalog': 'pooja-samagri',
+        'type': 'PUJA_KIT',
+      },
+    );
+    return (res.data['data']['items'] as List).cast<Map<String, dynamic>>();
+  }
+
   Future<List<Map<String, dynamic>>> listSamagri({String market = 'IN'}) async {
     final res = await _api.dio.get(
       '/products',

@@ -70,6 +70,37 @@ describe('Auth (e2e)', () => {
     await prisma.user.deleteMany({ where: { phoneE164: '+919123456789' } });
   });
 
+  it('registers with email/password/mobile then logs in', async () => {
+    const email = `devotee.${Date.now()}@example.com`;
+    const phone = '9988776655';
+
+    const registerRes = await request(app.getHttpServer())
+      .post('/api/v1/auth/register')
+      .send({
+        email,
+        password: 'secret123',
+        countryCode: '91',
+        phone,
+        fullName: 'Email User',
+        deviceId: 'e2e-password',
+      })
+      .expect(200);
+
+    expect(registerRes.body.data.tokens.accessToken).toBeDefined();
+    expect(registerRes.body.data.user.email).toBe(email);
+    expect(registerRes.body.data.user.isNewUser).toBe(true);
+
+    const loginRes = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ email, password: 'secret123', deviceId: 'e2e-password' })
+      .expect(200);
+
+    expect(loginRes.body.data.user.email).toBe(email);
+    expect(loginRes.body.data.user.isNewUser).toBe(false);
+
+    await prisma.user.deleteMany({ where: { email } });
+  });
+
   it('continues with Google social login and returns /me', async () => {
     const subject = `e2e-google-${Date.now()}`;
     const socialRes = await request(app.getHttpServer())

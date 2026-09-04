@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Pooja Store'**
+  /// **'Pavitra Seva'**
   String get appTitle;
 
   /// No description provided for @languageEnglish.
@@ -239,7 +239,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeSamagriSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Everyday items, Ganesh homam, and Varalakshmi kits'**
+  /// **'Festival & daily pooja essentials under one catalogue.'**
   String get homeSamagriSubtitle;
 
   /// No description provided for @homeOrdersTitle.
@@ -263,7 +263,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Sign in with your mobile number'**
+  /// **'Sign in with your email and password'**
   String get loginSubtitle;
 
   /// No description provided for @loginOtpSubtitle.
@@ -818,6 +818,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
   /// No description provided for @guidesTitle.
   ///
   /// In en, this message translates to:
@@ -1051,6 +1057,1338 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refresh'**
   String get refresh;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @guest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get guest;
+
+  /// No description provided for @homeTodayPanchang.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Panchang'**
+  String get homeTodayPanchang;
+
+  /// No description provided for @homeUpcomingFestivals.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming Festivals'**
+  String get homeUpcomingFestivals;
+
+  /// No description provided for @homeFestivalsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Pooja Samagri kits for each festival — ready to book.'**
+  String get homeFestivalsSubtitle;
+
+  /// No description provided for @bookSamagriKit.
+  ///
+  /// In en, this message translates to:
+  /// **'Book samagri kit'**
+  String get bookSamagriKit;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
+
+  /// No description provided for @homeMoreServices.
+  ///
+  /// In en, this message translates to:
+  /// **'More Services'**
+  String get homeMoreServices;
+
+  /// No description provided for @comingSoonBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'SOON'**
+  String get comingSoonBadge;
+
+  /// No description provided for @panchangShortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Panchang'**
+  String get panchangShortTitle;
+
+  /// No description provided for @panchangSunriseRahuKalam.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise {sunrise} · Rahu Kalam {rahu}'**
+  String panchangSunriseRahuKalam(String sunrise, String rahu);
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navSamagri.
+  ///
+  /// In en, this message translates to:
+  /// **'Samagri'**
+  String get navSamagri;
+
+  /// No description provided for @navPoojaris.
+  ///
+  /// In en, this message translates to:
+  /// **'Poojaris'**
+  String get navPoojaris;
+
+  /// No description provided for @navAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get navAccount;
+
+  /// No description provided for @profileGuestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore freely'**
+  String get profileGuestTitle;
+
+  /// No description provided for @profileGuestSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse festivals and Pooja Samagri without signing in. Sign in when you are ready to checkout.'**
+  String get profileGuestSubtitle;
+
+  /// No description provided for @signInRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in / Register'**
+  String get signInRegister;
+
+  /// No description provided for @browseSamagri.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Pooja Samagri'**
+  String get browseSamagri;
+
+  /// No description provided for @devotee.
+  ///
+  /// In en, this message translates to:
+  /// **'Devotee'**
+  String get devotee;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileTitle;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @personalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Details'**
+  String get personalDetails;
+
+  /// No description provided for @savedAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Addresses'**
+  String get savedAddresses;
+
+  /// No description provided for @familyMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Members'**
+  String get familyMembers;
+
+  /// No description provided for @orderHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Order History'**
+  String get orderHistory;
+
+  /// No description provided for @pujariDesk.
+  ///
+  /// In en, this message translates to:
+  /// **'Pujari Desk'**
+  String get pujariDesk;
+
+  /// No description provided for @joinAsPujari.
+  ///
+  /// In en, this message translates to:
+  /// **'Join as a pujari'**
+  String get joinAsPujari;
+
+  /// No description provided for @admin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get admin;
+
+  /// No description provided for @priestBookingHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Priest Booking History'**
+  String get priestBookingHistory;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @wishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Wishlist'**
+  String get wishlist;
+
+  /// No description provided for @support.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get support;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @logOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get logOut;
+
+  /// No description provided for @emptyCartBrowseSamagri.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Pooja Samagri to get started.'**
+  String get emptyCartBrowseSamagri;
+
+  /// No description provided for @cartQtyLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Qty {qty} · {price}'**
+  String cartQtyLine(int qty, String price);
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @itemsSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Items subtotal'**
+  String get itemsSubtotal;
+
+  /// No description provided for @deliveryCharge.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery charge'**
+  String get deliveryCharge;
+
+  /// No description provided for @total.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @speciality.
+  ///
+  /// In en, this message translates to:
+  /// **'Speciality'**
+  String get speciality;
+
+  /// No description provided for @howToDoPooja.
+  ///
+  /// In en, this message translates to:
+  /// **'How to do the Pooja'**
+  String get howToDoPooja;
+
+  /// No description provided for @poojaGuidesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pooja samagri by pooja'**
+  String get poojaGuidesTitle;
+
+  /// No description provided for @poojaGuidesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with the basic kit used in every home pooja. Add a deity or festival kit only for the extras that pooja needs.'**
+  String get poojaGuidesSubtitle;
+
+  /// No description provided for @commonSamagriTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Common items'**
+  String get commonSamagriTitle;
+
+  /// No description provided for @deityPoojaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deity'**
+  String get deityPoojaTitle;
+
+  /// No description provided for @festivalPoojaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Festivals'**
+  String get festivalPoojaTitle;
+
+  /// No description provided for @vrathamPoojaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vratams'**
+  String get vrathamPoojaTitle;
+
+  /// No description provided for @specialForThisPooja.
+  ///
+  /// In en, this message translates to:
+  /// **'Special items for this pooja'**
+  String get specialForThisPooja;
+
+  /// No description provided for @pairWithBasicKit.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy basic pooja kit'**
+  String get pairWithBasicKit;
+
+  /// No description provided for @pairWithBasicHint.
+  ///
+  /// In en, this message translates to:
+  /// **'These extras go with the common samagri — turmeric, kumkum, flowers, camphor, and the rest of the basic kit.'**
+  String get pairWithBasicHint;
+
+  /// No description provided for @deitySpecificKit.
+  ///
+  /// In en, this message translates to:
+  /// **'Deity extras kit'**
+  String get deitySpecificKit;
+
+  /// No description provided for @festivalVrathamKit.
+  ///
+  /// In en, this message translates to:
+  /// **'Festival / vratam kit'**
+  String get festivalVrathamKit;
+
+  /// No description provided for @commonItemsAlsoNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Also keep the everyday pooja items (listed under Common).'**
+  String get commonItemsAlsoNeeded;
+
+  /// No description provided for @viewCommonSamagri.
+  ///
+  /// In en, this message translates to:
+  /// **'View common samagri'**
+  String get viewCommonSamagri;
+
+  /// No description provided for @poojaGuideDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Items can vary by region, family custom, and your pujari’s vidhi.'**
+  String get poojaGuideDisclaimer;
+
+  /// No description provided for @browsePoojaGuides.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse by pooja'**
+  String get browsePoojaGuides;
+
+  /// No description provided for @requiredItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Required Items'**
+  String get requiredItems;
+
+  /// No description provided for @chooseOptionalItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose optional items'**
+  String get chooseOptionalItems;
+
+  /// No description provided for @optionalItemsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'These are not packed unless you select them.'**
+  String get optionalItemsHint;
+
+  /// No description provided for @ganeshPoojaItemsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Pooja items'**
+  String get ganeshPoojaItemsTab;
+
+  /// No description provided for @ganeshHomamTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Homam'**
+  String get ganeshHomamTab;
+
+  /// No description provided for @ganeshPoojaListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vinayaka Chavithi Pooja Samagri'**
+  String get ganeshPoojaListTitle;
+
+  /// No description provided for @ganeshHomamListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ganesh Homam Samagri'**
+  String get ganeshHomamListTitle;
+
+  /// No description provided for @completePoojaKit.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Pooja Kit'**
+  String get completePoojaKit;
+
+  /// No description provided for @bookPoojari.
+  ///
+  /// In en, this message translates to:
+  /// **'Book Poojari'**
+  String get bookPoojari;
+
+  /// No description provided for @signInToAddCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to add samagri to your cart'**
+  String get signInToAddCart;
+
+  /// No description provided for @selectAtLeastOneItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one pooja item.'**
+  String get selectAtLeastOneItem;
+
+  /// No description provided for @kitNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Kit not found'**
+  String get kitNotFound;
+
+  /// No description provided for @selectPoojaItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Select pooja items'**
+  String get selectPoojaItems;
+
+  /// No description provided for @addItemsToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {count} items to cart'**
+  String addItemsToCart(int count);
+
+  /// No description provided for @completeFestivalSamagri.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete festival samagri'**
+  String get completeFestivalSamagri;
+
+  /// No description provided for @itemsIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items included'**
+  String itemsIncluded(int count);
+
+  /// No description provided for @loginHeaderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Devotees and pujaris sign in with email, Google, or Apple'**
+  String get loginHeaderSubtitle;
+
+  /// No description provided for @welcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get welcome;
+
+  /// No description provided for @loginWelcomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to continue your seva'**
+  String get loginWelcomeSubtitle;
+
+  /// No description provided for @emailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'EMAIL'**
+  String get emailLabel;
+
+  /// No description provided for @emailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'you@example.com'**
+  String get emailHint;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PASSWORD'**
+  String get passwordLabel;
+
+  /// No description provided for @passwordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get passwordHint;
+
+  /// No description provided for @signInButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signInButton;
+
+  /// No description provided for @signInValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email and a password of at least 8 characters.'**
+  String get signInValidation;
+
+  /// No description provided for @noAccountSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'New here? Create an account'**
+  String get noAccountSignUp;
+
+  /// No description provided for @createAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get createAccountTitle;
+
+  /// No description provided for @createAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email, password, and mobile number'**
+  String get createAccountSubtitle;
+
+  /// No description provided for @createAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get createAccountButton;
+
+  /// No description provided for @signUpValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter email, a password of at least 8 characters, and your mobile number.'**
+  String get signUpValidation;
+
+  /// No description provided for @haveAccountSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get haveAccountSignIn;
+
+  /// No description provided for @mobileNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'MOBILE NUMBER'**
+  String get mobileNumberLabel;
+
+  /// No description provided for @phoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'98765 43210'**
+  String get phoneHint;
+
+  /// No description provided for @orContinueWith.
+  ///
+  /// In en, this message translates to:
+  /// **'or continue with'**
+  String get orContinueWith;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueWithGoogle;
+
+  /// No description provided for @continueWithApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Apple'**
+  String get continueWithApple;
+
+  /// No description provided for @pujariApplyPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you a pujari? Apply to join'**
+  String get pujariApplyPrompt;
+
+  /// No description provided for @termsPrivacyAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you agree to our Terms of Service and Privacy Policy'**
+  String get termsPrivacyAgreement;
+
+  /// No description provided for @verifyOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify OTP'**
+  String get verifyOtp;
+
+  /// No description provided for @otpSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to +91 {phone} ·'**
+  String otpSentTo(String phone);
+
+  /// No description provided for @otpDidntReceive.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive the code?'**
+  String get otpDidntReceive;
+
+  /// No description provided for @otpResendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}'**
+  String otpResendIn(String seconds);
+
+  /// No description provided for @otpResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend'**
+  String get otpResend;
+
+  /// No description provided for @onboardingSlide1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Pooja Kits'**
+  String get onboardingSlide1Title;
+
+  /// No description provided for @onboardingSlide1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Order curated kits for every festival and family function — nothing missing, nothing extra.'**
+  String get onboardingSlide1Desc;
+
+  /// No description provided for @onboardingSlide1Label.
+  ///
+  /// In en, this message translates to:
+  /// **'FESTIVAL KIT'**
+  String get onboardingSlide1Label;
+
+  /// No description provided for @onboardingSlide2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Poojaris'**
+  String get onboardingSlide2Title;
+
+  /// No description provided for @onboardingSlide2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Book experienced, background-verified priests for home visits or online consultations.'**
+  String get onboardingSlide2Desc;
+
+  /// No description provided for @onboardingSlide2Label.
+  ///
+  /// In en, this message translates to:
+  /// **'POOJARI PORTRAIT'**
+  String get onboardingSlide2Label;
+
+  /// No description provided for @onboardingSlide3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Same-Day Delivery'**
+  String get onboardingSlide3Title;
+
+  /// No description provided for @onboardingSlide3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh flowers, agarbatti and ritual items from nearby pooja stores, delivered fast.'**
+  String get onboardingSlide3Desc;
+
+  /// No description provided for @onboardingSlide3Label.
+  ///
+  /// In en, this message translates to:
+  /// **'DELIVERY VAN'**
+  String get onboardingSlide3Label;
+
+  /// No description provided for @onboardingSlide4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Never Miss a Festival'**
+  String get onboardingSlide4Title;
+
+  /// No description provided for @onboardingSlide4Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized reminders for every festival and auspicious date, right on time.'**
+  String get onboardingSlide4Desc;
+
+  /// No description provided for @onboardingSlide4Label.
+  ///
+  /// In en, this message translates to:
+  /// **'CALENDAR'**
+  String get onboardingSlide4Label;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @panchangDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Panchang times are approximate civil calculations for general guidance. Consult your family priest for ritual muhurat timing.'**
+  String get panchangDisclaimer;
+
+  /// No description provided for @panchangTithi.
+  ///
+  /// In en, this message translates to:
+  /// **'Tithi'**
+  String get panchangTithi;
+
+  /// No description provided for @panchangYoga.
+  ///
+  /// In en, this message translates to:
+  /// **'Yoga'**
+  String get panchangYoga;
+
+  /// No description provided for @panchangKarana.
+  ///
+  /// In en, this message translates to:
+  /// **'Karana'**
+  String get panchangKarana;
+
+  /// No description provided for @sunrise.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise'**
+  String get sunrise;
+
+  /// No description provided for @sunset.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset'**
+  String get sunset;
+
+  /// No description provided for @moonrise.
+  ///
+  /// In en, this message translates to:
+  /// **'Moonrise'**
+  String get moonrise;
+
+  /// No description provided for @moonset.
+  ///
+  /// In en, this message translates to:
+  /// **'Moonset'**
+  String get moonset;
+
+  /// No description provided for @muhurats.
+  ///
+  /// In en, this message translates to:
+  /// **'Muhurats'**
+  String get muhurats;
+
+  /// No description provided for @rahuKalam.
+  ///
+  /// In en, this message translates to:
+  /// **'Rahu Kalam'**
+  String get rahuKalam;
+
+  /// No description provided for @yamagandam.
+  ///
+  /// In en, this message translates to:
+  /// **'Yamagandam'**
+  String get yamagandam;
+
+  /// No description provided for @gulika.
+  ///
+  /// In en, this message translates to:
+  /// **'Gulika'**
+  String get gulika;
+
+  /// No description provided for @abhijitMuhurat.
+  ///
+  /// In en, this message translates to:
+  /// **'Abhijit Muhurat'**
+  String get abhijitMuhurat;
+
+  /// No description provided for @amritKalam.
+  ///
+  /// In en, this message translates to:
+  /// **'Amrit Kalam'**
+  String get amritKalam;
+
+  /// No description provided for @guidanceEmptyPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your birth profile (rasi + city) to unlock personalized daily guidance.'**
+  String get guidanceEmptyPrompt;
+
+  /// No description provided for @guidanceRecommendedPuja.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended puja'**
+  String get guidanceRecommendedPuja;
+
+  /// No description provided for @guidanceLuckyColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lucky color'**
+  String get guidanceLuckyColor;
+
+  /// No description provided for @guidanceDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Direction'**
+  String get guidanceDirection;
+
+  /// No description provided for @guidanceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Number'**
+  String get guidanceNumber;
+
+  /// No description provided for @guidanceCareer.
+  ///
+  /// In en, this message translates to:
+  /// **'Career'**
+  String get guidanceCareer;
+
+  /// No description provided for @guidanceFinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Finance'**
+  String get guidanceFinance;
+
+  /// No description provided for @guidanceHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get guidanceHealth;
+
+  /// No description provided for @guidanceTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get guidanceTravel;
+
+  /// No description provided for @todayBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get todayBadge;
+
+  /// No description provided for @signInToSaveBirthProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save your birth profile'**
+  String get signInToSaveBirthProfile;
+
+  /// No description provided for @birthProfileIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter name, date, time and place. We compute your janma rāśi (Moon sign) and today\'s guidance.'**
+  String get birthProfileIntro;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get fullName;
+
+  /// No description provided for @dateOfBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth'**
+  String get dateOfBirth;
+
+  /// No description provided for @birthTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth time'**
+  String get birthTime;
+
+  /// No description provided for @birthPlaceCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth place (city)'**
+  String get birthPlaceCity;
+
+  /// No description provided for @birthPlaceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hyderabad, Bengaluru, …'**
+  String get birthPlaceHint;
+
+  /// No description provided for @cityForDailyPanchang.
+  ///
+  /// In en, this message translates to:
+  /// **'City for daily panchang'**
+  String get cityForDailyPanchang;
+
+  /// No description provided for @computingRasi.
+  ///
+  /// In en, this message translates to:
+  /// **'Computing rāśi…'**
+  String get computingRasi;
+
+  /// No description provided for @fetchRasiPalalu.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch Rasi Palalu'**
+  String get fetchRasiPalalu;
+
+  /// No description provided for @rasiMoonSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Rāśi (Moon sign)'**
+  String get rasiMoonSign;
+
+  /// No description provided for @nakshatra.
+  ///
+  /// In en, this message translates to:
+  /// **'Nakshatra'**
+  String get nakshatra;
+
+  /// No description provided for @gotramOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Gotram (optional)'**
+  String get gotramOptional;
+
+  /// No description provided for @todayForYourRasi.
+  ///
+  /// In en, this message translates to:
+  /// **'Today for your rāśi'**
+  String get todayForYourRasi;
+
+  /// No description provided for @guidanceSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get guidanceSummary;
+
+  /// No description provided for @deliveryAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Address'**
+  String get deliveryAddress;
+
+  /// No description provided for @addressLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Address line'**
+  String get addressLine;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @state.
+  ///
+  /// In en, this message translates to:
+  /// **'State'**
+  String get state;
+
+  /// No description provided for @postalCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Postal code'**
+  String get postalCode;
+
+  /// No description provided for @ifBoughtSeparately.
+  ///
+  /// In en, this message translates to:
+  /// **'If bought separately'**
+  String get ifBoughtSeparately;
+
+  /// No description provided for @individualPricesKit.
+  ///
+  /// In en, this message translates to:
+  /// **'Individual prices · kit {price}'**
+  String individualPricesKit(String price);
+
+  /// No description provided for @festivalToday.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get festivalToday;
+
+  /// No description provided for @festivalInOneDay.
+  ///
+  /// In en, this message translates to:
+  /// **'IN 1 DAY'**
+  String get festivalInOneDay;
+
+  /// No description provided for @festivalInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'IN {days} DAYS'**
+  String festivalInDays(int days);
+
+  /// No description provided for @panchangNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: {note}'**
+  String panchangNote(String note);
+
+  /// No description provided for @gotramNakshatramLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Gotram: {gotram} · Nakshatram: {nakshatram}'**
+  String gotramNakshatramLine(String gotram, String nakshatram);
+
+  /// No description provided for @sessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please sign in again.'**
+  String get sessionExpired;
+
+  /// No description provided for @enterDobFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter date of birth as YYYY-MM-DD'**
+  String get enterDobFormat;
+
+  /// No description provided for @enterBirthTimeFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter birth time as HH:MM'**
+  String get enterBirthTimeFormat;
+
+  /// No description provided for @selectCityCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a city for birth place coordinates'**
+  String get selectCityCoordinates;
+
+  /// No description provided for @enterValidDob.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid date of birth (YYYY-MM-DD)'**
+  String get enterValidDob;
+
+  /// No description provided for @birthTimeHhMm.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth time must be HH:MM (24-hour)'**
+  String get birthTimeHhMm;
+
+  /// No description provided for @checkDateTimeRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Check date (YYYY-MM-DD) and time (HH:MM), then try again.'**
+  String get checkDateTimeRetry;
+
+  /// No description provided for @janmaRasiLagna.
+  ///
+  /// In en, this message translates to:
+  /// **'Janma rāśi: {rasi} · Lagna: {lagna}'**
+  String janmaRasiLagna(String rasi, String lagna);
+
+  /// No description provided for @guidanceLuckyDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Lucky direction'**
+  String get guidanceLuckyDirection;
+
+  /// No description provided for @guidanceLuckyNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Lucky number'**
+  String get guidanceLuckyNumber;
+
+  /// No description provided for @scanPoojariListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan poojari list'**
+  String get scanPoojariListTitle;
+
+  /// No description provided for @scanPoojariListIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a photo or paste the poojari’s written list. We’ll read the items and match them to samagri in the shop.'**
+  String get scanPoojariListIntro;
+
+  /// No description provided for @scanTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get scanTakePhoto;
+
+  /// No description provided for @scanChoosePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get scanChoosePhoto;
+
+  /// No description provided for @scanPasteListLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Or paste list text'**
+  String get scanPasteListLabel;
+
+  /// No description provided for @scanPasteListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pasupu, Kumkum, Ghee, Neiyy… (Telugu or English)'**
+  String get scanPasteListHint;
+
+  /// No description provided for @scanFindItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Find items'**
+  String get scanFindItems;
+
+  /// No description provided for @scanReadingList.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading list…'**
+  String get scanReadingList;
+
+  /// No description provided for @scanExtractedText.
+  ///
+  /// In en, this message translates to:
+  /// **'Extracted text'**
+  String get scanExtractedText;
+
+  /// No description provided for @scanNoTextFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No text found.'**
+  String get scanNoTextFound;
+
+  /// No description provided for @scanMatchedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched items ({count})'**
+  String scanMatchedItems(int count);
+
+  /// No description provided for @scanNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No samagri items matched. Try clearer text or paste one item per line.'**
+  String get scanNoMatches;
+
+  /// No description provided for @scanUnmatchedLines.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not match these lines'**
+  String get scanUnmatchedLines;
+
+  /// No description provided for @scanSelectedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected total: {total}'**
+  String scanSelectedTotal(String total);
+
+  /// No description provided for @scanAddToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to cart'**
+  String get scanAddToCart;
+
+  /// No description provided for @scanAddedToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched samagri added to cart'**
+  String get scanAddedToCart;
+
+  /// No description provided for @scanSelectItemsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one matched item.'**
+  String get scanSelectItemsError;
+
+  /// No description provided for @scanSignInToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to add scanned samagri to your cart'**
+  String get scanSignInToAdd;
+
+  /// No description provided for @scanListEmptyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the poojari list or upload a photo first.'**
+  String get scanListEmptyError;
+
+  /// No description provided for @addingToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding…'**
+  String get addingToCart;
+
+  /// No description provided for @scanListAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan list'**
+  String get scanListAction;
+
+  /// No description provided for @scanSavedLists.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved lists'**
+  String get scanSavedLists;
+
+  /// No description provided for @scanSaveForNextPuja.
+  ///
+  /// In en, this message translates to:
+  /// **'Save for next puja'**
+  String get scanSaveForNextPuja;
+
+  /// No description provided for @scanSaveListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'List name'**
+  String get scanSaveListTitle;
+
+  /// No description provided for @scanSaveListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ganesh puja list'**
+  String get scanSaveListHint;
+
+  /// No description provided for @scanListSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'List saved for next puja'**
+  String get scanListSaved;
+
+  /// No description provided for @scanSignInToSaveList.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save this list'**
+  String get scanSignInToSaveList;
+
+  /// No description provided for @scanQty.
+  ///
+  /// In en, this message translates to:
+  /// **'Qty'**
+  String get scanQty;
+
+  /// No description provided for @scanDidYouMean.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you mean?'**
+  String get scanDidYouMean;
+
+  /// No description provided for @scanDeleteSavedList.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete saved list'**
+  String get scanDeleteSavedList;
+
+  /// No description provided for @scanNoSavedLists.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved lists yet'**
+  String get scanNoSavedLists;
+
+  /// No description provided for @samagriTwoOptionsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload your poojari’s written list, or open a list your poojari sent you in the app after booking.'**
+  String get samagriTwoOptionsIntro;
+
+  /// No description provided for @poojariSamagriTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send samagri list'**
+  String get poojariSamagriTitle;
+
+  /// No description provided for @poojariSamagriIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Type or paste the samagri items. The devotee will see this list in their app and can add items to cart.'**
+  String get poojariSamagriIntro;
+
+  /// No description provided for @poojariSamagriIntroFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Send samagri items to {devotee}. They will see this list in the app and can add to cart.'**
+  String poojariSamagriIntroFor(String devotee);
+
+  /// No description provided for @poojariSamagriSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to devotee'**
+  String get poojariSamagriSend;
+
+  /// No description provided for @poojariSamagriSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Samagri list sent to devotee'**
+  String get poojariSamagriSent;
+
+  /// No description provided for @receivedSamagriLists.
+  ///
+  /// In en, this message translates to:
+  /// **'From your poojari'**
+  String get receivedSamagriLists;
+
+  /// No description provided for @receivedSamagriTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Poojari samagri list'**
+  String get receivedSamagriTitle;
+
+  /// No description provided for @receivedSamagriFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {priestName}'**
+  String receivedSamagriFrom(String priestName);
+
+  /// No description provided for @receivedSamagriNew.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get receivedSamagriNew;
+
+  /// No description provided for @notificationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get notificationsEmpty;
+
+  /// No description provided for @notificationsSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see your notifications'**
+  String get notificationsSignIn;
+
+  /// No description provided for @notificationsMarkAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get notificationsMarkAllRead;
 }
 
 class _AppLocalizationsDelegate

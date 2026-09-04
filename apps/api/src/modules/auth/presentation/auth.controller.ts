@@ -22,7 +22,10 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { Public } from '../../../common/decorators/public.decorator';
 import type { AuthenticatedUser } from '../domain/authenticated-user';
 import { RequestOtpUseCase } from '../application/use-cases/request-otp.use-case';
+import { LoginWithPasswordUseCase } from '../application/use-cases/login-with-password.use-case';
+import { RegisterAccountUseCase } from '../application/use-cases/register-account.use-case';
 import { SocialLoginUseCase } from '../application/use-cases/social-login.use-case';
+import { ChangePasswordUseCase } from '../application/use-cases/change-password.use-case';
 import { VerifyOtpUseCase } from '../application/use-cases/verify-otp.use-case';
 import { TokenService } from '../infrastructure/token.service';
 import { PrismaService } from '../../../core/database/prisma.service';
@@ -33,6 +36,7 @@ import {
   SocialLoginDto,
   VerifyOtpDto,
 } from './dto/request-otp.dto';
+import { LoginDto, RegisterDto, ChangePasswordDto } from './dto/password-auth.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { SocialProvider } from '@prisma/client';
 
@@ -42,6 +46,9 @@ export class AuthController {
   constructor(
     private readonly requestOtp: RequestOtpUseCase,
     private readonly verifyOtp: VerifyOtpUseCase,
+    private readonly registerAccount: RegisterAccountUseCase,
+    private readonly loginWithPassword: LoginWithPasswordUseCase,
+    private readonly changePassword: ChangePasswordUseCase,
     private readonly socialLogin: SocialLoginUseCase,
     private readonly tokens: TokenService,
     private readonly prisma: PrismaService,
@@ -77,6 +84,43 @@ export class AuthController {
       deviceId: dto.deviceId,
       fullName: dto.fullName,
       preferredLanguage: dto.preferredLanguage,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return { success: true, data: result };
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('register')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Create an account with email, password, and mobile' })
+  async register(@Body() dto: RegisterDto, @Req() req: Request) {
+    const result = await this.registerAccount.execute({
+      email: dto.email,
+      password: dto.password,
+      countryCode: dto.countryCode,
+      phone: dto.phone,
+      fullName: dto.fullName,
+      preferredLanguage: dto.preferredLanguage,
+      deviceId: dto.deviceId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return { success: true, data: result };
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sign in with email and password' })
+  async login(@Body() dto: LoginDto, @Req() req: Request) {
+    const result = await this.loginWithPassword.execute({
+      email: dto.email,
+      password: dto.password,
+      preferredLanguage: dto.preferredLanguage,
+      deviceId: dto.deviceId,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
@@ -147,22 +191,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOkResponse({ description: 'Current authenticated user' })
   async me(@CurrentUser() authUser: AuthenticatedUser) {
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: { id: authUser.id },
-      select: {
-        id: true,
-        phoneE164: true,
-        email: true,
-        fullName: true,
-        role: true,
-        status: true,
-        preferredLanguage: true,
-        timezone: true,
-        lastLoginAt: true,
-        createdAt: true,
-      },
-    });
-    return { success: true, data: user };
+    return { success: true, data: await this.publicUser(authUser.id) };
   }
 
   @Patch('me')
@@ -181,7 +210,7 @@ export class AuthController {
         throw new ConflictException('Email is already in use');
       }
     }
-    const user = await this.prisma.user.update({
+    await this.prisma.user.update({
       where: { id: authUser.id },
       data: {
         ...(dto.fullName !== undefined ? { fullName: dto.fullName } : {}),
@@ -193,6 +222,29 @@ export class AuthController {
           : {}),
         ...(dto.timezone !== undefined ? { timezone: dto.timezone } : {}),
       },
+    });
+    return { success: true, data: await this.publicUser(authUser.id) };
+  }
+
+  @Post('change-password')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change or set my password' })
+  async updatePassword(
+    @CurrentUser() authUser: AuthenticatedUser,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    const data = await this.changePassword.execute({
+      userId: authUser.id,
+      currentPassword: dto.currentPassword,
+      newPassword: dto.newPassword,
+    });
+    return { success: true, data };
+  }
+
+  private async publicUser(userId: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
       select: {
         id: true,
         phoneE164: true,
@@ -204,8 +256,10 @@ export class AuthController {
         timezone: true,
         lastLoginAt: true,
         createdAt: true,
+        passwordHash: true,
       },
     });
-    return { success: true, data: user };
+    const { passwordHash, ...safe } = user;
+    return { ...safe, hasPassword: Boolean(passwordHash) };
   }
 }

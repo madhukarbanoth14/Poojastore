@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,17 +13,19 @@ class _FakeAuthRepository implements AuthRepository {
   Future<AuthUser?> restoreSession() async => null;
 
   @override
-  Future<String?> requestOtp({
-    required String countryCode,
-    required String phone,
+  Future<AuthSession> login({
+    required String email,
+    required String password,
+    String? preferredLanguage,
   }) async =>
-      null;
+      throw UnimplementedError();
 
   @override
-  Future<AuthSession> verifyOtp({
+  Future<AuthSession> register({
+    required String email,
+    required String password,
     required String countryCode,
     required String phone,
-    required String code,
     String? fullName,
     String? preferredLanguage,
   }) async =>
@@ -59,8 +59,8 @@ class _FakeAuthRepository implements AuthRepository {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('login screen shows Send OTP when unauthenticated', (tester) async {
-    tester.view.physicalSize = const Size(800, 900);
+  testWidgets('login screen shows email sign-in when unauthenticated', (tester) async {
+    tester.view.physicalSize = const Size(800, 1200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -81,7 +81,9 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('Pooja Panchang'), findsOneWidget);
-    expect(find.text('Send OTP'), findsOneWidget);
+    expect(find.text('Pavitra Seva'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(find.text('Continue with Apple'), findsOneWidget);
   });
 }

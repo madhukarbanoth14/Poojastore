@@ -21,6 +21,22 @@ describe('computePanchang', () => {
     expect(payload.dateLabel).toBe('13 Aug 2026');
     expect(payload.weekday).toBe('Thursday');
     expect(payload.summary).toBe('Thursday · 13 Aug 2026');
+    expect(payload.samvatsaram).toBe('Parabhava');
+    expect(payload.ayana).toBe('Dakshinayana');
+    expect(payload.suryaRashi).toBeTruthy();
+    expect(payload.chandraRashi).toBeTruthy();
+    expect(payload.masam).toBeTruthy();
+    expect(payload.rithu).toBeTruthy();
+  });
+
+  it('uses Parabhava after Ugadi 2026 and Vishvavasu before it', () => {
+    const hyd = {
+      latitude: 17.385,
+      longitude: 78.4867,
+      timezone: 'Asia/Kolkata',
+    };
+    expect(computePanchang('2026-08-12', hyd).samvatsaram).toBe('Parabhava');
+    expect(computePanchang('2026-01-10', hyd).samvatsaram).toBe('Vishvavasu');
   });
 
   it('uses the civil calendar date, not tithi, in the home summary', () => {

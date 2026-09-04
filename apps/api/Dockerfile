@@ -8,10 +8,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate && npm run build && test -f dist/main.js \
-  && npx tsc prisma/seed.ts prisma/samagri-catalog.ts \
+  && npx tsc prisma/seed.ts prisma/samagri-catalog.ts prisma/sync-catalog.ts \
     --esModuleInterop --module commonjs --moduleResolution node \
     --skipLibCheck --target ES2022 --rootDir prisma --outDir dist/prisma \
-  && test -f dist/prisma/seed.js
+  && test -f dist/prisma/seed.js && test -f dist/prisma/sync-catalog.js
 
 FROM node:22-alpine AS runner
 WORKDIR /app
@@ -21,4 +21,4 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/prisma/sync-catalog.js && node dist/main.js"]

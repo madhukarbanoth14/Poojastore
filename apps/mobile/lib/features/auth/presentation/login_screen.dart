@@ -1,17 +1,13 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import '../../../core/config/app_config.dart';
 import '../../../core/i18n/language_switcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/diya_mark.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../l10n/l10n.dart';
 import 'auth_controller.dart';
+import 'social_sign_in.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -21,166 +17,68 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _phoneController = TextEditingController();
-  final _otpController = TextEditingController();
-  bool _otpSent = false;
-  int _otpTimer = 30;
-  Timer? _timer;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscure = true;
+  bool _finishingLogin = false;
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    _phoneController.dispose();
-    _otpController.dispose();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    _timer?.cancel();
-    setState(() => _otpTimer = 30);
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_otpTimer <= 1) {
-        timer.cancel();
-        setState(() => _otpTimer = 0);
-        return;
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(authControllerProvider).isAuthenticated) {
+        _finishLogin();
       }
-      setState(() => _otpTimer--);
     });
   }
 
-  Future<void> _requestOtp() async {
-    final ok = await ref.read(authControllerProvider.notifier).requestOtp(
-          countryCode: '91',
-          phone: _phoneController.text.trim(),
-        );
-    if (ok && mounted) {
-      setState(() => _otpSent = true);
-      _startTimer();
-    }
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
-  Future<void> _afterAuthSuccess() async {
-    if (!mounted) return;
+  void _finishLogin() {
+    if (!mounted || _finishingLogin) return;
+    if (!ref.read(authControllerProvider).isAuthenticated) return;
+    _finishingLogin = true;
+
     final next = GoRouterState.of(context).uri.queryParameters['next'];
     if (next != null && next.isNotEmpty) {
       context.go(next);
-    } else if (context.canPop()) {
-      context.pop();
+      return;
+    }
+    if (context.canPop()) {
+      context.pop(true);
     } else {
       context.go('/');
     }
   }
 
-  Future<void> _verifyOtp() async {
-    final ok = await ref.read(authControllerProvider.notifier).verifyOtp(
-          countryCode: '91',
-          phone: _phoneController.text.trim(),
-          code: _otpController.text.trim(),
-        );
-    if (ok) await _afterAuthSuccess();
-  }
-
-  bool _googleReady = false;
-
-  Future<void> _ensureGoogle() async {
-    if (_googleReady) return;
-    await GoogleSignIn.instance.initialize(
-      serverClientId: AppConfig.googleServerClientId.isEmpty
-          ? null
-          : AppConfig.googleServerClientId,
-    );
-    _googleReady = true;
-  }
-
-  Future<void> _continueWithGoogle() async {
-    final auth = ref.read(authControllerProvider.notifier);
-    try {
-      await _ensureGoogle();
-      if (!GoogleSignIn.instance.supportsAuthenticate()) {
-        throw StateError('Google Sign-In is not supported on this device');
-      }
-      final account = await GoogleSignIn.instance.authenticate(
-        scopeHint: const ['email', 'profile'],
-      );
-      final idToken = account.authentication.idToken;
-      final ok = await auth.socialLogin(
-        provider: 'GOOGLE',
-        idToken: idToken,
-        subject: account.id,
-        email: account.email,
-        fullName: account.displayName,
-      );
-      if (ok) await _afterAuthSuccess();
-    } on GoogleSignInException catch (e) {
-      if (e.code == GoogleSignInExceptionCode.canceled) return;
-      if (!mounted) return;
+  Future<void> _signIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppConfig.allowDemoSocial
-                ? 'Google Sign-In failed. Configure GOOGLE_SERVER_CLIENT_ID or use phone OTP.'
-                : 'Google Sign-In is not configured. Use phone OTP.',
-          ),
-        ),
+        SnackBar(content: Text(context.l10n.signInValidation)),
       );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Google Sign-In failed. Use phone OTP.'),
-        ),
-      );
+      return;
     }
-  }
-
-  Future<void> _continueWithApple() async {
-    final auth = ref.read(authControllerProvider.notifier);
-    try {
-      final available = await SignInWithApple.isAvailable();
-      if (!available) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Apple Sign-In is not available on this device.'),
-          ),
+    await ref.read(authControllerProvider.notifier).login(
+          email: email,
+          password: password,
         );
-        return;
-      }
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-      final given = credential.givenName;
-      final family = credential.familyName;
-      final fullName = [given, family].whereType<String>().join(' ').trim();
-      final ok = await auth.socialLogin(
-        provider: 'APPLE',
-        idToken: credential.identityToken,
-        subject: credential.userIdentifier,
-        email: credential.email,
-        fullName: fullName.isEmpty ? null : fullName,
-      );
-      if (ok) await _afterAuthSuccess();
-    } on SignInWithAppleAuthorizationException catch (e) {
-      if (e.code == AuthorizationErrorCode.canceled) return;
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Apple Sign-In failed. Use phone OTP.'),
-        ),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      if (previous?.isAuthenticated != true && next.isAuthenticated) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _finishLogin());
+      }
+    });
+
     final auth = ref.watch(authControllerProvider);
     final l10n = context.l10n;
 
@@ -197,26 +95,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   Row(
                     children: [
-                      if (context.canPop())
-                        IconButton(
-                          onPressed: () => context.pop(),
-                          icon: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: AppColors.cream,
-                            size: 18,
-                          ),
-                          tooltip: 'Back',
-                        )
-                      else
-                        IconButton(
-                          onPressed: () => context.go('/'),
-                          icon: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: AppColors.cream,
-                            size: 18,
-                          ),
-                          tooltip: 'Home',
+                      IconButton(
+                        onPressed: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.go('/');
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: AppColors.cream,
+                          size: 18,
                         ),
+                        tooltip: 'Back',
+                      ),
                       const Spacer(),
                     ],
                   ),
@@ -226,66 +119,180 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       const DiyaOrb(size: 52),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Pooja Store',
-                              style: TextStyle(
+                              l10n.appTitle,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w700,
-                              fontSize: 20,
-                              color: AppColors.cream,
+                                fontSize: 20,
+                                color: AppColors.cream,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Devotees and pujaris sign in with the same phone OTP',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              color: Color(0xBFFBF0DC),
+                            const SizedBox(height: 2),
+                            Text(
+                              l10n.loginHeaderSubtitle,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xBFFBF0DC),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const LanguageSwitcher(
-                      compact: true,
-                      iconColor: AppColors.cream,
-                    ),
-                  ],
-                ),
-              ],
+                      const LanguageSwitcher(
+                        compact: true,
+                        iconColor: AppColors.cream,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          ),
           Expanded(
-            child: Padding(
+            child: ListView(
               padding: const EdgeInsets.fromLTRB(26, 30, 26, 24),
-              child: _otpSent
-                  ? _OtpStep(
-                      phone: _phoneController.text.trim(),
-                      otpController: _otpController,
-                      loading: auth.loading,
-                      error: auth.error,
-                      debugOtp: auth.debugOtp,
-                      otpTimer: _otpTimer,
-                      onEdit: () {
-                        _timer?.cancel();
-                        setState(() => _otpSent = false);
-                      },
-                      onVerify: _verifyOtp,
-                      onResend: auth.loading || _otpTimer > 0 ? null : _requestOtp,
-                      l10n: l10n,
-                    )
-                  : _MobileStep(
-                      phoneController: _phoneController,
-                      loading: auth.loading,
-                      error: auth.error,
-                      onSend: _requestOtp,
-                      onGoogle: _continueWithGoogle,
-                      onApple: _continueWithApple,
+              children: [
+                Text(
+                  l10n.welcome,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                    color: AppColors.text,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  l10n.loginWelcomeSubtitle,
+                  style: const TextStyle(fontSize: 13.5, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 26),
+                _LabeledField(
+                  label: l10n.emailLabel,
+                  controller: _emailController,
+                  hint: l10n.emailHint,
+                  keyboardType: TextInputType.emailAddress,
+                  autofill: AutofillHints.email,
+                ),
+                const SizedBox(height: 14),
+                _LabeledField(
+                  label: l10n.passwordLabel,
+                  controller: _passwordController,
+                  hint: l10n.passwordHint,
+                  obscure: _obscure,
+                  autofill: AutofillHints.password,
+                  suffix: IconButton(
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                    icon: Icon(
+                      _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      color: AppColors.textMuted,
                     ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TerracottaButton(
+                  label: l10n.signInButton,
+                  onPressed: _signIn,
+                  loading: auth.loading,
+                ),
+                if (auth.error != null) ...[
+                  const SizedBox(height: 12),
+                  Text(auth.error!, style: const TextStyle(color: Colors.redAccent)),
+                ],
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    final next = GoRouterState.of(context).uri.queryParameters['next'];
+                    context.push(next != null && next.isNotEmpty ? '/signup?next=$next' : '/signup');
+                  },
+                  child: Text(
+                    l10n.noAccountSignUp,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.maroonDeep,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Expanded(child: Divider(color: AppColors.inputBorder)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        l10n.orContinueWith,
+                        style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                      ),
+                    ),
+                    const Expanded(child: Divider(color: AppColors.inputBorder)),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                OutlinedButton(
+                  onPressed: auth.loading ? null : () => continueWithGoogle(ref, context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.text,
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: AppColors.inputBorder),
+                    minimumSize: const Size.fromHeight(50),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const _GoogleDot(),
+                      const SizedBox(width: 10),
+                      Text(
+                        l10n.continueWithGoogle,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: auth.loading ? null : () => continueWithApple(ref, context),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF221013),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(50),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.apple, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        l10n.continueWithApple,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => context.push('/poojari/apply'),
+                  child: Text(
+                    l10n.pujariApplyPrompt,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.maroonDeep,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.termsPrivacyAgreement,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textMuted,
+                    height: 1.6,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -294,45 +301,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-class _MobileStep extends StatelessWidget {
-  const _MobileStep({
-    required this.phoneController,
-    required this.loading,
-    required this.error,
-    required this.onSend,
-    required this.onGoogle,
-    required this.onApple,
+class _LabeledField extends StatelessWidget {
+  const _LabeledField({
+    required this.label,
+    required this.controller,
+    required this.hint,
+    this.keyboardType,
+    this.obscure = false,
+    this.autofill,
+    this.suffix,
   });
 
-  final TextEditingController phoneController;
-  final bool loading;
-  final String? error;
-  final VoidCallback onSend;
-  final VoidCallback onGoogle;
-  final VoidCallback onApple;
+  final String label;
+  final TextEditingController controller;
+  final String hint;
+  final TextInputType? keyboardType;
+  final bool obscure;
+  final String? autofill;
+  final Widget? suffix;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Welcome',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: AppColors.text,
-          ),
-        ),
-        const SizedBox(height: 5),
-        const Text(
-          'Sign in to continue your seva',
-          style: TextStyle(fontSize: 13.5, color: AppColors.textMuted),
-        ),
-        const SizedBox(height: 26),
-        const Text(
-          'MOBILE NUMBER',
-          style: TextStyle(
+        Text(
+          label,
+          style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: AppColors.textMuted,
@@ -340,144 +335,14 @@ class _MobileStep extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.inputBorder),
-          ),
-          child: Row(
-            children: [
-              const Text(
-                '+91',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.text,
-                ),
-              ),
-              Container(
-                width: 1,
-                height: 18,
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                color: AppColors.inputBorder,
-              ),
-              Expanded(
-                child: TextField(
-                  controller: phoneController,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(10),
-                  ],
-                  decoration: const InputDecoration(
-                    hintText: '98765 43210',
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    filled: false,
-                    contentPadding: EdgeInsets.symmetric(vertical: 11),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        TerracottaButton(label: 'Send OTP', onPressed: onSend, loading: loading),
-        if (error != null) ...[
-          const SizedBox(height: 12),
-          Text(error!, style: const TextStyle(color: Colors.redAccent)),
-        ],
-        const SizedBox(height: 24),
-        const Row(
-          children: [
-            Expanded(child: Divider(color: AppColors.inputBorder)),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                'or continue with',
-                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
-              ),
-            ),
-            Expanded(child: Divider(color: AppColors.inputBorder)),
-          ],
-        ),
-        const SizedBox(height: 22),
-        OutlinedButton(
-          onPressed: loading ? null : onGoogle,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.text,
-            backgroundColor: Colors.white,
-            side: const BorderSide(color: AppColors.inputBorder),
-            minimumSize: const Size.fromHeight(50),
-          ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                _GoogleDot(),
-                SizedBox(width: 10),
-                Text(
-                  'Continue with Google',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        FilledButton(
-          onPressed: loading ? null : onApple,
-          style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF221013),
-            foregroundColor: Colors.white,
-            minimumSize: const Size.fromHeight(50),
-          ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 14,
-                  height: 17,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  'Continue with Apple',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => context.push('/poojari/apply'),
-          child: const Text(
-            'Are you a pujari? Apply to join',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: AppColors.maroonDeep,
-            ),
-          ),
-        ),
-        const Spacer(),
-        const Text(
-          'By continuing you agree to our Terms of Service and Privacy Policy',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11.5,
-            color: AppColors.textMuted,
-            height: 1.6,
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          obscureText: obscure,
+          autofillHints: autofill == null ? null : [autofill!],
+          decoration: InputDecoration(
+            hintText: hint,
+            suffixIcon: suffix,
           ),
         ),
       ],
@@ -505,215 +370,6 @@ class _GoogleDot extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _OtpStep extends StatelessWidget {
-  const _OtpStep({
-    required this.phone,
-    required this.otpController,
-    required this.loading,
-    required this.error,
-    required this.debugOtp,
-    required this.otpTimer,
-    required this.onEdit,
-    required this.onVerify,
-    required this.onResend,
-    required this.l10n,
-  });
-
-  final String phone;
-  final TextEditingController otpController;
-  final bool loading;
-  final String? error;
-  final String? debugOtp;
-  final int otpTimer;
-  final VoidCallback onEdit;
-  final VoidCallback onVerify;
-  final VoidCallback? onResend;
-  final AppLocalizations l10n;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Text(
-          'Verify OTP',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: AppColors.text,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              'Sent to +91 ${phone.isEmpty ? '98765 43210' : phone} · ',
-              style: const TextStyle(fontSize: 13.5, color: AppColors.textMuted),
-            ),
-            GestureDetector(
-              onTap: onEdit,
-              child: const Text(
-                'Edit',
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.saffron,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 28),
-        _OtpBoxes(controller: otpController),
-        if (debugOtp != null) ...[
-          const SizedBox(height: 10),
-          Text(
-            l10n.devOtp(debugOtp!),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.saffron,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-        const SizedBox(height: 22),
-        TerracottaButton(
-          label: 'Verify & Continue',
-          onPressed: onVerify,
-          loading: loading,
-        ),
-        const SizedBox(height: 18),
-        Text.rich(
-          TextSpan(
-            style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-            children: [
-              const TextSpan(text: "Didn't receive the code? "),
-              WidgetSpan(
-                alignment: PlaceholderAlignment.middle,
-                child: GestureDetector(
-                  onTap: onResend,
-                  child: Text(
-                    otpTimer > 0
-                        ? 'Resend in 00:${otpTimer.toString().padLeft(2, '0')}'
-                        : 'Resend',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: onResend == null
-                          ? AppColors.textMuted
-                          : AppColors.saffron,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          textAlign: TextAlign.center,
-        ),
-        if (error != null) ...[
-          const SizedBox(height: 12),
-          Text(error!, style: const TextStyle(color: Colors.redAccent)),
-        ],
-      ],
-    );
-  }
-}
-
-class _OtpBoxes extends StatefulWidget {
-  const _OtpBoxes({required this.controller});
-
-  final TextEditingController controller;
-
-  @override
-  State<_OtpBoxes> createState() => _OtpBoxesState();
-}
-
-class _OtpBoxesState extends State<_OtpBoxes> {
-  final _nodes = List.generate(6, (_) => FocusNode());
-  final _fields = List.generate(6, (_) => TextEditingController());
-
-  @override
-  void dispose() {
-    for (final n in _nodes) {
-      n.dispose();
-    }
-    for (final c in _fields) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  void _sync() {
-    widget.controller.text = _fields.map((c) => c.text).join();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(6, (i) {
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: i == 5 ? 0 : 8),
-            child: SizedBox(
-              height: 58,
-              child: TextField(
-                controller: _fields[i],
-                focusNode: _nodes[i],
-                textAlign: TextAlign.center,
-                keyboardType: TextInputType.number,
-                maxLength: 1,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 20,
-                  color: AppColors.text,
-                ),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                  counterText: '',
-                  contentPadding: EdgeInsets.zero,
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.inputBorder,
-                      width: 1.5,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.inputBorder,
-                      width: 1.5,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.saffron,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-                onChanged: (v) {
-                  if (v.isNotEmpty && i < 5) {
-                    _nodes[i + 1].requestFocus();
-                  }
-                  if (v.isEmpty && i > 0) {
-                    _nodes[i - 1].requestFocus();
-                  }
-                  _sync();
-                },
-              ),
-            ),
-          ),
-        );
-      }),
     );
   }
 }

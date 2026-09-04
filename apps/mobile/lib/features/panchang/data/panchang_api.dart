@@ -24,6 +24,14 @@ class PanchangApi {
     return res.data['data'] as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> forDate(String date, {String? city}) async {
+    final res = await _api.dio.get(
+      '/panchang/$date',
+      queryParameters: {if (city != null) 'city': city},
+    );
+    return res.data['data'] as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> calendar({
     required int year,
     required int month,

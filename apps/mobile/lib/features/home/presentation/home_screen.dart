@@ -7,9 +7,14 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/diya_mark.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
+import '../../../core/catalog/catalog_l10n.dart';
+import '../../../core/catalog/panchang_terms_l10n.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../l10n/l10n.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../marketplace/presentation/kits_screen.dart';
 import '../../panchang/data/panchang_api.dart';
+import '../../panchang/presentation/panchang_almanac_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -56,21 +61,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> _pickPanchangDate() async {
+    final iso = _today?['date'] as String?;
+    final selected = iso != null && iso.length >= 10
+        ? parseIsoDate(iso)
+        : DateTime.now();
+    final picked = await pickPanchangDate(context, selected: selected);
+    if (picked == null || !mounted) return;
+    try {
+      final data = await ref.read(panchangApiProvider).forDate(isoDate(picked));
+      if (!mounted) return;
+      setState(() => _today = data);
+    } catch (_) {}
+  }
+
   String get _firstName {
     final user = ref.read(authControllerProvider).user;
     final full = user?.fullName?.trim();
-    if (full == null || full.isEmpty) return 'Guest';
+    if (full == null || full.isEmpty) return '';
     return full.split(RegExp(r'\s+')).first;
   }
 
   String get _initial {
-    return _firstName.substring(0, 1).toUpperCase();
+    final name = _firstName;
+    if (name.isEmpty) return 'G';
+    return name.substring(0, 1).toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(localeControllerProvider, (_, __) => _load());
+    final l10n = context.l10n;
+    final te = context.isTelugu;
     final featured = _kits.take(3).toList();
     final loggedIn = ref.watch(authControllerProvider).isAuthenticated;
+    final displayName = _firstName.isEmpty ? l10n.guest : _firstName;
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -90,10 +115,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       children: [
                         const DiyaOrb(size: 34),
                         const SizedBox(width: 10),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Pooja Store',
-                            style: TextStyle(
+                            l10n.appTitle,
+                            style: const TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 18,
                               color: AppColors.cream,
@@ -113,9 +138,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 color: AppColors.goldBright,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Text(
-                                'Sign in',
-                                style: TextStyle(
+                              child: Text(
+                                l10n.signIn,
+                                style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.maroonDeep,
@@ -210,7 +235,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const GarlandDots(alignStart: true),
                     const SizedBox(height: 16),
                     Text(
-                      'Namaste, $_firstName',
+                      l10n.namasteName(displayName),
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 24,
@@ -226,22 +251,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const PpTitle("Today's Panchang"),
+                  PpTitle(l10n.homeTodayPanchang),
                   const SizedBox(height: 10),
-                  _PanchangCard(today: _today),
+                  _PanchangCard(
+                    today: _today,
+                    l10n: l10n,
+                    onPickDate: _pickPanchangDate,
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 22),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: PpTitle('Upcoming Festivals'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: PpTitle(l10n.homeUpcomingFestivals),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 6, 20, 0),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
               child: Text(
-                'Complete Pooja Samagri kits for each festival — ready to book.',
-                style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                l10n.homeFestivalsSubtitle,
+                style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
               ),
             ),
             const SizedBox(height: 10),
@@ -289,7 +318,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
-                                      f.daysTo,
+                                      festivalDaysToLabel(
+                                        target: f.target,
+                                        l10n: l10n,
+                                      ),
                                       style: const TextStyle(
                                         fontSize: 10.5,
                                         fontWeight: FontWeight.w700,
@@ -308,7 +340,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                f.name,
+                                f.localizedName(te),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -319,7 +351,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                f.date,
+                                f.localizedDate(te),
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.textMuted,
@@ -340,7 +372,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  child: const Text('Book samagri kit'),
+                                  child: Text(l10n.bookSamagriKit),
                                 ),
                               ),
                             ],
@@ -357,12 +389,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  const Expanded(child: PpTitle('Pooja Samagri')),
+                  Expanded(child: PpTitle(l10n.homeSamagriTitle)),
                   GestureDetector(
                     onTap: () => context.go('/shop'),
-                    child: const Text(
-                      'View all',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.viewAll,
+                      style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
                         color: AppColors.saffron,
@@ -372,11 +404,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 4, 20, 0),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
               child: Text(
-                'Festival & daily pooja essentials under one catalogue.',
-                style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                l10n.homeSamagriSubtitle,
+                style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 20, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () => context.push('/poojas'),
+                  child: Text(l10n.browsePoojaGuides),
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -391,16 +433,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   if (featured.isEmpty) {
                     const fallback = [
                       (
-                        'Ganesh Puja Homam Samagri',
-                        1999,
-                        'ganesh-puja-homam-samagri',
+                        'Ganesh Chaturthi Pooja Samagri',
+                        1499,
+                        'ganesh-chaturthi-pooja-samagri',
                       ),
                       (
                         'Satyanarayan Puja Samagri',
                         749,
                         'satyanarayan-puja-kit',
                       ),
-                      ('Daily Puja Samagri', 399, 'daily-puja-kit'),
+                      ('Basic Pooja Samagri', 1299, 'general-pooja-samagri-kit'),
                     ];
                     final k = fallback[i];
                     return _KitCard(
@@ -429,7 +471,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const PpTitle('More Services'),
+                  PpTitle(l10n.homeMoreServices),
                   const SizedBox(height: 10),
                   GridView.count(
                     crossAxisCount: 2,
@@ -438,34 +480,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
                     childAspectRatio: 1.05,
-                    children: const [
+                    children: [
                       _ServiceTile(
-                        title: 'Puja Vidhi',
+                        title: l10n.homeVidhiTitle,
                         imageId: 'vidhi',
                         route: '/vidhi',
                       ),
                       _ServiceTile(
-                        title: 'Kids Corner',
+                        title: l10n.homeKidsTitle,
                         imageId: 'kids',
                         soon: true,
+                        soonLabel: l10n.comingSoonBadge,
                       ),
                       _ServiceTile(
-                        title: 'Book a Priest',
+                        title: l10n.homePriestsTitle,
                         imageId: 'priest',
                         route: '/priests',
                       ),
                       _ServiceTile(
-                        title: 'Prasad & Vrat',
+                        title: l10n.homeGuidesTitle,
                         imageId: 'prasad',
                         route: '/guides',
                       ),
                       _ServiceTile(
-                        title: 'Puja Packages',
+                        title: l10n.homePackagesTitle,
                         imageId: 'packages',
                         route: '/packages',
                       ),
                       _ServiceTile(
-                        title: 'Panchang',
+                        title: l10n.panchangShortTitle,
                         imageId: 'samagri',
                         route: '/panchang',
                       ),
@@ -482,17 +525,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class _PanchangCard extends StatelessWidget {
-  const _PanchangCard({this.today});
+  const _PanchangCard({
+    this.today,
+    required this.l10n,
+    required this.onPickDate,
+  });
 
   final Map<String, dynamic>? today;
+  final AppLocalizations l10n;
+  final VoidCallback onPickDate;
 
   @override
   Widget build(BuildContext context) {
-    final dateLine = panchangHeadline(today);
+    final te = context.isTelugu;
+    final dateLine = localizedPanchangHeadline(today, te);
     final place = today?['cityName'] as String? ?? 'Hyderabad';
     final tithi = today?['tithi'] as String? ?? 'Shukla Dwitiya';
     final nakshatra =
         today?['nakshatra'] as String? ?? 'Uttara Phalguni Nakshatra';
+    final tithiLine = localizeTithiNakshatraLine(tithi, nakshatra, te);
     final sunrise = today?['sunrise'] as String? ?? '05:58 am';
     String rahu = '10:45–12:20';
     final rk = today?['rahuKalam'];
@@ -500,37 +551,37 @@ class _PanchangCard extends StatelessWidget {
       rahu = '${rk['start']}–${rk['end']}';
     }
 
-    return GestureDetector(
-      onTap: () => context.push('/panchang'),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.maroonDeep, AppColors.maroon],
-          ),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFD9AE55)),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.maroonDeep, AppColors.maroon],
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -30,
-              top: -30,
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.goldBright.withValues(alpha: 0.12),
-                ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFD9AE55)),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -30,
+            top: -30,
+            child: Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.goldBright.withValues(alpha: 0.12),
               ),
             ),
-            Row(
-              children: [
-                Expanded(
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => context.push('/panchang'),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -544,7 +595,7 @@ class _PanchangCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        '$tithi · $nakshatra',
+                        tithiLine,
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -553,7 +604,7 @@ class _PanchangCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Sunrise $sunrise · Rahu Kalam $rahu',
+                        l10n.panchangSunriseRahuKalam(sunrise, rahu),
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.cream.withValues(alpha: 0.75),
@@ -562,14 +613,19 @@ class _PanchangCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Text(
-                  '›',
-                  style: TextStyle(color: AppColors.goldBright, fontSize: 18),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              IconButton(
+                onPressed: onPickDate,
+                tooltip: almanacLabel('pickDate', te),
+                icon: const Icon(Icons.calendar_month, color: AppColors.goldBright),
+              ),
+              const Text(
+                '›',
+                style: TextStyle(color: AppColors.goldBright, fontSize: 18),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -638,12 +694,14 @@ class _ServiceTile extends StatelessWidget {
     required this.imageId,
     this.route,
     this.soon = false,
+    this.soonLabel = 'SOON',
   });
 
   final String title;
   final String imageId;
   final String? route;
   final bool soon;
+  final String soonLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -692,9 +750,9 @@ class _ServiceTile extends StatelessWidget {
                           color: AppColors.chipBg,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
-                          'SOON',
-                          style: TextStyle(
+                        child: Text(
+                          soonLabel,
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFFA8763B),

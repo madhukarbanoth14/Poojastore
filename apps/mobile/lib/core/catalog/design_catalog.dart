@@ -1,31 +1,36 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'festival_catalog_i18n.dart';
 import 'samagri_catalog.dart';
 
 class ShopCategory {
   const ShopCategory({
     required this.id,
     required this.name,
+    required this.nameTe,
     required this.mono,
   });
 
   final String id;
   final String name;
+  final String nameTe;
   final String mono;
+
+  String label(bool te) => te ? nameTe : name;
 }
 
 const shopCategories = [
-  ShopCategory(id: 'festival-kits', name: 'Festival Kits', mono: 'FK'),
-  ShopCategory(id: 'function-kits', name: 'Function Kits', mono: 'FN'),
-  ShopCategory(id: 'daily-pooja', name: 'Daily Pooja', mono: 'DP'),
-  ShopCategory(id: 'flowers', name: 'Flowers', mono: 'FL'),
-  ShopCategory(id: 'agarbatti', name: 'Agarbatti', mono: 'AG'),
-  ShopCategory(id: 'diyas', name: 'Diyas', mono: 'DY'),
-  ShopCategory(id: 'oils', name: 'Oils', mono: 'OL'),
-  ShopCategory(id: 'kumkum', name: 'Kumkum', mono: 'KK'),
-  ShopCategory(id: 'camphor', name: 'Camphor', mono: 'CM'),
-  ShopCategory(id: 'books', name: 'Books', mono: 'BK'),
-  ShopCategory(id: 'brass', name: 'Brass Items', mono: 'BR'),
+  ShopCategory(id: 'festival-kits', name: 'Festival Kits', nameTe: 'పండుగ కిట్‌లు', mono: 'FK'),
+  ShopCategory(id: 'function-kits', name: 'Function Kits', nameTe: 'సమారంభ కిట్‌లు', mono: 'FN'),
+  ShopCategory(id: 'daily-pooja', name: 'Daily Pooja', nameTe: 'రోజువారీ పూజ', mono: 'DP'),
+  ShopCategory(id: 'flowers', name: 'Flowers', nameTe: 'పుష్పాలు', mono: 'FL'),
+  ShopCategory(id: 'agarbatti', name: 'Agarbatti', nameTe: 'అగరబత్తీలు', mono: 'AG'),
+  ShopCategory(id: 'diyas', name: 'Diyas', nameTe: 'దీపాలు', mono: 'DY'),
+  ShopCategory(id: 'oils', name: 'Oils', nameTe: 'నూనెలు', mono: 'OL'),
+  ShopCategory(id: 'kumkum', name: 'Kumkum', nameTe: 'కుంకుమ', mono: 'KK'),
+  ShopCategory(id: 'camphor', name: 'Camphor', nameTe: 'కర్పూరం', mono: 'CM'),
+  ShopCategory(id: 'books', name: 'Books', nameTe: 'పుస్తకాలు', mono: 'BK'),
+  ShopCategory(id: 'brass', name: 'Brass Items', nameTe: 'ఇత్తడి వస్తువులు', mono: 'BR'),
 ];
 
 const nearbyStores = [
@@ -64,8 +69,32 @@ class FestivalGuide {
   /// Per-item retail prices when sourced from [samagri_catalog.dart].
   final List<SamagriLine>? pricedItems;
 
+  FestivalCopy? get _te => festivalCopyTe[id];
+
   int? get pricedItemsTotalMinor =>
       pricedItems == null ? null : sumSamagriLinePrices(pricedItems!);
+
+  String localizedName(bool te) => te ? (_te?.nameTe ?? name) : name;
+
+  String localizedDate(bool te) => te ? (_te?.dateTe ?? date) : date;
+
+  String localizedDescription(bool te) =>
+      te ? (_te?.descriptionTe ?? description) : description;
+
+  String localizedSpeciality(bool te) =>
+      te ? (_te?.specialityTe ?? speciality) : speciality;
+
+  List<String> localizedSteps(bool te) => te ? (_te?.stepsTe ?? steps) : steps;
+
+  List<String> localizedItems(bool te) {
+    if (te && pricedItems != null && pricedItems!.isNotEmpty) {
+      return pricedItems!.map((line) => line.displayName(true)).toList();
+    }
+    if (te && _te != null && _te!.itemsTe.isNotEmpty) return _te!.itemsTe;
+    return items;
+  }
+
+  String localizedKitName(bool te) => te ? (_te?.kitNameTe ?? kitName) : kitName;
 
   String get daysTo {
     final now = DateTime.now();
@@ -117,11 +146,11 @@ final upcomingFestivals = [
       'Perform aarti morning and evening through the festival.',
       'Immerse the idol in water on the chosen day (visarjan).',
     ],
-    items: ganeshPujaHomamKitItems,
-    kitName: 'Ganesh Puja Homam Samagri',
-    kitPrice: 1999,
-    kitSlug: 'ganesh-puja-homam-samagri',
-    pricedItems: ganeshHomamList.items,
+    items: ganeshPoojaList.items.map((line) => line.displayName(false)).toList(),
+    kitName: 'Ganesh Chaturthi Pooja Samagri',
+    kitPrice: 1499,
+    kitSlug: 'ganesh-chaturthi-pooja-samagri',
+    pricedItems: ganeshPoojaList.items,
   ),
   FestivalGuide(
     id: 'navratri',

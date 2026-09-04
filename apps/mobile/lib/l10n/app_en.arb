@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Pooja Store",
+  "appTitle": "Pavitra Seva",
   "languageEnglish": "English",
   "languageTelugu": "తెలుగు",
   "cart": "Cart",
@@ -32,7 +32,7 @@
   "homeOrdersTitle": "My Orders",
   "homeOrdersSubtitle": "Track paid kits and bookings",
   "homeComingNext": "Coming next: full vendor marketplace onboarding.",
-  "loginSubtitle": "Sign in with your mobile number",
+  "loginSubtitle": "Sign in with your email and password",
   "loginOtpSubtitle": "Enter the OTP sent to your phone",
   "country": "Country",
   "countryIndia": "India (+91)",
@@ -164,6 +164,7 @@
   "myPriestBookings": "My priest bookings",
   "noBookingsYet": "No bookings yet",
   "cancel": "Cancel",
+  "save": "Save",
   "guidesTitle": "Prasad & Vrat",
   "tabVrat": "Vrat",
   "tabPrasad": "Prasad",
@@ -208,5 +209,307 @@
   "adminBookingsSubtitle": "Ops list of pandit bookings",
   "adminOrdersTitle": "Admin orders",
   "adminBookingsTitle": "Admin priest bookings",
-  "refresh": "Refresh"
+  "refresh": "Refresh",
+  "signIn": "Sign in",
+  "guest": "Guest",
+  "homeTodayPanchang": "Today's Panchang",
+  "homeUpcomingFestivals": "Upcoming Festivals",
+  "homeFestivalsSubtitle": "Complete Pooja Samagri kits for each festival — ready to book.",
+  "bookSamagriKit": "Book samagri kit",
+  "viewAll": "View all",
+  "homeSamagriSubtitle": "Festival & daily pooja essentials under one catalogue.",
+  "homeMoreServices": "More Services",
+  "comingSoonBadge": "SOON",
+  "panchangShortTitle": "Panchang",
+  "panchangSunriseRahuKalam": "Sunrise {sunrise} · Rahu Kalam {rahu}",
+  "@panchangSunriseRahuKalam": {
+    "placeholders": {
+      "sunrise": { "type": "String" },
+      "rahu": { "type": "String" }
+    }
+  },
+  "navHome": "Home",
+  "navSamagri": "Samagri",
+  "navPoojaris": "Poojaris",
+  "navAccount": "Account",
+  "profileGuestTitle": "Explore freely",
+  "profileGuestSubtitle": "Browse festivals and Pooja Samagri without signing in. Sign in when you are ready to checkout.",
+  "signInRegister": "Sign in / Register",
+  "browseSamagri": "Browse Pooja Samagri",
+  "devotee": "Devotee",
+  "profileTitle": "Profile",
+  "edit": "Edit",
+  "personalDetails": "Personal Details",
+  "savedAddresses": "Saved Addresses",
+  "familyMembers": "Family Members",
+  "orderHistory": "Order History",
+  "pujariDesk": "Pujari Desk",
+  "joinAsPujari": "Join as a pujari",
+  "admin": "Admin",
+  "priestBookingHistory": "Priest Booking History",
+  "notifications": "Notifications",
+  "wishlist": "Wishlist",
+  "support": "Support",
+  "language": "Language",
+  "darkMode": "Dark Mode",
+  "logOut": "Log Out",
+  "emptyCartBrowseSamagri": "Browse Pooja Samagri to get started.",
+  "cartQtyLine": "Qty {qty} · {price}",
+  "@cartQtyLine": {
+    "placeholders": {
+      "qty": { "type": "int" },
+      "price": { "type": "String" }
+    }
+  },
+  "remove": "Remove",
+  "itemsSubtotal": "Items subtotal",
+  "deliveryCharge": "Delivery charge",
+  "total": "Total",
+  "about": "About",
+  "speciality": "Speciality",
+  "howToDoPooja": "How to do the Pooja",
+  "poojaGuidesTitle": "Pooja samagri by pooja",
+  "poojaGuidesSubtitle": "Start with the basic kit used in every home pooja. Add a deity or festival kit only for the extras that pooja needs.",
+  "commonSamagriTitle": "Common items",
+  "deityPoojaTitle": "Deity",
+  "festivalPoojaTitle": "Festivals",
+  "vrathamPoojaTitle": "Vratams",
+  "specialForThisPooja": "Special items for this pooja",
+  "pairWithBasicKit": "Buy basic pooja kit",
+  "pairWithBasicHint": "These extras go with the common samagri — turmeric, kumkum, flowers, camphor, and the rest of the basic kit.",
+  "deitySpecificKit": "Deity extras kit",
+  "festivalVrathamKit": "Festival / vratam kit",
+  "commonItemsAlsoNeeded": "Also keep the everyday pooja items (listed under Common).",
+  "viewCommonSamagri": "View common samagri",
+  "poojaGuideDisclaimer": "Items can vary by region, family custom, and your pujari’s vidhi.",
+  "browsePoojaGuides": "Browse by pooja",
+  "requiredItems": "Required Items",
+  "chooseOptionalItems": "Choose optional items",
+  "optionalItemsHint": "These are not packed unless you select them.",
+  "ganeshPoojaItemsTab": "Pooja items",
+  "ganeshHomamTab": "Homam",
+  "ganeshPoojaListTitle": "Vinayaka Chavithi Pooja Samagri",
+  "ganeshHomamListTitle": "Ganesh Homam Samagri",
+  "completePoojaKit": "Complete Pooja Kit",
+  "bookPoojari": "Book Poojari",
+  "signInToAddCart": "Sign in to add samagri to your cart",
+  "selectAtLeastOneItem": "Select at least one pooja item.",
+  "kitNotFound": "Kit not found",
+  "selectPoojaItems": "Select pooja items",
+  "addItemsToCart": "Add {count} items to cart",
+  "@addItemsToCart": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "completeFestivalSamagri": "Complete festival samagri",
+  "itemsIncluded": "{count} items included",
+  "@itemsIncluded": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "loginHeaderSubtitle": "Devotees and pujaris sign in with email, Google, or Apple",
+  "welcome": "Welcome",
+  "loginWelcomeSubtitle": "Sign in to continue your seva",
+  "emailLabel": "EMAIL",
+  "emailHint": "you@example.com",
+  "passwordLabel": "PASSWORD",
+  "passwordHint": "At least 8 characters",
+  "signInButton": "Sign in",
+  "signInValidation": "Enter a valid email and a password of at least 8 characters.",
+  "noAccountSignUp": "New here? Create an account",
+  "createAccountTitle": "Create account",
+  "createAccountSubtitle": "Email, password, and mobile number",
+  "createAccountButton": "Create account",
+  "signUpValidation": "Enter email, a password of at least 8 characters, and your mobile number.",
+  "haveAccountSignIn": "Already have an account? Sign in",
+  "mobileNumberLabel": "MOBILE NUMBER",
+  "phoneHint": "98765 43210",
+  "orContinueWith": "or continue with",
+  "continueWithGoogle": "Continue with Google",
+  "continueWithApple": "Continue with Apple",
+  "pujariApplyPrompt": "Are you a pujari? Apply to join",
+  "termsPrivacyAgreement": "By continuing you agree to our Terms of Service and Privacy Policy",
+  "verifyOtp": "Verify OTP",
+  "otpSentTo": "Sent to +91 {phone} ·",
+  "@otpSentTo": {
+    "placeholders": {
+      "phone": { "type": "String" }
+    }
+  },
+  "otpDidntReceive": "Didn't receive the code?",
+  "otpResendIn": "Resend in {seconds}",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": { "type": "String" }
+    }
+  },
+  "otpResend": "Resend",
+  "onboardingSlide1Title": "Complete Pooja Kits",
+  "onboardingSlide1Desc": "Order curated kits for every festival and family function — nothing missing, nothing extra.",
+  "onboardingSlide1Label": "FESTIVAL KIT",
+  "onboardingSlide2Title": "Verified Poojaris",
+  "onboardingSlide2Desc": "Book experienced, background-verified priests for home visits or online consultations.",
+  "onboardingSlide2Label": "POOJARI PORTRAIT",
+  "onboardingSlide3Title": "Same-Day Delivery",
+  "onboardingSlide3Desc": "Fresh flowers, agarbatti and ritual items from nearby pooja stores, delivered fast.",
+  "onboardingSlide3Label": "DELIVERY VAN",
+  "onboardingSlide4Title": "Never Miss a Festival",
+  "onboardingSlide4Desc": "Personalized reminders for every festival and auspicious date, right on time.",
+  "onboardingSlide4Label": "CALENDAR",
+  "skip": "Skip",
+  "getStarted": "Get Started",
+  "panchangDisclaimer": "Panchang times are approximate civil calculations for general guidance. Consult your family priest for ritual muhurat timing.",
+  "panchangTithi": "Tithi",
+  "panchangYoga": "Yoga",
+  "panchangKarana": "Karana",
+  "sunrise": "Sunrise",
+  "sunset": "Sunset",
+  "moonrise": "Moonrise",
+  "moonset": "Moonset",
+  "muhurats": "Muhurats",
+  "rahuKalam": "Rahu Kalam",
+  "yamagandam": "Yamagandam",
+  "gulika": "Gulika",
+  "abhijitMuhurat": "Abhijit Muhurat",
+  "amritKalam": "Amrit Kalam",
+  "guidanceEmptyPrompt": "Save your birth profile (rasi + city) to unlock personalized daily guidance.",
+  "guidanceRecommendedPuja": "Recommended puja",
+  "guidanceLuckyColor": "Lucky color",
+  "guidanceDirection": "Direction",
+  "guidanceNumber": "Number",
+  "guidanceCareer": "Career",
+  "guidanceFinance": "Finance",
+  "guidanceHealth": "Health",
+  "guidanceTravel": "Travel",
+  "todayBadge": "TODAY",
+  "signInToSaveBirthProfile": "Sign in to save your birth profile",
+  "birthProfileIntro": "Enter name, date, time and place. We compute your janma rāśi (Moon sign) and today's guidance.",
+  "fullName": "Full name",
+  "dateOfBirth": "Date of birth",
+  "birthTime": "Birth time",
+  "birthPlaceCity": "Birth place (city)",
+  "birthPlaceHint": "Hyderabad, Bengaluru, …",
+  "cityForDailyPanchang": "City for daily panchang",
+  "computingRasi": "Computing rāśi…",
+  "fetchRasiPalalu": "Fetch Rasi Palalu",
+  "rasiMoonSign": "Rāśi (Moon sign)",
+  "nakshatra": "Nakshatra",
+  "gotramOptional": "Gotram (optional)",
+  "todayForYourRasi": "Today for your rāśi",
+  "guidanceSummary": "Summary",
+  "deliveryAddress": "Delivery Address",
+  "addressLine": "Address line",
+  "city": "City",
+  "state": "State",
+  "postalCode": "Postal code",
+  "ifBoughtSeparately": "If bought separately",
+  "individualPricesKit": "Individual prices · kit {price}",
+  "@individualPricesKit": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  },
+  "festivalToday": "TODAY",
+  "festivalInOneDay": "IN 1 DAY",
+  "festivalInDays": "IN {days} DAYS",
+  "@festivalInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "panchangNote": "Note: {note}",
+  "@panchangNote": {
+    "placeholders": {
+      "note": { "type": "String" }
+    }
+  },
+  "gotramNakshatramLine": "Gotram: {gotram} · Nakshatram: {nakshatram}",
+  "@gotramNakshatramLine": {
+    "placeholders": {
+      "gotram": { "type": "String" },
+      "nakshatram": { "type": "String" }
+    }
+  },
+  "sessionExpired": "Session expired. Please sign in again.",
+  "enterDobFormat": "Enter date of birth as YYYY-MM-DD",
+  "enterBirthTimeFormat": "Enter birth time as HH:MM",
+  "selectCityCoordinates": "Select a city for birth place coordinates",
+  "enterValidDob": "Enter a valid date of birth (YYYY-MM-DD)",
+  "birthTimeHhMm": "Birth time must be HH:MM (24-hour)",
+  "checkDateTimeRetry": "Check date (YYYY-MM-DD) and time (HH:MM), then try again.",
+  "janmaRasiLagna": "Janma rāśi: {rasi} · Lagna: {lagna}",
+  "@janmaRasiLagna": {
+    "placeholders": {
+      "rasi": { "type": "String" },
+      "lagna": { "type": "String" }
+    }
+  },
+  "guidanceLuckyDirection": "Lucky direction",
+  "guidanceLuckyNumber": "Lucky number",
+  "scanPoojariListTitle": "Scan poojari list",
+  "scanPoojariListIntro": "Upload a photo or paste the poojari’s written list. We’ll read the items and match them to samagri in the shop.",
+  "scanTakePhoto": "Take photo",
+  "scanChoosePhoto": "Gallery",
+  "scanPasteListLabel": "Or paste list text",
+  "scanPasteListHint": "Pasupu, Kumkum, Ghee, Neiyy… (Telugu or English)",
+  "scanFindItems": "Find items",
+  "scanReadingList": "Reading list…",
+  "scanExtractedText": "Extracted text",
+  "scanNoTextFound": "No text found.",
+  "scanMatchedItems": "Matched items ({count})",
+  "@scanMatchedItems": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "scanNoMatches": "No samagri items matched. Try clearer text or paste one item per line.",
+  "scanUnmatchedLines": "Could not match these lines",
+  "scanSelectedTotal": "Selected total: {total}",
+  "@scanSelectedTotal": {
+    "placeholders": {
+      "total": { "type": "String" }
+    }
+  },
+  "scanAddToCart": "Add to cart",
+  "scanAddedToCart": "Matched samagri added to cart",
+  "scanSelectItemsError": "Select at least one matched item.",
+  "scanSignInToAdd": "Sign in to add scanned samagri to your cart",
+  "scanListEmptyError": "Paste the poojari list or upload a photo first.",
+  "addingToCart": "Adding…",
+  "scanListAction": "Scan list",
+  "scanSavedLists": "Saved lists",
+  "scanSaveForNextPuja": "Save for next puja",
+  "scanSaveListTitle": "List name",
+  "scanSaveListHint": "Ganesh puja list",
+  "scanListSaved": "List saved for next puja",
+  "scanSignInToSaveList": "Sign in to save this list",
+  "scanQty": "Qty",
+  "scanDidYouMean": "Did you mean?",
+  "scanDeleteSavedList": "Delete saved list",
+  "scanNoSavedLists": "No saved lists yet",
+  "samagriTwoOptionsIntro": "Upload your poojari’s written list, or open a list your poojari sent you in the app after booking.",
+  "poojariSamagriTitle": "Send samagri list",
+  "poojariSamagriIntro": "Type or paste the samagri items. The devotee will see this list in their app and can add items to cart.",
+  "poojariSamagriIntroFor": "Send samagri items to {devotee}. They will see this list in the app and can add to cart.",
+  "@poojariSamagriIntroFor": {
+    "placeholders": {
+      "devotee": { "type": "String" }
+    }
+  },
+  "poojariSamagriSend": "Send to devotee",
+  "poojariSamagriSent": "Samagri list sent to devotee",
+  "receivedSamagriLists": "From your poojari",
+  "receivedSamagriTitle": "Poojari samagri list",
+  "receivedSamagriFrom": "From {priestName}",
+  "@receivedSamagriFrom": {
+    "placeholders": {
+      "priestName": { "type": "String" }
+    }
+  },
+  "receivedSamagriNew": "NEW",
+  "notificationsEmpty": "No notifications yet",
+  "notificationsSignIn": "Sign in to see your notifications",
+  "notificationsMarkAllRead": "Mark all read"
 }

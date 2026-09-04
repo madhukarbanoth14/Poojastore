@@ -1,15 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
+import '../storage/secure_storage.dart';
 
 class ApiClient {
   ApiClient({FlutterSecureStorage? storage, this.localeCode = 'en'})
-      : _storage = storage ?? const FlutterSecureStorage(),
+      : _storage = storage ?? secureStorage,
         dio = Dio(
           BaseOptions(
             baseUrl: AppConfig.apiBaseUrl,
-            connectTimeout: const Duration(seconds: 20),
-            receiveTimeout: const Duration(seconds: 20),
+            connectTimeout: const Duration(seconds: 8),
+            receiveTimeout: const Duration(seconds: 12),
+            sendTimeout: const Duration(seconds: 8),
             headers: {'Content-Type': 'application/json'},
           ),
         ) {

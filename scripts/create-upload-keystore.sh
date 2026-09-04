@@ -32,7 +32,7 @@ keytool -genkey -v \
   -validity 10000 \
   -storepass "$STORE_PASS" \
   -keypass "$KEY_PASS" \
-  -dname "CN=Pooja Store, OU=Mobile, O=Pooja Store, L=Hyderabad, ST=Telangana, C=IN"
+  -dname "CN=Pavitra Seva, OU=Mobile, O=TechFy Labs, L=Hyderabad, ST=Telangana, C=IN"
 
 cat > "$PROPS" <<EOF
 storePassword=$STORE_PASS

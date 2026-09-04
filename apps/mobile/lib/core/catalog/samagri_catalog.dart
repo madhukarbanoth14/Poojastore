@@ -22,7 +22,9 @@ class SamagriLine {
   String displayName(bool te) {
     final name = te ? nameTe : nameEn;
     final pack = te ? packTe : packEn;
-    return pack == null || pack.isEmpty ? name : '$name — $pack';
+    final qty = (pack == null || pack.isEmpty) && quantity > 1 ? ' ×$quantity' : '';
+    if (pack == null || pack.isEmpty) return '$name$qty';
+    return '$name — $pack';
   }
 
   int get lineTotalMinor => priceMinor * quantity;
@@ -55,6 +57,52 @@ class SamagriFestivalList {
   String title(bool te) => te ? titleTe : titleEn;
   String subtitle(bool te) => te ? subtitleTe : subtitleEn;
 }
+
+/// Vinayaka Chavithi home pooja list (handwritten samagri diary).
+const ganeshPoojaList = SamagriFestivalList(
+  id: 'ganesh-pooja',
+  kitSlug: 'ganesh-chaturthi-pooja-samagri',
+  titleEn: 'Ganesh Pooja items',
+  titleTe: 'వినాయక చవితి పూజా సామగ్రి',
+  subtitleEn: 'Home pooja samagri for Vinayaka Chavithi — view first, then Homam.',
+  subtitleTe: 'వినాయక చవితి ఇంటి పూజా సామగ్రి — ముందు పూజా వస్తువులు, తర్వాత హోమం.',
+  kitPriceMinor: 149900,
+  items: [
+    SamagriLine(slug: 'samagri-turmeric', nameEn: 'Turmeric', nameTe: 'పసుపు', priceMinor: 4000, packEn: '100g', packTe: '100గ్రా'),
+    SamagriLine(slug: 'samagri-kumkum', nameEn: 'Kumkum', nameTe: 'కుంకుమ', priceMinor: 5000, packEn: '100g', packTe: '100గ్రా'),
+    SamagriLine(slug: 'samagri-gandham', nameEn: 'Sandal paste (Gandham)', nameTe: 'గంధం', priceMinor: 8000),
+    SamagriLine(slug: 'samagri-incense', nameEn: 'Incense sticks', nameTe: 'అగరవత్తులు', priceMinor: 4000, packEn: '1 pack', packTe: '1 ప్యాక్'),
+    SamagriLine(slug: 'samagri-camphor', nameEn: 'Arati camphor', nameTe: 'హారతి కర్పూరం', priceMinor: 5000, packEn: '1 large', packTe: '1 పెద్దది'),
+    SamagriLine(slug: 'samagri-dhoti', nameEn: 'Dhoti', nameTe: 'దోవతి', priceMinor: 39900, packEn: '9×5', packTe: '9×5'),
+    SamagriLine(slug: 'samagri-sela', nameEn: 'Sela (shawl)', nameTe: 'శేల', priceMinor: 19900),
+    SamagriLine(slug: 'samagri-dried-coconut', nameEn: 'Dried coconut halves', nameTe: 'ఎండిన కుడకలు', priceMinor: 19900, quantity: 5),
+    SamagriLine(slug: 'samagri-betel-nuts', nameEn: 'Betel nuts', nameTe: 'వక్కలు', priceMinor: 8000, packEn: '100g', packTe: '100గ్రా'),
+    SamagriLine(slug: 'samagri-dates', nameEn: 'Dates', nameTe: 'ఖర్జూరాలు', priceMinor: 8000, packEn: '100g', packTe: '100గ్రా'),
+    SamagriLine(slug: 'samagri-turmeric-roots', nameEn: 'Turmeric roots', nameTe: 'పసుపు కొమ్ములు', priceMinor: 6000, packEn: '100g', packTe: '100గ్రా'),
+    SamagriLine(slug: 'samagri-betel-leaves', nameEn: 'Betel leaves', nameTe: 'తమలపాకులు', priceMinor: 3000, optional: true),
+    SamagriLine(slug: 'samagri-bananas', nameEn: 'Bananas', nameTe: 'అరటిపండ్లు', priceMinor: 6000, optional: true),
+    SamagriLine(slug: 'samagri-copper-pot', nameEn: 'Copper pot (Chembu)', nameTe: 'చెంబు (రాగి)', priceMinor: 24900, optional: true),
+    SamagriLine(slug: 'samagri-kankana-thread', nameEn: 'Kankana thread', nameTe: 'కంకణ దారం', priceMinor: 2000),
+    SamagriLine(slug: 'samagri-yajnopavita', nameEn: 'Yajnopavita', nameTe: 'యజ్ఞోపవీతం', priceMinor: 5000, quantity: 2, packEn: '1 large, 1 small', packTe: 'పెద్దది, చిన్నది'),
+    SamagriLine(slug: 'samagri-flowers', nameEn: 'Loose flowers', nameTe: 'విడి పువ్వులు', priceMinor: 8000, optional: true),
+    SamagriLine(slug: 'samagri-garland', nameEn: 'Flower garlands', nameTe: 'పూల దండలు', priceMinor: 10000, optional: true),
+    SamagriLine(slug: 'samagri-coconuts', nameEn: 'Coconuts', nameTe: 'కొబ్బరికాయలు', priceMinor: 6000, quantity: 2),
+    SamagriLine(slug: 'samagri-white-thread', nameEn: 'White thread', nameTe: 'తెల్ల దారం', priceMinor: 2000),
+    SamagriLine(slug: 'samagri-navadhanyalu', nameEn: 'Navadhanyalu', nameTe: 'నవధాన్యాలు', priceMinor: 9000, packEn: '1/2 kg', packTe: '1/2 కిలో'),
+    SamagriLine(slug: 'samagri-akhanda-deepam', nameEn: 'Akhanda deepam (clay)', nameTe: 'అఖండ దీపం (మట్టిది)', priceMinor: 14900),
+    SamagriLine(slug: 'samagri-diya-wicks', nameEn: 'Lamp wicks', nameTe: 'దీపం వత్తులు', priceMinor: 3000, quantity: 5),
+    SamagriLine(slug: 'samagri-oil', nameEn: 'Oil', nameTe: 'నూనె', priceMinor: 28000, packEn: '2 liters', packTe: '2 లీటర్లు'),
+    SamagriLine(slug: 'samagri-durva', nameEn: 'Patri and garika', nameTe: 'పత్రి, గరిక', priceMinor: 3000, optional: true),
+    SamagriLine(slug: 'samagri-bell', nameEn: 'Bell', nameTe: 'గంట', priceMinor: 12000, optional: true),
+    SamagriLine(slug: 'samagri-arati-plate', nameEn: 'Harathi plate', nameTe: 'హారతి ప్లేటు', priceMinor: 15000, optional: true),
+    SamagriLine(slug: 'samagri-plates', nameEn: 'Trays', nameTe: 'ట్రేలు', priceMinor: 12000, quantity: 2, optional: true),
+    SamagriLine(slug: 'samagri-glasses', nameEn: 'Glasses', nameTe: 'గ్లాసులు', priceMinor: 4000, quantity: 2, optional: true),
+    SamagriLine(slug: 'samagri-undrallu', nameEn: 'Undrallu (prasad)', nameTe: 'ఉండ్రాళ్లు', priceMinor: 8000, optional: true),
+    SamagriLine(slug: 'samagri-laddu', nameEn: 'Laddu (prasad)', nameTe: 'లడ్డూ', priceMinor: 8000, optional: true),
+    SamagriLine(slug: 'samagri-small-diyas', nameEn: 'Small lamps', nameTe: 'చిన్న దీపాలు', priceMinor: 8000),
+    SamagriLine(slug: 'samagri-cotton-wicks', nameEn: 'Wicks', nameTe: 'వత్తులు', priceMinor: 3000, packEn: '1 pack', packTe: '1 ప్యాక్'),
+  ],
+);
 
 /// From `docs/pooja_samagri.xlsx` → section "గణేష్ పూజ హోమం సామాగ్రి" (18 items).
 const ganeshHomamList = SamagriFestivalList(
@@ -133,7 +181,7 @@ const varalakshmiList = SamagriFestivalList(
   ],
 );
 
-const festivalSamagriLists = [ganeshHomamList, varalakshmiList];
+const festivalSamagriLists = [ganeshPoojaList, ganeshHomamList, varalakshmiList];
 
 SamagriFestivalList samagriListById(String? id) {
   return festivalSamagriLists.firstWhere(

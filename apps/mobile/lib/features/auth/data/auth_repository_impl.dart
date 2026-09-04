@@ -1,43 +1,53 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/secure_storage.dart';
 import '../domain/auth_repository.dart';
 import '../domain/auth_user.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._api, {FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+      : _storage = storage ?? secureStorage;
 
   final ApiClient _api;
   final FlutterSecureStorage _storage;
 
   @override
-  Future<String?> requestOtp({
-    required String countryCode,
-    required String phone,
+  Future<AuthSession> login({
+    required String email,
+    required String password,
+    String? preferredLanguage,
   }) async {
     final response = await _api.dio.post(
-      '/auth/otp/request',
-      data: {'countryCode': countryCode, 'phone': phone},
+      '/auth/login',
+      data: {
+        'email': email,
+        'password': password,
+        if (preferredLanguage != null) 'preferredLanguage': preferredLanguage,
+        'deviceId': 'flutter-mobile',
+      },
     );
-    final data = response.data['data'] as Map<String, dynamic>;
-    return data['debugOtp'] as String?;
+    return _sessionFromResponse(response.data['data'] as Map<String, dynamic>);
   }
 
   @override
-  Future<AuthSession> verifyOtp({
+  Future<AuthSession> register({
+    required String email,
+    required String password,
     required String countryCode,
     required String phone,
-    required String code,
     String? fullName,
     String? preferredLanguage,
   }) async {
     final response = await _api.dio.post(
-      '/auth/otp/verify',
+      '/auth/register',
       data: {
+        'email': email,
+        'password': password,
         'countryCode': countryCode,
         'phone': phone,
-        'code': code,
         if (fullName != null && fullName.isNotEmpty) 'fullName': fullName,
         if (preferredLanguage != null) 'preferredLanguage': preferredLanguage,
         'deviceId': 'flutter-mobile',
@@ -127,10 +137,12 @@ class AuthRepositoryImpl implements AuthRepository {
     final token = await _storage.read(key: 'access_token');
     if (token == null || token.isEmpty) return null;
     try {
-      return await me();
+      return await me().timeout(const Duration(seconds: 8));
     } on DioException {
       await _storage.delete(key: 'access_token');
       await _storage.delete(key: 'refresh_token');
+      return null;
+    } on TimeoutException {
       return null;
     }
   }

@@ -49,10 +49,15 @@ dependencies:
   sign_in_with_apple: ^8.1.0
   agora_rtc_engine: 6.5.3
   permission_handler: 11.4.0
+  image_picker: ^1.2.0
+  firebase_core: ^4.1.0
+  firebase_messaging: ^16.0.1
+  flutter_local_notifications: ^19.4.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -74,8 +79,18 @@ flutter:
     - assets/images/festivals/
     - assets/images/services/
     - assets/images/OM.jpg
+    - assets/images/pavitra_seva_logo.jpeg
+    - assets/images/pavitra_seva_icon.jpeg
     - assets/audio/om-chant-10s.mp3
     - assets/audio/om-chant-5s.mp3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/images/pavitra_seva_icon.jpeg
+  adaptive_icon_background: "#F5F0E8"
+  adaptive_icon_foreground: assets/images/pavitra_seva_icon.jpeg
+  remove_alpha_ios: true
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

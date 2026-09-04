@@ -90,12 +90,19 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
     return sum * _qty;
   }
 
+  bool get _hasOptional => _items.any(
+        (item) => item['optional'] == true || item['isOptional'] == true,
+      );
+
+  bool _isOptional(Map<String, dynamic> item) =>
+      item['optional'] == true || item['isOptional'] == true;
+
   void _selectDefaults(List<Map<String, dynamic>> items) {
     _selected
       ..clear()
       ..addAll(
         items
-            .where((item) => item['optional'] != true && item['isOptional'] != true)
+            .where((item) => !_isOptional(item))
             .map(_keyOf)
             .where((key) => key.isNotEmpty),
       );
@@ -116,7 +123,7 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
     final keys = _selected.toList();
     if (_items.isNotEmpty && keys.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select at least one pooja item.')),
+        SnackBar(content: Text(context.l10n.selectAtLeastOneItem)),
       );
       return;
     }
@@ -194,60 +201,30 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const PpTitle('Select pooja items', size: 14),
+                    PpTitle(l10n.requiredItems, size: 14),
                     const SizedBox(height: 8),
                     if (_error != null)
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                    ...items.map((item) {
-                      final key = _keyOf(item);
-                      final optional =
-                          item['optional'] == true || item['isOptional'] == true;
-                      final selected = _selected.contains(key);
-                      final pack = item['pack'] as String?;
-                      final linePrice = _priceOf(item);
-                      return CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        value: selected,
-                        activeColor: AppColors.maroonDeep,
-                        onChanged: (value) {
-                          setState(() {
-                            if (value == true) {
-                              _selected.add(key);
-                            } else {
-                              _selected.remove(key);
-                            }
-                          });
-                        },
-                        title: Text(
-                          item['name'] as String? ?? '',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
+                    ...items
+                        .where((item) => !_isOptional(item))
+                        .map((item) => _itemTile(item, optional: false)),
+                    if (_hasOptional) ...[
+                      const SizedBox(height: 18),
+                      PpTitle(l10n.chooseOptionalItems, size: 14),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.optionalItemsHint,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          height: 1.45,
+                          color: AppColors.textMuted,
                         ),
-                        subtitle: Text(
-                          [
-                            if (pack != null && pack.isNotEmpty) pack,
-                            if (optional) 'Optional',
-                          ].join(' · '),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                        secondary: linePrice > 0
-                            ? Text(
-                                formatInr(linePrice),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.saffron,
-                                ),
-                              )
-                            : null,
-                        controlAffinity: ListTileControlAffinity.leading,
-                      );
-                    }),
+                      ),
+                      const SizedBox(height: 8),
+                      ...items
+                          .where(_isOptional)
+                          .map((item) => _itemTile(item, optional: true)),
+                    ],
                   ],
                 ),
               ),
@@ -327,7 +304,7 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                           child: Text(
                             _adding
                                 ? l10n.processing
-                                : 'Add ${_selected.length} items to cart',
+                                : l10n.addItemsToCart(_selected.length),
                           ),
                         ),
                       ),
@@ -337,5 +314,56 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
               ),
             ],
           );
+  }
+
+  Widget _itemTile(Map<String, dynamic> item, {required bool optional}) {
+    final key = _keyOf(item);
+    final selected = _selected.contains(key);
+    final pack = item['pack'] as String?;
+    final linePrice = _priceOf(item);
+    return CheckboxListTile(
+      contentPadding: EdgeInsets.zero,
+      value: selected,
+      activeColor: AppColors.maroonDeep,
+      onChanged: !optional && _hasOptional
+          ? null
+          : (value) {
+              setState(() {
+                if (value == true) {
+                  _selected.add(key);
+                } else {
+                  _selected.remove(key);
+                }
+              });
+            },
+      title: Text(
+        item['name'] as String? ?? '',
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        [
+          if (pack != null && pack.isNotEmpty) pack,
+          if (optional) context.l10n.optionalItem,
+        ].join(' · '),
+        style: const TextStyle(
+          fontSize: 12,
+          color: AppColors.textMuted,
+        ),
+      ),
+      secondary: linePrice > 0
+          ? Text(
+              formatInr(linePrice),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.saffron,
+              ),
+            )
+          : null,
+      controlAffinity: ListTileControlAffinity.leading,
+    );
   }
 }

@@ -1,37 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ps_widgets.dart';
 
 const kOnboardingDoneKey = 'ps_onboarding_done';
-
-const _slides = [
-  (
-    title: 'Complete Pooja Kits',
-    desc:
-        'Order curated kits for every festival and family function — nothing missing, nothing extra.',
-    label: 'FESTIVAL KIT',
-  ),
-  (
-    title: 'Verified Poojaris',
-    desc:
-        'Book experienced, background-verified priests for home visits or online consultations.',
-    label: 'POOJARI PORTRAIT',
-  ),
-  (
-    title: 'Same-Day Delivery',
-    desc:
-        'Fresh flowers, agarbatti and ritual items from nearby pooja stores, delivered fast.',
-    label: 'DELIVERY VAN',
-  ),
-  (
-    title: 'Never Miss a Festival',
-    desc:
-        'Personalized reminders for every festival and auspicious date, right on time.',
-    label: 'CALENDAR',
-  ),
-];
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -51,18 +25,52 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _next() {
-    if (_index >= _slides.length - 1) {
+    final slideCount = _slideCount(context);
+    if (_index >= slideCount - 1) {
       _finish();
       return;
     }
     setState(() => _index++);
   }
 
+  int _slideCount(BuildContext context) => 4;
+
+  ({String title, String desc, String label}) _slideAt(
+    BuildContext context,
+    int index,
+  ) {
+    final l10n = context.l10n;
+    return switch (index) {
+      0 => (
+          title: l10n.onboardingSlide1Title,
+          desc: l10n.onboardingSlide1Desc,
+          label: l10n.onboardingSlide1Label,
+        ),
+      1 => (
+          title: l10n.onboardingSlide2Title,
+          desc: l10n.onboardingSlide2Desc,
+          label: l10n.onboardingSlide2Label,
+        ),
+      2 => (
+          title: l10n.onboardingSlide3Title,
+          desc: l10n.onboardingSlide3Desc,
+          label: l10n.onboardingSlide3Label,
+        ),
+      _ => (
+          title: l10n.onboardingSlide4Title,
+          desc: l10n.onboardingSlide4Desc,
+          label: l10n.onboardingSlide4Label,
+        ),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    final slide = _slides[_index];
-    final last = _index == _slides.length - 1;
+    final slide = _slideAt(context, _index);
+    final slideCount = _slideCount(context);
+    final last = _index == slideCount - 1;
     final t = context.ps;
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: t.bg,
@@ -80,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: TextButton(
                   onPressed: _finish,
                   child: Text(
-                    'Skip',
+                    l10n.skip,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: t.textMuted,
@@ -156,7 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_slides.length, (i) {
+                    children: List.generate(slideCount, (i) {
                       final active = i == _index;
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
@@ -172,7 +180,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   const SizedBox(height: 20),
                   PsSaffronButton(
-                    label: last ? 'Get Started' : 'Next',
+                    label: last ? l10n.getStarted : l10n.next,
                     onPressed: _next,
                   ),
                 ],

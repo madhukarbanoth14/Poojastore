@@ -18,6 +18,8 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _pulse;
   final AudioPlayer _omPlayer = AudioPlayer();
 
+  static const _logoAsset = 'assets/images/pavitra_seva_logo.jpeg';
+
   @override
   void initState() {
     super.initState();
@@ -26,14 +28,13 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1200),
     )..repeat();
     _playOmChant();
-    Future<void>.delayed(const Duration(milliseconds: 10000), () async {
+    Future<void>.delayed(const Duration(milliseconds: 2200), () async {
       if (!mounted) return;
       const storage = FlutterSecureStorage();
       final done = await storage.read(key: kOnboardingDoneKey);
       if (!mounted) return;
       await _omPlayer.stop();
       if (!mounted) return;
-      // Guests land on home (or onboarding once); login is optional until checkout.
       context.go(done == '1' ? '/' : '/onboarding');
     });
   }
@@ -63,7 +64,8 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.maroonDeep, AppColors.maroon],
+            colors: [Color(0xFFF8F3EB), Color(0xFFF0E6D8), AppColors.maroonDeep],
+            stops: [0.0, 0.72, 1.0],
           ),
         ),
         child: Stack(
@@ -80,107 +82,70 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 220,
-                    height: 220,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          width: 220,
-                          height: 220,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.goldBright.withValues(alpha: 0.35),
-                              style: BorderStyle.solid,
-                            ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.maroon.withValues(alpha: 0.12),
+                            blurRadius: 28,
+                            offset: const Offset(0, 10),
                           ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          _logoAsset,
+                          width: 300,
+                          fit: BoxFit.contain,
                         ),
-                        CustomPaint(
-                          size: const Size(220, 220),
-                          painter: _DashedCirclePainter(
-                            color: AppColors.goldBright.withValues(alpha: 0.35),
-                          ),
-                        ),
-                        CustomPaint(
-                          size: const Size(178, 178),
-                          painter: _DashedCirclePainter(
-                            color: AppColors.goldBright.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.goldBright.withValues(alpha: 0.45),
-                                blurRadius: 36,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Text(
+                      'Divine essentials, delivered',
+                      style: TextStyle(
+                        fontSize: 14,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.maroon.withValues(alpha: 0.85),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    AnimatedBuilder(
+                      animation: _pulse,
+                      builder: (context, _) {
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(3, (i) {
+                            final phase = (_pulse.value + i * 0.2) % 1;
+                            final scale =
+                                1 + (phase < 0.5 ? phase : 1 - phase) * 0.8;
+                            final opacity =
+                                0.4 + (1 - (phase - 0.5).abs() * 2) * 0.6;
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 3.5),
+                              width: 8 * scale,
+                              height: 8 * scale,
+                              decoration: BoxDecoration(
+                                color: AppColors.gold.withValues(
+                                  alpha: opacity.clamp(0.4, 1),
+                                ),
+                                shape: BoxShape.circle,
                               ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/OM.jpg',
-                              fit: BoxFit.cover,
-                              width: 120,
-                              height: 120,
-                            ),
-                          ),
-                        ),
-                      ],
+                            );
+                          }),
+                        );
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 22),
-                  const Text(
-                    'Pooja Store',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 30,
-                      color: AppColors.cream,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Divine essentials, delivered',
-                    style: TextStyle(
-                      fontSize: 14,
-                      letterSpacing: 1.5,
-                      color: AppColors.cream.withValues(alpha: 0.75),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  AnimatedBuilder(
-                    animation: _pulse,
-                    builder: (context, _) {
-                      return Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(3, (i) {
-                          final phase = (_pulse.value + i * 0.2) % 1;
-                          final scale = 1 + (phase < 0.5 ? phase : 1 - phase) * 0.8;
-                          final opacity = 0.4 + (1 - (phase - 0.5).abs() * 2) * 0.6;
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 3.5),
-                            width: 8 * scale,
-                            height: 8 * scale,
-                            decoration: BoxDecoration(
-                              color: AppColors.goldBright.withValues(
-                                alpha: opacity.clamp(0.4, 1),
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                          );
-                        }),
-                      );
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -188,40 +153,4 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
-}
-
-class _DashedCirclePainter extends CustomPainter {
-  _DashedCirclePainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    const dash = 5.0;
-    const gap = 4.0;
-    final radius = size.width / 2;
-    final circ = 2 * 3.14159 * radius;
-    final count = (circ / (dash + gap)).floor();
-    final sweep = (dash / circ) * 2 * 3.14159;
-    final skip = (gap / circ) * 2 * 3.14159;
-    var start = 0.0;
-    for (var i = 0; i < count; i++) {
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset(radius, radius), radius: radius),
-        start,
-        sweep,
-        false,
-        paint,
-      );
-      start += sweep + skip;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedCirclePainter oldDelegate) =>
-      oldDelegate.color != color;
 }

@@ -23,9 +23,11 @@ Future<bool> ensureLoggedIn(
     ),
   );
 
-  // Single push only — do not also push from a SnackBar action (that caused
-  // a stacked second login screen after OTP).
-  await context.push<void>('/login');
+  // Return here after OTP so router can send the user back (avoids pop races).
+  final returnTo = GoRouterState.of(context).matchedLocation;
+  await context.push<void>(
+    '/login?next=${Uri.encodeComponent(returnTo)}',
+  );
   if (!context.mounted) return false;
   return ref.read(authControllerProvider).isAuthenticated;
 }

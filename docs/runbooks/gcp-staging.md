@@ -21,7 +21,7 @@ Console: [https://console.cloud.google.com/run/detail/asia-south1/pooja-api-stag
 | Artifact Registry | `asia-south1-docker.pkg.dev/pooja-store-app/pooja-store` |
 | Cloud SQL (PostgreSQL 16) | `pooja-store-staging` |
 | Memorystore Redis 7 | `pooja-store-staging` |
-| Cloud Run | `pooja-api-staging` |
+| Cloud Run | `pooja-api-staging`, `pooja-api-production`, `pavitra-seva-web` |
 | Runtime SA | `pooja-api@pooja-store-app.iam.gserviceaccount.com` |
 
 Secrets in Secret Manager (never commit these):

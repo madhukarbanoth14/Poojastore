@@ -13,6 +13,7 @@ import {
   KidsAgeBand,
   PackageAddonType,
 } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { seedPoojaSamagri } from './samagri-catalog';
 
 const prisma = new PrismaClient();
@@ -158,6 +159,9 @@ async function upsertKit(input: {
 
 async function main() {
   const adminPhone = process.env.SEED_ADMIN_PHONE_E164 ?? '+919999999999';
+  const adminEmail = (process.env.SEED_ADMIN_EMAIL ?? 'admin@pavitraseva.in').toLowerCase();
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'Admin@12345';
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
 
   await prisma.user.upsert({
     where: { phoneE164: adminPhone },
@@ -166,11 +170,15 @@ async function main() {
       status: UserStatus.ACTIVE,
       fullName: 'Platform Admin',
       market: Market.IN,
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
     },
     create: {
       phoneE164: adminPhone,
       countryCode: '91',
       phoneNational: adminPhone.replace('+91', ''),
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
       fullName: 'Platform Admin',
       role: Role.ADMIN,
       status: UserStatus.ACTIVE,
@@ -214,11 +222,11 @@ async function main() {
       { name: 'Banana / fruit offering pack guidance card', quantity: 1, isOptional: true },
     ],
     i18nTe: {
-      name: 'సత్యనారాయణ పూజా కిట్',
+      name: 'సత్యనారాయణ స్వామి పూజా కిట్',
       description:
-        'సత్యనారాయణ కథ, పూజకు కావాల్సిన సామగ్రి — ఇంటి వేడుకకు సంపూర్ణ కిట్.',
+        'సత్యనారాయణ స్వామి కథ, పూజకు కావాల్సిన సామగ్రి — ఇంటి వేడుకకు సంపూర్ణ కిట్.',
       kitItems: [
-        'సత్యనారాయణ ఫోటో/ఫ్రేమ్',
+        'సత్యనారాయణ స్వామి ఫోటో/ఫ్రేమ్',
         'కుంకుమ & పసుపు',
         'అగరబత్తీలు',
         'కర్పూరం',
@@ -1475,10 +1483,10 @@ async function seedTeluguContent() {
   await upsertVidhi({
     slug: 'satyanarayan-puja-te',
     language: 'te',
-    title: 'సత్యనారాయణ పూజా విధి',
-    summary: 'ఇంట్లో సత్యనారాయణ కథ, నైవేద్యం, హారతి.',
+    title: 'సత్యనారాయణ స్వామి పూజా విధి',
+    summary: 'ఇంట్లో సత్యనారాయణ స్వామి కథ, నైవేద్యం, హారతి.',
     description:
-      'ఇంట్లో సత్యనారాయణ పూజ చేయడానికి సులభమైన విధి. సామగ్రికి సత్యనారాయణ పూజా కిట్ వాడండి.',
+      'ఇంట్లో సత్యనారాయణ స్వామి పూజ చేయడానికి సులభమైన విధి. సామగ్రికి సత్యనారాయణ స్వామి పూజా కిట్ వాడండి.',
     category: VidhiCategory.OCCASION,
     bestTimeHint:
       'అభిజిత్ ముహూర్తం లేదా సూర్యోదయం తర్వాత శుభ ఘడియలు; రాహు కాలం మానండి.',
@@ -1488,7 +1496,7 @@ async function seedTeluguContent() {
     tags: ['satyanarayan', 'vrat', 'home', 'katha'],
     sortOrder: 1,
     kathaText:
-      'సత్యం పాటించి కథ పూర్తి చేసిన భక్తులను సత్యనారాయణుడు ఆశీర్వదిస్తాడు. హారతి తర్వాత ప్రసాదం పంచుకోండి.',
+      'సత్యం పాటించి కథ పూర్తి చేసిన భక్తులను సత్యనారాయణ స్వామి ఆశీర్వదిస్తాడు. హారతి తర్వాత ప్రసాదం పంచుకోండి.',
     steps: [
       {
         stepNumber: 1,
@@ -1520,7 +1528,7 @@ async function seedTeluguContent() {
         stepNumber: 5,
         title: 'కథ & హారతి',
         instruction:
-          'సత్యనారాయణ కథ చదవండి లేదా వినండి. హారతి, పుష్పాంజలి తర్వాత ప్రసాదం పంచండి.',
+          'సత్యనారాయణ స్వామి కథ చదవండి లేదా వినండి. హారతి, పుష్పాంజలి తర్వాత ప్రసాదం పంచండి.',
       },
     ],
     mantras: [
@@ -1531,7 +1539,7 @@ async function seedTeluguContent() {
         meaning: 'వినాయకునికి నమస్కారం.',
       },
       {
-        title: 'సత్యనారాయణ మంత్రం',
+        title: 'సత్యనారాయణ స్వామి మంత్రం',
         sanskritText: 'ॐ नमो भगवते सत्यदेवाय',
         transliteration: 'Om Namo Bhagavate Satyadevaya',
         meaning: 'సత్యదేవునికి నమస్కారం.',

@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Pooja Store Mobile</string>
+	<string>Pavitra Seva</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -67,8 +67,14 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Pooja Store needs camera access for video consultations with poojaris.</string>
+	<string>Pavitra Seva needs camera access to scan poojari samagri lists and for video consultations.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pavitra Seva needs photo library access to upload poojari samagri list photos.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Pooja Store needs microphone access for audio and video consultations.</string>
+	<string>Pavitra Seva needs microphone access for audio and video consultations.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

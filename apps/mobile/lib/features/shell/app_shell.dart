@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 
 class AppShell extends StatelessWidget {
@@ -10,6 +11,7 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ps;
+    final l10n = context.l10n;
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: DecoratedBox(
@@ -23,25 +25,25 @@ class AppShell extends StatelessWidget {
             child: Row(
               children: [
                 _NavItem(
-                  label: 'Home',
+                  label: l10n.navHome,
                   selected: navigationShell.currentIndex == 0,
                   onTap: () => _go(0),
                   icon: _NavIcon.home,
                 ),
                 _NavItem(
-                  label: 'Samagri',
+                  label: l10n.navSamagri,
                   selected: navigationShell.currentIndex == 1,
                   onTap: () => _go(1),
                   icon: _NavIcon.categories,
                 ),
                 _NavItem(
-                  label: 'Poojaris',
+                  label: l10n.navPoojaris,
                   selected: navigationShell.currentIndex == 2,
                   onTap: () => _go(2),
                   icon: _NavIcon.priests,
                 ),
                 _NavItem(
-                  label: 'Account',
+                  label: l10n.navAccount,
                   selected: navigationShell.currentIndex == 3,
                   onTap: () => _go(3),
                   icon: _NavIcon.profile,

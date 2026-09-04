@@ -61,61 +61,67 @@ export class CheckoutService {
       where: { id: userId },
     });
 
-    const order = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.order.create({
-        data: {
-          orderNumber,
-          userId,
-          status: OrderStatus.PENDING_PAYMENT,
-          market,
-          currency,
-          subtotalMinor,
-          shippingMinor,
-          taxMinor,
-          discountMinor: 0,
-          totalMinor,
-          shippingAddressId: address.id,
-          deliverySlot: deliverySlot?.trim() || null,
-          items: {
-            create: cart.items.map((item) => {
-              const unit =
-                item.unitPriceOverrideMinor ?? item.product.priceMinor;
-              return {
-                productId: item.productId,
-                productName: item.product.name,
-                quantity: item.quantity,
-                unitPriceMinor: unit,
-                totalMinor: item.quantity * unit,
-                metadata: (item.metadata ?? {}) as Prisma.InputJsonValue,
-              };
-            }),
-          },
+    const order = await this.prisma.order.create({
+      data: {
+        orderNumber,
+        userId,
+        status: OrderStatus.PENDING_PAYMENT,
+        market,
+        currency,
+        subtotalMinor,
+        shippingMinor,
+        taxMinor,
+        discountMinor: 0,
+        totalMinor,
+        shippingAddressId: address.id,
+        deliverySlot: deliverySlot?.trim() || null,
+        items: {
+          create: cart.items.map((item) => {
+            const unit =
+              item.unitPriceOverrideMinor ?? item.product.priceMinor;
+            return {
+              productId: item.productId,
+              productName: item.product.name,
+              quantity: item.quantity,
+              unitPriceMinor: unit,
+              totalMinor: item.quantity * unit,
+              metadata: (item.metadata ?? {}) as Prisma.InputJsonValue,
+            };
+          }),
         },
-        include: { items: true },
-      });
-
-      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
-      return created;
-    });
-
-    const session = await this.payments.createSession({
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      amountMinor: order.totalMinor,
-      currency: order.currency,
-      market: order.market,
-      customer: {
-        id: user.id,
-        email: user.email,
-        phoneE164: user.phoneE164,
-        fullName: user.fullName,
       },
-      lineItems: order.items.map((item) => ({
-        name: item.productName,
-        quantity: item.quantity,
-        unitAmountMinor: item.unitPriceMinor,
-      })),
+      include: { items: true },
     });
+
+    let session;
+    try {
+      session = await this.payments.createSession({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        amountMinor: order.totalMinor,
+        currency: order.currency,
+        market: order.market,
+        customer: {
+          id: user.id,
+          email: user.email,
+          phoneE164: user.phoneE164,
+          fullName: user.fullName,
+        },
+        lineItems: order.items.map((item) => ({
+          name: item.productName,
+          quantity: item.quantity,
+          unitAmountMinor: item.unitPriceMinor,
+        })),
+      });
+    } catch (err) {
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { status: OrderStatus.FAILED },
+      });
+      throw err;
+    }
+
+    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
 
     const payment = await this.prisma.payment.create({
       data: {

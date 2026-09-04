@@ -16,7 +16,7 @@ class OrdersScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.ps.bg,
-      appBar: const PsHeader(title: 'Order History'),
+      appBar: PsHeader(title: l10n.orderHistory),
       body: FutureBuilder(
         future: ref.read(marketplaceApiProvider).myOrders(),
         builder: (context, snapshot) {

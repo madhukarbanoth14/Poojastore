@@ -59,6 +59,48 @@ upsert_secret() {
 upsert_secret pooja-staging-database-url "$DATABASE_URL"
 upsert_secret pooja-staging-redis-url "$REDIS_URL"
 
+# Optional Razorpay test keys — export before deploy or load from apps/api/.env locally.
+# With keys set, checkout uses Razorpay even when PAYMENT_MODE=mock (test mode).
+if [[ -f apps/api/.env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source apps/api/.env
+  set +a
+fi
+
+if [[ -z "${GOOGLE_CLIENT_IDS:-}" ]]; then
+  GOOGLE_CLIENT_IDS="$(gcloud run services describe "$SERVICE" \
+    --project="$PROJECT" --region="$REGION" \
+    --format=json 2>/dev/null | python3 -c "
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    raise SystemExit
+containers = (((data.get('spec') or {}).get('template') or {}).get('spec') or {}).get('containers') or [{}]
+envs = (containers[0] or {}).get('env') or []
+for item in envs:
+    if item.get('name') == 'GOOGLE_CLIENT_IDS':
+        print(item.get('value') or '', end='')
+        break
+" || true)"
+fi
+
+SECRETS="DATABASE_URL=pooja-staging-database-url:latest,REDIS_URL=pooja-staging-redis-url:latest,JWT_ACCESS_SECRET=pooja-staging-jwt-access:latest,JWT_REFRESH_SECRET=pooja-staging-jwt-refresh:latest"
+
+if [[ -n "${RAZORPAY_KEY_ID:-}" && -n "${RAZORPAY_KEY_SECRET:-}" ]]; then
+  upsert_secret pooja-staging-razorpay-key-id "$RAZORPAY_KEY_ID"
+  upsert_secret pooja-staging-razorpay-key-secret "$RAZORPAY_KEY_SECRET"
+  SECRETS="${SECRETS},RAZORPAY_KEY_ID=pooja-staging-razorpay-key-id:latest,RAZORPAY_KEY_SECRET=pooja-staging-razorpay-key-secret:latest"
+  if [[ -n "${RAZORPAY_WEBHOOK_SECRET:-}" ]]; then
+    upsert_secret pooja-staging-razorpay-webhook-secret "$RAZORPAY_WEBHOOK_SECRET"
+    SECRETS="${SECRETS},RAZORPAY_WEBHOOK_SECRET=pooja-staging-razorpay-webhook-secret:latest"
+  fi
+  echo "Razorpay test keys will be mounted on Cloud Run."
+else
+  echo "WARNING: RAZORPAY_KEY_ID/SECRET not set — checkout will fall back to MOCK on staging."
+fi
+
 gcloud run deploy "$SERVICE" \
   --project="$PROJECT" \
   --region="$REGION" \
@@ -75,8 +117,8 @@ gcloud run deploy "$SERVICE" \
   --network=default \
   --subnet=default \
   --vpc-egress=private-ranges-only \
-  --set-secrets="DATABASE_URL=pooja-staging-database-url:latest,REDIS_URL=pooja-staging-redis-url:latest,JWT_ACCESS_SECRET=pooja-staging-jwt-access:latest,JWT_REFRESH_SECRET=pooja-staging-jwt-refresh:latest" \
-  --set-env-vars="NODE_ENV=development,API_PREFIX=api,API_VERSION=1,JWT_ACCESS_TTL_SECONDS=900,JWT_REFRESH_TTL_SECONDS=2592000,OTP_LENGTH=6,OTP_TTL_SECONDS=300,OTP_MAX_ATTEMPTS=5,OTP_MAX_REQUESTS_PER_HOUR=5,OTP_RETURN_IN_RESPONSE=true,SMS_PROVIDER=console,SWAGGER_ENABLED=true,PAYMENT_MODE=mock,LOG_LEVEL=info"
+  --set-secrets="$SECRETS" \
+  --set-env-vars="^@^NODE_ENV=development@API_PREFIX=api@API_VERSION=1@JWT_ACCESS_TTL_SECONDS=900@JWT_REFRESH_TTL_SECONDS=2592000@OTP_LENGTH=6@OTP_TTL_SECONDS=300@OTP_MAX_ATTEMPTS=5@OTP_MAX_REQUESTS_PER_HOUR=5@OTP_RETURN_IN_RESPONSE=true@SMS_PROVIDER=console@SWAGGER_ENABLED=true@PAYMENT_MODE=mock@PUBLIC_API_BASE_URL=https://pooja-api-staging-tcjernzh5a-el.a.run.app@LOG_LEVEL=info@GOOGLE_CLIENT_IDS=${GOOGLE_CLIENT_IDS:-}"
 
 URL="$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format='value(status.url)')"
 echo "Deployed: $URL"

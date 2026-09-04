@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/apps/mobile"
 
-API_BASE_URL="${API_BASE_URL:-https://pooja-api-staging-tcjernzh5a-el.a.run.app/api/v1}"
+API_BASE_URL="${API_BASE_URL:-https://pooja-api-production-tcjernzh5a-el.a.run.app/api/v1}"
 # Android versionCode max is 2100000000 — use compact YYMMDDHH
 BUILD_NUMBER="${BUILD_NUMBER:-$(date +%y%m%d%H)}"
 GOOGLE_SERVER_CLIENT_ID="${GOOGLE_SERVER_CLIENT_ID:-}"

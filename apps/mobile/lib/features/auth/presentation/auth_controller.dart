@@ -21,14 +21,12 @@ class AuthState {
     this.user,
     this.loading = false,
     this.error,
-    this.debugOtp,
     this.bootstrapping = true,
   });
 
   final AuthUser? user;
   final bool loading;
   final String? error;
-  final String? debugOtp;
   final bool bootstrapping;
 
   bool get isAuthenticated => user != null;
@@ -37,7 +35,6 @@ class AuthState {
     AuthUser? user,
     bool? loading,
     String? error,
-    String? debugOtp,
     bool? bootstrapping,
     bool clearUser = false,
     bool clearError = false,
@@ -46,7 +43,6 @@ class AuthState {
       user: clearUser ? null : (user ?? this.user),
       loading: loading ?? this.loading,
       error: clearError ? null : (error ?? this.error),
-      debugOtp: debugOtp ?? this.debugOtp,
       bootstrapping: bootstrapping ?? this.bootstrapping,
     );
   }
@@ -73,17 +69,19 @@ class AuthController extends StateNotifier<AuthState> {
     );
   }
 
-  Future<bool> requestOtp({
-    required String countryCode,
-    required String phone,
+  Future<bool> login({
+    required String email,
+    required String password,
+    String? preferredLanguage,
   }) async {
-    state = state.copyWith(loading: true, clearError: true, debugOtp: null);
+    state = state.copyWith(loading: true, clearError: true);
     try {
-      final otp = await _repository.requestOtp(
-        countryCode: countryCode,
-        phone: phone,
+      final session = await _repository.login(
+        email: email,
+        password: password,
+        preferredLanguage: preferredLanguage,
       );
-      state = state.copyWith(loading: false, debugOtp: otp);
+      state = state.copyWith(loading: false, user: session.user);
       return true;
     } catch (error) {
       state = state.copyWith(loading: false, error: friendlyNetworkError(error));
@@ -91,19 +89,21 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> verifyOtp({
+  Future<bool> register({
+    required String email,
+    required String password,
     required String countryCode,
     required String phone,
-    required String code,
     String? fullName,
     String? preferredLanguage,
   }) async {
     state = state.copyWith(loading: true, clearError: true);
     try {
-      final session = await _repository.verifyOtp(
+      final session = await _repository.register(
+        email: email,
+        password: password,
         countryCode: countryCode,
         phone: phone,
-        code: code,
         fullName: fullName,
         preferredLanguage: preferredLanguage,
       );
@@ -133,8 +133,8 @@ class AuthController extends StateNotifier<AuthState> {
         state = state.copyWith(
           loading: false,
           error: provider == 'APPLE'
-              ? 'Apple Sign-In is not configured. Use phone OTP.'
-              : 'Google Sign-In is not configured. Use phone OTP.',
+              ? 'Apple Sign-In is not configured. Use email and password.'
+              : 'Google Sign-In is not configured. Use email and password.',
         );
         return false;
       }
@@ -186,6 +186,7 @@ class AuthController extends StateNotifier<AuthState> {
 
 final authControllerProvider =
     StateNotifierProvider<AuthController, AuthState>((ref) {
+  ref.keepAlive();
   // Use read (not watch) so locale/ApiClient rebuilds do not recreate AuthController
   // and wipe the in-memory session (that was forcing a second login after OTP).
   final controller = AuthController(ref.read(authRepositoryProvider));

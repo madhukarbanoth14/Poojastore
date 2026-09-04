@@ -3,6 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { SMS_SENDER } from './application/ports/sms-sender.port';
+import { ChangePasswordUseCase } from './application/use-cases/change-password.use-case';
+import { LoginWithPasswordUseCase } from './application/use-cases/login-with-password.use-case';
+import { RegisterAccountUseCase } from './application/use-cases/register-account.use-case';
 import { RequestOtpUseCase } from './application/use-cases/request-otp.use-case';
 import { SocialLoginUseCase } from './application/use-cases/social-login.use-case';
 import { VerifyOtpUseCase } from './application/use-cases/verify-otp.use-case';
@@ -28,6 +31,9 @@ import { AuthController } from './presentation/auth.controller';
   providers: [
     RequestOtpUseCase,
     VerifyOtpUseCase,
+    RegisterAccountUseCase,
+    LoginWithPasswordUseCase,
+    ChangePasswordUseCase,
     SocialLoginUseCase,
     TokenService,
     JwtStrategy,
