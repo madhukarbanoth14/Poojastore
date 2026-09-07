@@ -171,6 +171,39 @@ fi
 ENV_EXTRA="${ENV_EXTRA}@UPI_QR_IMAGE_URL=${UPI_QR_IMAGE_URL}"
 PAYMENT_MODE=live
 
+# Gmail SMTP for order confirmation emails (EMAIL_FROM / SMTP_USER / SMTP_PASS
+# contain @ so they must be secrets, not --set-env-vars entries).
+EMAIL_PROVIDER="${EMAIL_PROVIDER:-smtp}"
+PUBLIC_WEB_BASE_URL="${PUBLIC_WEB_BASE_URL:-https://pavitraseva.in}"
+SMTP_HOST="${SMTP_HOST:-smtp.gmail.com}"
+SMTP_PORT="${SMTP_PORT:-587}"
+SMTP_SECURE="${SMTP_SECURE:-false}"
+EMAIL_FROM="${EMAIL_FROM:-Pavitra Seva <pavitraseva@techfylabs.com>}"
+SMTP_USER="${SMTP_USER:-pavitraseva@techfylabs.com}"
+
+if [[ -n "${SMTP_PASS:-}" ]]; then
+  upsert_secret pooja-production-email-from "$EMAIL_FROM"
+  upsert_secret pooja-production-smtp-user "$SMTP_USER"
+  upsert_secret pooja-production-smtp-pass "$SMTP_PASS"
+  for secret_name in pooja-production-email-from pooja-production-smtp-user pooja-production-smtp-pass; do
+    gcloud secrets add-iam-policy-binding "$secret_name" \
+      --account="$ACCOUNT" --project="$PROJECT" \
+      --member="serviceAccount:${SA}" \
+      --role="roles/secretmanager.secretAccessor" --quiet >/dev/null
+  done
+  SECRETS="${SECRETS},EMAIL_FROM=pooja-production-email-from:latest,SMTP_USER=pooja-production-smtp-user:latest,SMTP_PASS=pooja-production-smtp-pass:latest"
+  ENV_EXTRA="${ENV_EXTRA}@EMAIL_PROVIDER=${EMAIL_PROVIDER}@PUBLIC_WEB_BASE_URL=${PUBLIC_WEB_BASE_URL}@SMTP_HOST=${SMTP_HOST}@SMTP_PORT=${SMTP_PORT}@SMTP_SECURE=${SMTP_SECURE}"
+  echo "Gmail SMTP will be mounted for order confirmation emails."
+elif gcloud secrets describe pooja-production-smtp-pass \
+    --account="$ACCOUNT" --project="$PROJECT" >/dev/null 2>&1; then
+  SECRETS="${SECRETS},EMAIL_FROM=pooja-production-email-from:latest,SMTP_USER=pooja-production-smtp-user:latest,SMTP_PASS=pooja-production-smtp-pass:latest"
+  ENV_EXTRA="${ENV_EXTRA}@EMAIL_PROVIDER=${EMAIL_PROVIDER}@PUBLIC_WEB_BASE_URL=${PUBLIC_WEB_BASE_URL}@SMTP_HOST=${SMTP_HOST}@SMTP_PORT=${SMTP_PORT}@SMTP_SECURE=${SMTP_SECURE}"
+  echo "Keeping existing production SMTP secrets (not overwritten)."
+else
+  echo "WARNING: SMTP_PASS unset — order confirmation emails will use console provider."
+  ENV_EXTRA="${ENV_EXTRA}@EMAIL_PROVIDER=console@PUBLIC_WEB_BASE_URL=${PUBLIC_WEB_BASE_URL}"
+fi
+
 if [[ "$PAYMENT_MODE" != "live" ]]; then
   echo "WARNING: Razorpay and company UPI are unset — checkout will use MOCK."
 fi
@@ -194,7 +227,6 @@ gcloud run deploy "$SERVICE" \
   --vpc-egress=private-ranges-only \
   --set-secrets="$SECRETS" \
   --set-env-vars="^@^NODE_ENV=development@API_PREFIX=api@API_VERSION=1@JWT_ACCESS_TTL_SECONDS=900@JWT_REFRESH_TTL_SECONDS=2592000@OTP_LENGTH=6@OTP_TTL_SECONDS=300@OTP_MAX_ATTEMPTS=5@OTP_MAX_REQUESTS_PER_HOUR=5@OTP_RETURN_IN_RESPONSE=true@SMS_PROVIDER=console@SWAGGER_ENABLED=false@PAYMENT_MODE=${PAYMENT_MODE}@PUBLIC_API_BASE_URL=${PUBLIC_API_BASE_URL}@CORS_ORIGINS=${CORS_ORIGINS}@LOG_LEVEL=info@GOOGLE_CLIENT_IDS=${GOOGLE_CLIENT_IDS:-}${ENV_EXTRA}"
-
 URL="$(gcloud run services describe "$SERVICE" --account="$ACCOUNT" --project="$PROJECT" --region="$REGION" --format='value(status.url)')"
 echo "Deployed: $URL"
 echo "Health:   $URL/api/v1/health/ready"
