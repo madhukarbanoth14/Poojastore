@@ -205,22 +205,18 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
     super.dispose();
   }
 
-  String? _metaUri(String key) {
-    final value = _meta[key] as String?;
-    if (value == null || value.isEmpty) return null;
-    return value;
-  }
-
   Future<void> _pickScreenshot() async {
     final file = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      imageQuality: 70,
-      maxWidth: 1600,
+      imageQuality: 55,
+      maxWidth: 1280,
     );
     if (file == null) return;
     final bytes = await file.readAsBytes();
-    if (bytes.length > 2000000) {
-      if (mounted) setState(() => _error = 'Screenshot must be under 2 MB');
+    if (bytes.length > 900000) {
+      if (mounted) {
+        setState(() => _error = 'Screenshot is too large — enter the UTR only');
+      }
       return;
     }
     if (!mounted) return;
@@ -357,7 +353,7 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
             ],
             const SizedBox(height: 14),
             const Text(
-              'UPI reference / UTR (optional if you upload a screenshot)',
+              'UPI reference / UTR',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
             ),
             const SizedBox(height: 6),
@@ -374,7 +370,7 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
               onPressed: _pickScreenshot,
               child: Text(
                 _screenshotBytes == null
-                    ? 'Upload payment screenshot'
+                    ? 'Upload payment screenshot (optional)'
                     : 'Change screenshot',
               ),
             ),
@@ -404,7 +400,7 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
             ),
             const SizedBox(height: 10),
             const Text(
-              'Enter the UTR or upload the payment screenshot. We confirm the credit, then pack the order.',
+              'Enter the UTR after paying — the order confirms automatically. A screenshot is optional backup.',
               style: TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.4),
             ),
           ],
