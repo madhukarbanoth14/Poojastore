@@ -39,7 +39,7 @@ abstract class AuthRepository {
 
   Future<void> updatePreferredLanguage(String language);
 
-  Future<AuthUser> updateProfile({String? fullName, String? email});
+  Future<AuthUser> updateProfile({String? fullName, String? email, String? phone});
 
   Future<AuthUser> me();
 

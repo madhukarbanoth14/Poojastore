@@ -23,6 +23,11 @@ function toE164(raw: string) {
   return "";
 }
 
+/** Real IN mobiles start 6–9. Google/Apple social accounts use a +915… placeholder. */
+function isRealInMobile(phoneE164: string | null | undefined) {
+  return Boolean(phoneE164 && /^\+91[6-9]\d{9}$/.test(phoneE164));
+}
+
 function StepDots({ step, lastLabel }: { step: Step; lastLabel: string }) {
   const labels = ["Kits", "Who", "Details", lastLabel];
   return (
@@ -50,7 +55,7 @@ function StepDots({ step, lastLabel }: { step: Step; lastLabel: string }) {
 }
 
 export default function CheckoutPage() {
-  const { user, cart, ready, refreshCart } = useAuth();
+  const { user, cart, ready, refreshCart, updateProfile } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -61,6 +66,7 @@ export default function CheckoutPage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [postal, setPostal] = useState("");
+  const [deliveryPhone, setDeliveryPhone] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [familyLine1, setFamilyLine1] = useState("");
@@ -81,6 +87,9 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!user) return;
+    if (isRealInMobile(user.phoneE164) && !deliveryPhone) {
+      setDeliveryPhone(user.phoneE164.replace(/^\+91/, ""));
+    }
     void listAddresses()
       .then((items) => {
         setAddresses(items);
@@ -103,7 +112,8 @@ export default function CheckoutPage() {
   const wantsPay = wantsSelf || wantsFamily;
 
   const hasSelfAddress = Boolean(
-    addressId || (line1.trim() && city.trim() && state.trim() && postal.trim()),
+    (addressId || (line1.trim() && city.trim() && state.trim() && postal.trim())) &&
+      toE164(deliveryPhone),
   );
   const hasFamily = Boolean(
     recipientName.trim() &&
@@ -208,6 +218,16 @@ export default function CheckoutPage() {
       }
 
       if (!wantsPay) return;
+
+      const selfPhone = toE164(deliveryPhone);
+      if (wantsSelf) {
+        if (!selfPhone) {
+          throw new Error("Enter your mobile number for delivery updates.");
+        }
+        if (!isRealInMobile(user?.phoneE164) || user?.phoneE164 !== selfPhone) {
+          await updateProfile({ phone: selfPhone });
+        }
+      }
 
       let shippingAddressId = addressId;
       let familyAddressId: string | undefined;
@@ -373,6 +393,10 @@ export default function CheckoutPage() {
         {step === 3 && wantsSelf ? (
           <section>
             <h2 className="font-semibold">Your delivery address</h2>
+            <p className="mt-1 text-sm text-muted">
+              Include your mobile number so the delivery partner can reach you
+              (required for Google / Apple sign-in).
+            </p>
             <AddressFields
               addresses={addresses}
               addressId={addressId}
@@ -381,10 +405,12 @@ export default function CheckoutPage() {
               city={city}
               state={state}
               postal={postal}
+              phone={deliveryPhone}
               onLine1={setLine1}
               onCity={setCity}
               onState={setState}
               onPostal={setPostal}
+              onPhone={setDeliveryPhone}
             />
           </section>
         ) : null}
@@ -637,10 +663,12 @@ function AddressFields({
   city,
   state,
   postal,
+  phone,
   onLine1,
   onCity,
   onState,
   onPostal,
+  onPhone,
 }: {
   addresses: Address[];
   addressId: string;
@@ -649,36 +677,47 @@ function AddressFields({
   city: string;
   state: string;
   postal: string;
+  phone: string;
   onLine1: (v: string) => void;
   onCity: (v: string) => void;
   onState: (v: string) => void;
   onPostal: (v: string) => void;
+  onPhone: (v: string) => void;
 }) {
-  if (addresses.length) {
-    return (
-      <div className="mt-2">
-        {addresses.map((a) => (
-          <button
-            key={a.id}
-            type="button"
-            onClick={() => onSelect(a.id)}
-            className={`mt-2 w-full rounded-2xl border px-4 py-3 text-left text-sm ${addressId === a.id ? "border-gold bg-blush" : "border-border bg-paper"}`}
-          >
-            <p className="font-semibold">{a.label}</p>
-            <p className="text-muted">
-              {a.line1}, {a.city}, {a.state} {a.postalCode}
-            </p>
-          </button>
-        ))}
-      </div>
-    );
-  }
   return (
     <div className="mt-2 grid gap-2">
-      <input className="input-ps" placeholder="Address" value={line1} onChange={(e) => onLine1(e.target.value)} />
-      <input className="input-ps" placeholder="City" value={city} onChange={(e) => onCity(e.target.value)} />
-      <input className="input-ps" placeholder="State" value={state} onChange={(e) => onState(e.target.value)} />
-      <input className="input-ps" placeholder="PIN" value={postal} onChange={(e) => onPostal(e.target.value)} />
+      {addresses.length ? (
+        <div>
+          {addresses.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => onSelect(a.id)}
+              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-left text-sm ${addressId === a.id ? "border-gold bg-blush" : "border-border bg-paper"}`}
+            >
+              <p className="font-semibold">{a.label}</p>
+              <p className="text-muted">
+                {a.line1}, {a.city}, {a.state} {a.postalCode}
+              </p>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <>
+          <input className="input-ps" placeholder="Address" value={line1} onChange={(e) => onLine1(e.target.value)} />
+          <input className="input-ps" placeholder="City" value={city} onChange={(e) => onCity(e.target.value)} />
+          <input className="input-ps" placeholder="State" value={state} onChange={(e) => onState(e.target.value)} />
+          <input className="input-ps" placeholder="PIN" value={postal} onChange={(e) => onPostal(e.target.value)} />
+        </>
+      )}
+      <input
+        className="input-ps"
+        placeholder="Mobile number"
+        inputMode="tel"
+        autoComplete="tel"
+        value={phone}
+        onChange={(e) => onPhone(e.target.value)}
+      />
     </div>
   );
 }

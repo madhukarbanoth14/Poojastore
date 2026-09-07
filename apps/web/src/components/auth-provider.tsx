@@ -46,6 +46,7 @@ type AuthState = {
   updateProfile: (patch: {
     fullName?: string;
     email?: string;
+    phone?: string;
     preferredLanguage?: string;
     timezone?: string;
   }) => Promise<void>;
@@ -183,6 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (patch: {
       fullName?: string;
       email?: string;
+      phone?: string;
       preferredLanguage?: string;
       timezone?: string;
     }) => {
