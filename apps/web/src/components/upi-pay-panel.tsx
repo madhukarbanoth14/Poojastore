@@ -97,8 +97,7 @@ export function UpiPayPanel({
   const amount = formatMoney(payment.amountMinor, payment.currency ?? "INR");
   const normalizedUtr = normalizeUtr(utr);
   const amountPaidMinor = parseAmountToMinor(amountPaid);
-  const canSubmit =
-    normalizedUtr.length === 12 && amountPaidMinor != null && !busy;
+  const canSubmit = Boolean(normalizedUtr || amountPaid.trim()) && !busy;
 
   async function copyVpa() {
     if (!vpa) return;
