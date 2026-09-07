@@ -383,22 +383,46 @@ export class ConfirmPaymentService {
       payment.providerPaymentId ||
       `shot${payment.id.replace(/-/g, '').slice(0, 18)}`;
 
+    const metaUpdate = {
+      ...(payment.metadata as Record<string, unknown>),
+      ...(utr ? { utr } : {}),
+      hasScreenshot:
+        Boolean(screenshot) ||
+        Boolean((payment.metadata as Record<string, unknown>).hasScreenshot),
+      submittedAt: new Date().toISOString(),
+    };
+
+    // Valid UTR → auto-confirm so checkout completes without waiting on admin.
+    // Screenshot-only stays PROCESSING for manual review.
+    if (utr.length >= 8) {
+      try {
+        return await this.markSucceeded({
+          paymentId: payment.id,
+          providerPaymentId,
+          raw: {
+            ...metaUpdate,
+            autoConfirmed: true,
+            autoConfirmedAt: new Date().toISOString(),
+          },
+        });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          throw new BadRequestException('This UPI reference was already used');
+        }
+        throw error;
+      }
+    }
+
     try {
       return await this.prisma.payment.update({
         where: { id: payment.id },
         data: {
           status: PaymentStatus.PROCESSING,
           providerPaymentId,
-          metadata: {
-            ...(payment.metadata as Record<string, unknown>),
-            ...(utr ? { utr } : {}),
-            hasScreenshot:
-              Boolean(screenshot) ||
-              Boolean(
-                (payment.metadata as Record<string, unknown>).hasScreenshot,
-              ),
-            submittedAt: new Date().toISOString(),
-          } as Prisma.InputJsonValue,
+          metadata: metaUpdate as Prisma.InputJsonValue,
         },
       });
     } catch (error) {

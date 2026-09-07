@@ -14,6 +14,9 @@ async function bootstrap() {
     bufferLogs: true,
     rawBody: true,
   });
+  // Base64 UPI screenshots exceed Nest's default ~100kb JSON limit.
+  app.useBodyParser('json', { limit: '6mb' });
+  app.useBodyParser('urlencoded', { limit: '6mb', extended: true });
   const config = app.get(ConfigService);
   const logger = app.get(Logger);
   app.useLogger(logger);
