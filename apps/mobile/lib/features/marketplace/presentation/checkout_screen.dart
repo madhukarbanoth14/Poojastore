@@ -186,6 +186,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               decoration: const InputDecoration(labelText: 'Postal code'),
             ),
           ],
+          const SizedBox(height: 10),
+          TextField(
+            controller: _phone,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Mobile number',
+              hintText: 'Required for delivery (Google / Apple login)',
+            ),
+          ),
           const SizedBox(height: 16),
           const Text(
             'Delivery Slot',
