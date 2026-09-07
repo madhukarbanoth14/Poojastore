@@ -88,24 +88,81 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
   }
 
   String? get _networkQrSrc {
-    if (!_brokenCompanyQr) {
-      final company = _meta['qrImageUrl'] as String?;
-      if (company != null && company.isNotEmpty) {
-        if (company.startsWith('http')) return company;
-        if (company.startsWith('/images/')) {
-          final origin = kReleaseMode
-              ? 'https://pavitraseva.in'
-              : 'http://127.0.0.1:3001';
-          return '$origin$company';
-        }
+    // Prefer dynamic amount QR — PhonePe often blocks app deep-link Pay buttons.
+    final upi = _upiUri;
+    if (upi != null && !_brokenCompanyQr) {
+      return 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${Uri.encodeComponent(upi)}';
+    }
+    final company = _meta['qrImageUrl'] as String?;
+    if (company != null && company.isNotEmpty) {
+      if (company.startsWith('http')) return company;
+      if (company.startsWith('/images/')) {
+        final origin = kReleaseMode
+            ? 'https://pavitraseva.in'
+            : 'http://127.0.0.1:3001';
+        return '$origin$company';
       }
     }
-    final upi = _upiUri;
-    if (upi == null) return null;
-    return 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${Uri.encodeComponent(upi)}';
+    return null;
   }
 
   Widget _qrImage() {
+    final src = _networkQrSrc;
+    if (src != null) {
+      return Image.network(
+        src,
+        width: 220,
+        height: 220,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) {
+          if (!_brokenCompanyQr) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => _brokenCompanyQr = true);
+            });
+            return const SizedBox(
+              width: 220,
+              height: 220,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (!_brokenAssetQr) {
+            return Image.asset(
+              'assets/images/payments/company-upi-qr.jpeg',
+              width: 220,
+              height: 220,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && !_brokenAssetQr) {
+                    setState(() => _brokenAssetQr = true);
+                  }
+                });
+                return const SizedBox(
+                  width: 220,
+                  height: 72,
+                  child: Center(
+                    child: Text(
+                      'QR unavailable — use UPI ID',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+          return const SizedBox(
+            width: 220,
+            height: 72,
+            child: Center(
+              child: Text(
+                'QR unavailable — use UPI ID',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        },
+      );
+    }
     if (!_brokenAssetQr) {
       return Image.asset(
         'assets/images/payments/company-upi-qr.jpeg',
@@ -120,52 +177,26 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
           });
           return const SizedBox(
             width: 220,
-            height: 220,
-            child: Center(child: CircularProgressIndicator()),
+            height: 72,
+            child: Center(
+              child: Text(
+                'QR unavailable — use UPI ID',
+                textAlign: TextAlign.center,
+              ),
+            ),
           );
         },
       );
     }
-    final src = _networkQrSrc;
-    if (src == null) {
-      return const SizedBox(
-        width: 220,
-        height: 72,
-        child: Center(
-          child: Text(
-            'QR unavailable — use UPI ID or Open UPI app',
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    }
-    return Image.network(
-      src,
+    return const SizedBox(
       width: 220,
-      height: 220,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) {
-        if (!_brokenCompanyQr) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() => _brokenCompanyQr = true);
-          });
-          return const SizedBox(
-            width: 220,
-            height: 220,
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        return const SizedBox(
-          width: 220,
-          height: 72,
-          child: Center(
-            child: Text(
-              'QR unavailable — use UPI ID or Open UPI app',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        );
-      },
+      height: 72,
+      child: Center(
+        child: Text(
+          'QR unavailable — use UPI ID',
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 
@@ -225,13 +256,8 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
   }
 
   Future<void> _openUpi() async {
-    await _openUris([
-      _metaUri('phonepeUri'),
-      _metaUri('gpayUri'),
-      _metaUri('gpayAltUri'),
-      _metaUri('paytmUri'),
-      _upiUri,
-    ]);
+    // Standard upi:// only — PhonePe declines phonepe://pay deep links.
+    await _openUris([_upiUri]);
   }
 
   Future<void> _submit() async {
@@ -283,7 +309,7 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Pay $_amountLabel in PhonePe, Google Pay, or Paytm. Money goes to the Techfy Labs UPI account. Scan the QR only if you are paying from another phone.',
+              'Pay $_amountLabel by scanning this QR in PhonePe, Google Pay, or Paytm. PhonePe often blocks in-app Pay buttons — QR or UPI ID works reliably.',
               style: const TextStyle(color: AppColors.textMuted, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -351,40 +377,11 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
                 ),
               ),
             ],
-            if (_metaUri('phonepeUri') != null ||
-                _metaUri('gpayUri') != null ||
-                _metaUri('paytmUri') != null ||
-                _upiUri != null) ...[
+            if (_upiUri != null) ...[
               const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (_metaUri('phonepeUri') != null)
-                    OutlinedButton(
-                      onPressed: () => _openUris([_metaUri('phonepeUri'), _upiUri]),
-                      child: const Text('PhonePe'),
-                    ),
-                  if (_metaUri('gpayUri') != null)
-                    OutlinedButton(
-                      onPressed: () => _openUris([
-                        _metaUri('gpayUri'),
-                        _metaUri('gpayAltUri'),
-                        _upiUri,
-                      ]),
-                      child: const Text('Google Pay'),
-                    ),
-                  if (_metaUri('paytmUri') != null)
-                    OutlinedButton(
-                      onPressed: () => _openUris([_metaUri('paytmUri'), _upiUri]),
-                      child: const Text('Paytm'),
-                    ),
-                  if (_upiUri != null)
-                    OutlinedButton(
-                      onPressed: _openUpi,
-                      child: const Text('Other UPI app'),
-                    ),
-                ],
+              OutlinedButton(
+                onPressed: _openUpi,
+                child: const Text('Open UPI app (if QR scan is not possible)'),
               ),
             ],
             const SizedBox(height: 14),

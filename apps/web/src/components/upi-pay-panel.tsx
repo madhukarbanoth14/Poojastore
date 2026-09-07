@@ -13,12 +13,13 @@ function publicQrSrc(raw?: string) {
   return COMPANY_QR;
 }
 
-function qrSrc(payment: Payment, brokenCompanyQr: boolean) {
-  const company = publicQrSrc(payment.metadata?.qrImageUrl);
-  if (!brokenCompanyQr) return company;
+/** Prefer a dynamic amount QR — PhonePe blocks many in-app deep links. */
+function qrSrc(payment: Payment, brokenDynamic: boolean) {
   const upi = payment.metadata?.upiUri;
-  if (!upi) return null;
-  return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${encodeURIComponent(upi)}`;
+  if (upi && !brokenDynamic) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${encodeURIComponent(upi)}`;
+  }
+  return publicQrSrc(payment.metadata?.qrImageUrl);
 }
 
 function fileToDataUrl(file: File) {
@@ -43,10 +44,10 @@ export function UpiPayPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [brokenCompanyQr, setBrokenCompanyQr] = useState(false);
+  const [brokenDynamic, setBrokenDynamic] = useState(false);
   const src = useMemo(
-    () => qrSrc(payment, brokenCompanyQr),
-    [payment, brokenCompanyQr],
+    () => qrSrc(payment, brokenDynamic),
+    [payment, brokenDynamic],
   );
   const vpa = payment.metadata?.vpa;
   const amount = formatMoney(payment.amountMinor, payment.currency ?? "INR");
@@ -97,19 +98,21 @@ export function UpiPayPanel({
     <section className="space-y-4">
       <h2 className="font-semibold">Pay with UPI</h2>
       <p className="text-sm text-muted">
-        Pay <span className="font-semibold text-maroon">{amount}</span> to Techfy Labs with
-        PhonePe, Google Pay, or Paytm. On a computer, scan the QR with another phone.
+        Pay <span className="font-semibold text-maroon">{amount}</span> by{" "}
+        <span className="font-semibold text-maroon">scanning this QR</span> in
+        PhonePe, Google Pay, or Paytm. PhonePe often blocks in-app Pay buttons —
+        QR or UPI ID works reliably.
       </p>
       {src ? (
         <div className="flex justify-center rounded-2xl border border-divider bg-white p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={src}
-            alt="Company UPI QR code"
+            alt="UPI QR code with order amount"
             width={240}
             height={240}
             className="h-60 w-60 object-contain"
-            onError={() => setBrokenCompanyQr(true)}
+            onError={() => setBrokenDynamic(true)}
           />
         </div>
       ) : null}
@@ -127,26 +130,14 @@ export function UpiPayPanel({
           </button>
         </div>
       ) : null}
-      <div className="grid gap-2 sm:grid-cols-3">
-        {payment.metadata?.phonepeUri ? (
-          <a href={payment.metadata.phonepeUri} className="btn-outline-gold flex justify-center">
-            PhonePe
-          </a>
-        ) : null}
-        {payment.metadata?.gpayUri ? (
-          <a href={payment.metadata.gpayUri} className="btn-outline-gold flex justify-center">
-            Google Pay
-          </a>
-        ) : null}
-        {payment.metadata?.paytmUri ? (
-          <a href={payment.metadata.paytmUri} className="btn-outline-gold flex justify-center">
-            Paytm
-          </a>
-        ) : null}
-      </div>
+      <ol className="list-decimal space-y-1 pl-5 text-sm text-body">
+        <li>Open PhonePe / GPay / Paytm → Scan QR (or pay to the UPI ID above)</li>
+        <li>Confirm amount is {amount}</li>
+        <li>After paying, enter UTR or upload a screenshot below</li>
+      </ol>
       {payment.metadata?.upiUri ? (
         <a href={payment.metadata.upiUri} className="btn-outline-gold flex justify-center">
-          Other UPI app
+          Open UPI app (if QR scan is not possible)
         </a>
       ) : null}
       <label className="block text-sm font-semibold">
@@ -185,8 +176,7 @@ export function UpiPayPanel({
         {busy ? "Saving…" : "I have paid"}
       </button>
       <p className="text-xs text-muted">
-        Money goes to the Techfy Labs UPI account. We confirm the credit on the bank
-        statement, then pack the order.
+        Money goes to the registered UPI account. We confirm the credit, then pack the order.
       </p>
     </section>
   );

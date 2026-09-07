@@ -56,13 +56,17 @@ export function buildUpiAppLinks(params: {
   note: string;
 }) {
   const query = upiPayQuery(params);
+  // Use the standard upi:// intent only. App-specific schemes like
+  // phonepe://pay are often declined by PhonePe with a security error
+  // asking the user to pay via QR / UPI ID instead.
+  const upiUri = `upi://pay?${query}`;
   return {
-    upiUri: `upi://pay?${query}`,
-    phonepeUri: `phonepe://pay?${query}`,
-    gpayUri: `tez://upi/pay?${query}`,
-    gpayAltUri: `gpay://upi/pay?${query}`,
-    paytmUri: `paytmmp://pay?${query}`,
-    bhimUri: `bhim://pay?${query}`,
+    upiUri,
+    phonepeUri: upiUri,
+    gpayUri: upiUri,
+    gpayAltUri: upiUri,
+    paytmUri: upiUri,
+    bhimUri: upiUri,
   };
 }
 
