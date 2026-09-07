@@ -46,7 +46,7 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> updatePreferredLanguage(String language) async {}
 
   @override
-  Future<AuthUser> updateProfile({String? fullName, String? email}) async =>
+  Future<AuthUser> updateProfile({String? fullName, String? email, String? phone}) async =>
       throw UnimplementedError();
 
   @override
