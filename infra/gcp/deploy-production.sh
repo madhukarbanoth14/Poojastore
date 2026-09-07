@@ -138,6 +138,7 @@ if [[ -n "${RAZORPAY_KEY_ID:-}" && -n "${RAZORPAY_KEY_SECRET:-}" ]]; then
 elif gcloud secrets describe pooja-production-razorpay-key-id \
     --account="$ACCOUNT" --project="$PROJECT" >/dev/null 2>&1; then
   SECRETS="${SECRETS},RAZORPAY_KEY_ID=pooja-production-razorpay-key-id:latest,RAZORPAY_KEY_SECRET=pooja-production-razorpay-key-secret:latest"
+  PAYMENT_MODE=live
   echo "Keeping existing production Razorpay secrets (not overwritten)."
 fi
 
@@ -151,16 +152,24 @@ if [[ -n "${UPI_VPA:-}" ]]; then
   SECRETS="${SECRETS},UPI_VPA=pooja-production-upi-vpa:latest"
   PAYMENT_MODE=live
   echo "Company UPI VPA will be mounted (PAYMENT_MODE=live)."
+elif gcloud secrets describe pooja-production-upi-vpa \
+    --account="$ACCOUNT" --project="$PROJECT" >/dev/null 2>&1; then
+  SECRETS="${SECRETS},UPI_VPA=pooja-production-upi-vpa:latest"
+  PAYMENT_MODE=live
+  echo "Keeping existing production UPI VPA secret (not overwritten)."
 fi
 
 ENV_EXTRA=""
-if [[ -n "${UPI_PAYEE_NAME:-}" ]]; then
-  ENV_EXTRA="${ENV_EXTRA}@UPI_PAYEE_NAME=${UPI_PAYEE_NAME}"
+if [[ -z "${UPI_PAYEE_NAME:-}" ]]; then
+  UPI_PAYEE_NAME="Pavitra Seva"
 fi
-if [[ -n "${UPI_QR_IMAGE_URL:-}" ]]; then
-  ENV_EXTRA="${ENV_EXTRA}@UPI_QR_IMAGE_URL=${UPI_QR_IMAGE_URL}"
-  PAYMENT_MODE=live
+ENV_EXTRA="${ENV_EXTRA}@UPI_PAYEE_NAME=${UPI_PAYEE_NAME}"
+
+if [[ -z "${UPI_QR_IMAGE_URL:-}" ]]; then
+  UPI_QR_IMAGE_URL="https://pavitraseva.in/images/payments/company-upi-qr.jpeg"
 fi
+ENV_EXTRA="${ENV_EXTRA}@UPI_QR_IMAGE_URL=${UPI_QR_IMAGE_URL}"
+PAYMENT_MODE=live
 
 if [[ "$PAYMENT_MODE" != "live" ]]; then
   echo "WARNING: Razorpay and company UPI are unset — checkout will use MOCK."
