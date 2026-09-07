@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/format";
 import { submitUpiUtr, type Payment } from "@/lib/payments";
 
 const COMPANY_QR = "/images/payments/company-upi-qr.jpeg";
+const MAX_UPLOAD_BYTES = 900_000;
 
 function publicQrSrc(raw?: string) {
   if (!raw) return COMPANY_QR;
@@ -13,21 +14,40 @@ function publicQrSrc(raw?: string) {
   return COMPANY_QR;
 }
 
-function qrSrc(payment: Payment, brokenCompanyQr: boolean) {
-  const company = publicQrSrc(payment.metadata?.qrImageUrl);
-  if (!brokenCompanyQr) return company;
+/** Prefer a dynamic amount QR — PhonePe blocks many in-app deep links. */
+function qrSrc(payment: Payment, brokenDynamic: boolean) {
   const upi = payment.metadata?.upiUri;
-  if (!upi) return null;
-  return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${encodeURIComponent(upi)}`;
+  if (upi && !brokenDynamic) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${encodeURIComponent(upi)}`;
+  }
+  return publicQrSrc(payment.metadata?.qrImageUrl);
 }
 
-function fileToDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("Could not read the screenshot"));
-    reader.readAsDataURL(file);
-  });
+/** Resize + JPEG-compress so the base64 body stays under the API limit. */
+async function compressScreenshot(file: File): Promise<{ dataUrl: string; name: string }> {
+  const bitmap = await createImageBitmap(file);
+  const maxEdge = 1280;
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Could not prepare the screenshot");
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  let quality = 0.72;
+  let dataUrl = canvas.toDataURL("image/jpeg", quality);
+  while (dataUrl.length > MAX_UPLOAD_BYTES * 1.37 && quality > 0.4) {
+    quality -= 0.08;
+    dataUrl = canvas.toDataURL("image/jpeg", quality);
+  }
+  if (dataUrl.length > MAX_UPLOAD_BYTES * 1.4) {
+    throw new Error("Screenshot is still too large — enter the UTR only, or pick a smaller image");
+  }
+  return { dataUrl, name: file.name.replace(/\.\w+$/, "") + ".jpg" };
 }
 
 export function UpiPayPanel({
@@ -43,10 +63,10 @@ export function UpiPayPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [brokenCompanyQr, setBrokenCompanyQr] = useState(false);
+  const [brokenDynamic, setBrokenDynamic] = useState(false);
   const src = useMemo(
-    () => qrSrc(payment, brokenCompanyQr),
-    [payment, brokenCompanyQr],
+    () => qrSrc(payment, brokenDynamic),
+    [payment, brokenDynamic],
   );
   const vpa = payment.metadata?.vpa;
   const amount = formatMoney(payment.amountMinor, payment.currency ?? "INR");
@@ -68,19 +88,23 @@ export function UpiPayPanel({
       setScreenshotName(null);
       return;
     }
-    if (file.size > 2_000_000) {
-      setError("Screenshot must be under 2 MB");
-      return;
-    }
     setError(null);
-    setScreenshot(await fileToDataUrl(file));
-    setScreenshotName(file.name);
+    try {
+      const compressed = await compressScreenshot(file);
+      setScreenshot(compressed.dataUrl);
+      setScreenshotName(compressed.name);
+    } catch (err) {
+      setScreenshot(null);
+      setScreenshotName(null);
+      setError(err instanceof Error ? err.message : "Could not read the screenshot");
+    }
   }
 
   async function submit() {
     setBusy(true);
     setError(null);
     try {
+      // Prefer UTR for auto-confirm; screenshot is optional proof.
       await submitUpiUtr(payment.id, {
         utr: utr.trim() || undefined,
         screenshotBase64: screenshot ?? undefined,
@@ -97,19 +121,21 @@ export function UpiPayPanel({
     <section className="space-y-4">
       <h2 className="font-semibold">Pay with UPI</h2>
       <p className="text-sm text-muted">
-        Pay <span className="font-semibold text-maroon">{amount}</span> to Techfy Labs with
-        PhonePe, Google Pay, or Paytm. On a computer, scan the QR with another phone.
+        Pay <span className="font-semibold text-maroon">{amount}</span> by{" "}
+        <span className="font-semibold text-maroon">scanning this QR</span> in
+        PhonePe, Google Pay, or Paytm. We only accept QR payments — no in-app Pay
+        links.
       </p>
       {src ? (
         <div className="flex justify-center rounded-2xl border border-divider bg-white p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={src}
-            alt="Company UPI QR code"
+            alt="UPI QR code with order amount"
             width={240}
             height={240}
             className="h-60 w-60 object-contain"
-            onError={() => setBrokenCompanyQr(true)}
+            onError={() => setBrokenDynamic(true)}
           />
         </div>
       ) : null}
@@ -127,30 +153,13 @@ export function UpiPayPanel({
           </button>
         </div>
       ) : null}
-      <div className="grid gap-2 sm:grid-cols-3">
-        {payment.metadata?.phonepeUri ? (
-          <a href={payment.metadata.phonepeUri} className="btn-outline-gold flex justify-center">
-            PhonePe
-          </a>
-        ) : null}
-        {payment.metadata?.gpayUri ? (
-          <a href={payment.metadata.gpayUri} className="btn-outline-gold flex justify-center">
-            Google Pay
-          </a>
-        ) : null}
-        {payment.metadata?.paytmUri ? (
-          <a href={payment.metadata.paytmUri} className="btn-outline-gold flex justify-center">
-            Paytm
-          </a>
-        ) : null}
-      </div>
-      {payment.metadata?.upiUri ? (
-        <a href={payment.metadata.upiUri} className="btn-outline-gold flex justify-center">
-          Other UPI app
-        </a>
-      ) : null}
+      <ol className="list-decimal space-y-1 pl-5 text-sm text-body">
+        <li>Open PhonePe / GPay / Paytm → Scan this QR</li>
+        <li>Confirm amount is {amount}</li>
+        <li>Enter the UTR below (order confirms automatically). Screenshot is optional.</li>
+      </ol>
       <label className="block text-sm font-semibold">
-        UPI reference / UTR (optional if you upload a screenshot)
+        UPI reference / UTR
         <input
           className="input-ps mt-1"
           value={utr}
@@ -160,7 +169,7 @@ export function UpiPayPanel({
         />
       </label>
       <div>
-        <p className="text-sm font-semibold">Payment screenshot (optional if you enter a UTR)</p>
+        <p className="text-sm font-semibold">Payment screenshot (optional)</p>
         <label className="btn-orange relative mt-2 w-full cursor-pointer overflow-hidden">
           <input
             className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
@@ -175,7 +184,7 @@ export function UpiPayPanel({
           <p className="mt-2 text-sm text-maroon">Attached: {screenshotName ?? "screenshot"}</p>
         ) : null}
       </div>
-      {error ? <p className="text-sm text-orange">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-orange">{error}</p> : null}
       <button
         type="button"
         className="btn-orange w-full disabled:opacity-50"
@@ -185,8 +194,8 @@ export function UpiPayPanel({
         {busy ? "Saving…" : "I have paid"}
       </button>
       <p className="text-xs text-muted">
-        Money goes to the Techfy Labs UPI account. We confirm the credit on the bank
-        statement, then pack the order.
+        Enter the UTR from PhonePe after paying — we confirm the order automatically.
+        A screenshot is optional backup for our team.
       </p>
     </section>
   );

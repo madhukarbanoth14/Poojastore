@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../features/marketplace/data/marketplace_api.dart';
 import '../theme/app_theme.dart';
@@ -88,24 +87,81 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
   }
 
   String? get _networkQrSrc {
-    if (!_brokenCompanyQr) {
-      final company = _meta['qrImageUrl'] as String?;
-      if (company != null && company.isNotEmpty) {
-        if (company.startsWith('http')) return company;
-        if (company.startsWith('/images/')) {
-          final origin = kReleaseMode
-              ? 'https://pavitraseva.in'
-              : 'http://127.0.0.1:3001';
-          return '$origin$company';
-        }
+    // Prefer dynamic amount QR — PhonePe often blocks app deep-link Pay buttons.
+    final upi = _upiUri;
+    if (upi != null && !_brokenCompanyQr) {
+      return 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${Uri.encodeComponent(upi)}';
+    }
+    final company = _meta['qrImageUrl'] as String?;
+    if (company != null && company.isNotEmpty) {
+      if (company.startsWith('http')) return company;
+      if (company.startsWith('/images/')) {
+        final origin = kReleaseMode
+            ? 'https://pavitraseva.in'
+            : 'http://127.0.0.1:3001';
+        return '$origin$company';
       }
     }
-    final upi = _upiUri;
-    if (upi == null) return null;
-    return 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${Uri.encodeComponent(upi)}';
+    return null;
   }
 
   Widget _qrImage() {
+    final src = _networkQrSrc;
+    if (src != null) {
+      return Image.network(
+        src,
+        width: 220,
+        height: 220,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) {
+          if (!_brokenCompanyQr) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => _brokenCompanyQr = true);
+            });
+            return const SizedBox(
+              width: 220,
+              height: 220,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (!_brokenAssetQr) {
+            return Image.asset(
+              'assets/images/payments/company-upi-qr.jpeg',
+              width: 220,
+              height: 220,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && !_brokenAssetQr) {
+                    setState(() => _brokenAssetQr = true);
+                  }
+                });
+                return const SizedBox(
+                  width: 220,
+                  height: 72,
+                  child: Center(
+                    child: Text(
+                      'QR unavailable — use UPI ID',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+          return const SizedBox(
+            width: 220,
+            height: 72,
+            child: Center(
+              child: Text(
+                'QR unavailable — use UPI ID',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        },
+      );
+    }
     if (!_brokenAssetQr) {
       return Image.asset(
         'assets/images/payments/company-upi-qr.jpeg',
@@ -120,52 +176,26 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
           });
           return const SizedBox(
             width: 220,
-            height: 220,
-            child: Center(child: CircularProgressIndicator()),
+            height: 72,
+            child: Center(
+              child: Text(
+                'QR unavailable — use UPI ID',
+                textAlign: TextAlign.center,
+              ),
+            ),
           );
         },
       );
     }
-    final src = _networkQrSrc;
-    if (src == null) {
-      return const SizedBox(
-        width: 220,
-        height: 72,
-        child: Center(
-          child: Text(
-            'QR unavailable — use UPI ID or Open UPI app',
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    }
-    return Image.network(
-      src,
+    return const SizedBox(
       width: 220,
-      height: 220,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) {
-        if (!_brokenCompanyQr) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() => _brokenCompanyQr = true);
-          });
-          return const SizedBox(
-            width: 220,
-            height: 220,
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        return const SizedBox(
-          width: 220,
-          height: 72,
-          child: Center(
-            child: Text(
-              'QR unavailable — use UPI ID or Open UPI app',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        );
-      },
+      height: 72,
+      child: Center(
+        child: Text(
+          'QR unavailable — use UPI ID',
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 
@@ -175,38 +205,18 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
     super.dispose();
   }
 
-  String? _metaUri(String key) {
-    final value = _meta[key] as String?;
-    if (value == null || value.isEmpty) return null;
-    return value;
-  }
-
-  Future<void> _openUris(List<String?> uris) async {
-    for (final raw in uris) {
-      if (raw == null || raw.isEmpty) continue;
-      try {
-        final uri = Uri.parse(raw);
-        if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
-      } catch (_) {}
-    }
-    if (mounted) {
-      setState(() {
-        _error =
-            'Install PhonePe, Google Pay, or Paytm to pay from this phone.';
-      });
-    }
-  }
-
   Future<void> _pickScreenshot() async {
     final file = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      imageQuality: 70,
-      maxWidth: 1600,
+      imageQuality: 55,
+      maxWidth: 1280,
     );
     if (file == null) return;
     final bytes = await file.readAsBytes();
-    if (bytes.length > 2000000) {
-      if (mounted) setState(() => _error = 'Screenshot must be under 2 MB');
+    if (bytes.length > 900000) {
+      if (mounted) {
+        setState(() => _error = 'Screenshot is too large — enter the UTR only');
+      }
       return;
     }
     if (!mounted) return;
@@ -222,16 +232,6 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
     if (vpa == null) return;
     await Clipboard.setData(ClipboardData(text: vpa));
     if (mounted) setState(() => _copied = true);
-  }
-
-  Future<void> _openUpi() async {
-    await _openUris([
-      _metaUri('phonepeUri'),
-      _metaUri('gpayUri'),
-      _metaUri('gpayAltUri'),
-      _metaUri('paytmUri'),
-      _upiUri,
-    ]);
   }
 
   Future<void> _submit() async {
@@ -283,7 +283,7 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Pay $_amountLabel in PhonePe, Google Pay, or Paytm. Money goes to the Techfy Labs UPI account. Scan the QR only if you are paying from another phone.',
+              'Pay $_amountLabel by scanning this QR in PhonePe, Google Pay, or Paytm. We only accept QR payments — no in-app Pay links.',
               style: const TextStyle(color: AppColors.textMuted, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -351,45 +351,9 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
                 ),
               ),
             ],
-            if (_metaUri('phonepeUri') != null ||
-                _metaUri('gpayUri') != null ||
-                _metaUri('paytmUri') != null ||
-                _upiUri != null) ...[
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (_metaUri('phonepeUri') != null)
-                    OutlinedButton(
-                      onPressed: () => _openUris([_metaUri('phonepeUri'), _upiUri]),
-                      child: const Text('PhonePe'),
-                    ),
-                  if (_metaUri('gpayUri') != null)
-                    OutlinedButton(
-                      onPressed: () => _openUris([
-                        _metaUri('gpayUri'),
-                        _metaUri('gpayAltUri'),
-                        _upiUri,
-                      ]),
-                      child: const Text('Google Pay'),
-                    ),
-                  if (_metaUri('paytmUri') != null)
-                    OutlinedButton(
-                      onPressed: () => _openUris([_metaUri('paytmUri'), _upiUri]),
-                      child: const Text('Paytm'),
-                    ),
-                  if (_upiUri != null)
-                    OutlinedButton(
-                      onPressed: _openUpi,
-                      child: const Text('Other UPI app'),
-                    ),
-                ],
-              ),
-            ],
             const SizedBox(height: 14),
             const Text(
-              'UPI reference / UTR (optional if you upload a screenshot)',
+              'UPI reference / UTR',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
             ),
             const SizedBox(height: 6),
@@ -406,7 +370,7 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
               onPressed: _pickScreenshot,
               child: Text(
                 _screenshotBytes == null
-                    ? 'Upload payment screenshot'
+                    ? 'Upload payment screenshot (optional)'
                     : 'Change screenshot',
               ),
             ),
@@ -436,7 +400,7 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
             ),
             const SizedBox(height: 10),
             const Text(
-              'Enter the UTR or upload the payment screenshot. We confirm the credit, then pack the order.',
+              'Enter the UTR after paying — the order confirms automatically. A screenshot is optional backup.',
               style: TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.4),
             ),
           ],

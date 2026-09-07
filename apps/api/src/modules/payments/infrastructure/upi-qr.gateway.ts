@@ -56,13 +56,10 @@ export function buildUpiAppLinks(params: {
   note: string;
 }) {
   const query = upiPayQuery(params);
+  // Payload for the QR code only — checkout UI never opens deep links.
+  const upiUri = `upi://pay?${query}`;
   return {
-    upiUri: `upi://pay?${query}`,
-    phonepeUri: `phonepe://pay?${query}`,
-    gpayUri: `tez://upi/pay?${query}`,
-    gpayAltUri: `gpay://upi/pay?${query}`,
-    paytmUri: `paytmmp://pay?${query}`,
-    bhimUri: `bhim://pay?${query}`,
+    upiUri,
   };
 }
 
@@ -96,12 +93,8 @@ export class UpiQrGateway implements PaymentGateway {
         payeeName,
         amount: amountRupees,
         currency: input.currency,
+        // Used only to render the QR image — never opened as a deep link.
         upiUri: links?.upiUri,
-        phonepeUri: links?.phonepeUri,
-        gpayUri: links?.gpayUri,
-        gpayAltUri: links?.gpayAltUri,
-        paytmUri: links?.paytmUri,
-        bhimUri: links?.bhimUri,
         qrImageUrl: qrImageUrl || undefined,
         orderNumber: input.orderNumber,
       },

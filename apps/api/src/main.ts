@@ -1,6 +1,7 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
@@ -10,10 +11,13 @@ import { attachSentry, initSentry } from './core/observability/sentry';
 async function bootstrap() {
   initSentry();
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
     rawBody: true,
   });
+  // Base64 UPI screenshots exceed Nest's default ~100kb JSON limit.
+  app.useBodyParser('json', { limit: '6mb' });
+  app.useBodyParser('urlencoded', { limit: '6mb', extended: true });
   const config = app.get(ConfigService);
   const logger = app.get(Logger);
   app.useLogger(logger);
