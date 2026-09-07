@@ -11,12 +11,15 @@ export function AddToCartButton({
   label = "Add to cart",
   className = "",
   compact = false,
+  redirectTo = "/cart",
 }: {
   productId: string;
   selectedItemKeys?: string[];
   label?: string;
   className?: string;
   compact?: boolean;
+  /** Where to go after a successful add. Defaults to cart. */
+  redirectTo?: string;
 }) {
   const { user, refreshCart } = useAuth();
   const router = useRouter();
@@ -25,7 +28,9 @@ export function AddToCartButton({
 
   async function add() {
     if (!user) {
-      router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+      router.push(
+        `/login?next=${encodeURIComponent(window.location.pathname)}`,
+      );
       return;
     }
     setBusy(true);
@@ -40,7 +45,7 @@ export function AddToCartButton({
         }),
       });
       await refreshCart();
-      router.push("/cart");
+      router.push(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add to cart");
     } finally {
