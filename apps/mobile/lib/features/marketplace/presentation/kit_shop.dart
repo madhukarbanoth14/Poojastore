@@ -179,6 +179,7 @@ class _KitShopViewState extends ConsumerState<KitShopView> {
             id,
             selectedItemKeys:
                 _chosenOptional.isEmpty ? null : _selectedKeys,
+            replace: true,
           );
       if (mounted) context.push('/checkout');
     } catch (e) {

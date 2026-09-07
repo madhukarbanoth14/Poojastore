@@ -333,6 +333,7 @@ export function KitShop({
               <AddToCartButton
                 productId={tab.product.id}
                 selectedItemKeys={chosenOptional.size ? selectedKeys : undefined}
+                buyNow
                 redirectTo="/checkout"
                 className="w-full justify-center"
                 label={locale === "te" ? "ఇప్పుడే కొనండి" : "Buy Now"}
@@ -507,6 +508,7 @@ export function KitShop({
           <AddToCartButton
             productId={tab.product.id}
             selectedItemKeys={chosenOptional.size ? selectedKeys : undefined}
+            buyNow
             redirectTo="/checkout"
             compact
             className="btn-orange-sm"

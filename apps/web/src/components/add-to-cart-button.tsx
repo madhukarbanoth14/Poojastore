@@ -12,6 +12,7 @@ export function AddToCartButton({
   className = "",
   compact = false,
   redirectTo = "/cart",
+  buyNow = false,
 }: {
   productId: string;
   selectedItemKeys?: string[];
@@ -20,6 +21,8 @@ export function AddToCartButton({
   compact?: boolean;
   /** Where to go after a successful add. Defaults to cart. */
   redirectTo?: string;
+  /** Clear other cart lines so checkout total matches this product. */
+  buyNow?: boolean;
 }) {
   const { user, refreshCart } = useAuth();
   const router = useRouter();
@@ -42,6 +45,7 @@ export function AddToCartButton({
           productId,
           quantity: 1,
           ...(selectedItemKeys?.length ? { selectedItemKeys } : {}),
+          ...(buyNow ? { replace: true } : {}),
         }),
       });
       await refreshCart();
@@ -62,7 +66,7 @@ export function AddToCartButton({
         aria-label={label}
         className={`btn-orange disabled:opacity-60 ${className}`}
       >
-        {busy ? "Adding…" : label}
+        {busy ? (buyNow ? "Buying…" : "Adding…") : label}
       </button>
       {error ? <p className="mt-2 text-sm text-orange">{error}</p> : null}
     </div>
