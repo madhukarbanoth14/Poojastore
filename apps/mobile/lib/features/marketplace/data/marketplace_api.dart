@@ -48,6 +48,7 @@ class MarketplaceApi {
     String productId, {
     int qty = 1,
     List<String>? selectedItemKeys,
+    bool replace = false,
   }) async {
     final res = await _api.dio.post(
       '/cart/items',
@@ -55,6 +56,7 @@ class MarketplaceApi {
         'productId': productId,
         'quantity': qty,
         if (selectedItemKeys != null) 'selectedItemKeys': selectedItemKeys,
+        if (replace) 'replace': true,
       },
     );
     return res.data['data'] as Map<String, dynamic>;

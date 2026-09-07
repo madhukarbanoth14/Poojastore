@@ -11,6 +11,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -45,6 +46,11 @@ class AddCartItemDto {
   @IsArray()
   @IsString({ each: true })
   selectedItemKeys?: string[];
+
+  /** Buy Now: clear other cart lines so checkout matches this product price. */
+  @IsOptional()
+  @IsBoolean()
+  replace?: boolean;
 }
 
 class UpdateCartItemDto {
@@ -94,10 +100,20 @@ export class CartController {
     if (!product) throw new NotFoundException('Product not found');
 
     const cart = await this.getOrCreateCart(user.id);
+    if (dto.replace) {
+      await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    }
     const selectedKeys = dto.selectedItemKeys?.filter(Boolean) ?? [];
+    const replace = Boolean(dto.replace);
 
     if (selectedKeys.length && product.type === ProductType.PUJA_KIT) {
-      await this.addSelectedKitItems(cart.id, product, selectedKeys, dto.quantity);
+      await this.addSelectedKitItems(
+        cart.id,
+        product,
+        selectedKeys,
+        dto.quantity,
+        { replace },
+      );
     } else {
       await this.prisma.cartItem.upsert({
         where: {
@@ -107,8 +123,16 @@ export class CartController {
           cartId: cart.id,
           productId: dto.productId,
           quantity: dto.quantity,
+          unitPriceOverrideMinor: null,
+          metadata: {},
         },
-        update: { quantity: { increment: dto.quantity } },
+        update: replace
+          ? {
+              quantity: dto.quantity,
+              unitPriceOverrideMinor: null,
+              metadata: {},
+            }
+          : { quantity: { increment: dto.quantity } },
       });
     }
 
@@ -163,6 +187,7 @@ export class CartController {
     },
     selectedKeys: string[],
     quantity: number,
+    opts: { replace?: boolean } = {},
   ) {
     const slugs = collectLineItemSlugs([product]);
     const priced = slugs.length
@@ -182,6 +207,62 @@ export class CartController {
       throw new BadRequestException('Select at least one kit item');
     }
 
+    const required = selectable.filter((item) => !item.optional);
+    const selectedRequired = required.filter((item) =>
+      selectedKeys.includes(item.key),
+    );
+    const selectedOptional = selected.filter((item) => item.optional);
+    const qtyUpdate = opts.replace
+      ? { quantity }
+      : { quantity: { increment: quantity } };
+
+    // Full included set → one kit line at the kit price (not retail sum of SKUs).
+    // Optional extras are added separately when they have a catalog SKU.
+    if (required.length > 0 && selectedRequired.length === required.length) {
+      const kitMetadata = selectedOptional.length
+        ? {
+            selectedItemKeys: selected.map((item) => item.key),
+            selectedItems: selected.map((item) => item.name),
+          }
+        : {};
+      await this.prisma.cartItem.upsert({
+        where: {
+          cartId_productId: { cartId, productId: product.id },
+        },
+        create: {
+          cartId,
+          productId: product.id,
+          quantity,
+          unitPriceOverrideMinor: null,
+          metadata: kitMetadata,
+        },
+        update: {
+          ...qtyUpdate,
+          unitPriceOverrideMinor: null,
+          metadata: kitMetadata,
+        },
+      });
+
+      for (const item of selectedOptional) {
+        if (!item.productId) continue;
+        await this.prisma.cartItem.upsert({
+          where: {
+            cartId_productId: {
+              cartId,
+              productId: item.productId,
+            },
+          },
+          create: {
+            cartId,
+            productId: item.productId,
+            quantity,
+          },
+          update: qtyUpdate,
+        });
+      }
+      return;
+    }
+
     const allHaveSku = selected.every((item) => item.productId);
     if (allHaveSku) {
       for (const item of selected) {
@@ -197,7 +278,7 @@ export class CartController {
             productId: item.productId!,
             quantity,
           },
-          update: { quantity: { increment: quantity } },
+          update: qtyUpdate,
         });
       }
       return;
@@ -219,7 +300,7 @@ export class CartController {
         },
       },
       update: {
-        quantity: { increment: quantity },
+        ...qtyUpdate,
         unitPriceOverrideMinor: override,
         metadata: {
           selectedItemKeys: selected.map((item) => item.key),

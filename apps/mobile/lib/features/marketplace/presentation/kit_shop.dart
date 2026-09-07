@@ -177,9 +177,11 @@ class _KitShopViewState extends ConsumerState<KitShopView> {
       }
       await ref.read(marketplaceApiProvider).addToCart(
             id,
-            selectedItemKeys: _selectedKeys,
+            selectedItemKeys:
+                _chosenOptional.isEmpty ? null : _selectedKeys,
+            replace: true,
           );
-      if (mounted) context.push('/cart');
+      if (mounted) context.push('/checkout');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -227,7 +229,7 @@ class _KitShopViewState extends ConsumerState<KitShopView> {
                       priceMinor: _priceMinor,
                       mrpMinor: _mrpMinor,
                       adding: _adding,
-                      addLabel: te ? 'పూర్తి కిట్ చేర్చండి' : 'Add Complete Kit',
+                      addLabel: te ? 'ఇప్పుడే కొనండి' : 'Buy Now',
                       viewLabel: te ? 'అన్ని వస్తువులు' : 'View All Items',
                       onAdd: _adding ? null : _addKit,
                       onViewItems: _scrollToItems,
@@ -1182,7 +1184,7 @@ class _StickyBar extends StatelessWidget {
                 child: Text(
                   adding
                       ? context.l10n.processing
-                      : (te ? 'కిట్ చేర్చండి' : 'Add Complete Kit'),
+                      : (te ? 'ఇప్పుడే కొనండి' : 'Buy Now'),
                 ),
               ),
             ],

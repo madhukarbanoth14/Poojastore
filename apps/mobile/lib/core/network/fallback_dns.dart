@@ -152,14 +152,14 @@ class FallbackDnsHttpOverrides extends HttpOverrides {
         final ordered = _ipv4First(lookup);
         if (ordered.isNotEmpty) {
           // Plain TCP; HttpClient wraps TLS using the original hostname.
-          return Socket.startConnect(ordered.first, port);
+          return await Socket.startConnect(ordered.first, port);
         }
       } catch (_) {}
       final fallback = await _dns.lookupA(host);
       if (fallback.isEmpty) {
         throw SocketException('Failed host lookup: $host');
       }
-      return Socket.startConnect(fallback.first, port);
+      return await Socket.startConnect(fallback.first, port);
     };
     return client;
   }
