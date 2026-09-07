@@ -18,6 +18,10 @@ import { PrismaService } from '../../../core/database/prisma.service';
 import { PushNotificationService } from '../../notifications/application/push-notification.service';
 import type { AuthenticatedUser } from '../../auth/domain/authenticated-user';
 import { parsePaymentScreenshot } from '../infrastructure/parse-payment-screenshot';
+import {
+  assertPaidAmountMatches,
+  assertValidUpiUtr,
+} from '../domain/upi-utr';
 
 @Injectable()
 export class ConfirmPaymentService {
@@ -329,15 +333,14 @@ export class ConfirmPaymentService {
   async submitUpiProof(
     paymentId: string,
     userId: string,
-    input: { utr?: string; screenshotBase64?: string },
+    input: {
+      utr: string;
+      amountPaidMinor: number;
+      screenshotBase64?: string;
+    },
   ) {
-    const utr = input.utr?.trim().toUpperCase() ?? '';
+    const utr = assertValidUpiUtr(input.utr);
     const screenshot = input.screenshotBase64?.trim() ?? '';
-    if (!utr && !screenshot) {
-      throw new BadRequestException(
-        'Enter a UTR or upload the payment screenshot',
-      );
-    }
 
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
@@ -362,6 +365,22 @@ export class ConfirmPaymentService {
       );
     }
 
+    assertPaidAmountMatches(input.amountPaidMinor, payment.amountMinor);
+
+    const duplicate = await this.prisma.payment.findFirst({
+      where: {
+        providerPaymentId: utr,
+        id: { not: payment.id },
+        status: { in: [PaymentStatus.SUCCEEDED, PaymentStatus.PROCESSING] },
+      },
+      select: { id: true },
+    });
+    if (duplicate) {
+      throw new BadRequestException(
+        'This UTR was already used on another order. Enter the UTR from your payment for this order only.',
+      );
+    }
+
     if (screenshot) {
       const parsed = parsePaymentScreenshot(screenshot);
       await this.prisma.upiPaymentProof.upsert({
@@ -378,50 +397,24 @@ export class ConfirmPaymentService {
       });
     }
 
-    const providerPaymentId =
-      utr ||
-      payment.providerPaymentId ||
-      `shot${payment.id.replace(/-/g, '').slice(0, 18)}`;
-
     const metaUpdate = {
       ...(payment.metadata as Record<string, unknown>),
-      ...(utr ? { utr } : {}),
+      utr,
+      amountPaidMinor: payment.amountMinor,
       hasScreenshot:
         Boolean(screenshot) ||
         Boolean((payment.metadata as Record<string, unknown>).hasScreenshot),
       submittedAt: new Date().toISOString(),
     };
 
-    // Valid UTR → auto-confirm so checkout completes without waiting on admin.
-    // Screenshot-only stays PROCESSING for manual review.
-    if (utr.length >= 8) {
-      try {
-        return await this.markSucceeded({
-          paymentId: payment.id,
-          providerPaymentId,
-          raw: {
-            ...metaUpdate,
-            autoConfirmed: true,
-            autoConfirmedAt: new Date().toISOString(),
-          },
-        });
-      } catch (error) {
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2002'
-        ) {
-          throw new BadRequestException('This UPI reference was already used');
-        }
-        throw error;
-      }
-    }
-
+    // Valid format + matching amount → queue for bank confirmation.
+    // Invalid UTR / wrong amount never reach here (thrown above).
     try {
       return await this.prisma.payment.update({
         where: { id: payment.id },
         data: {
           status: PaymentStatus.PROCESSING,
-          providerPaymentId,
+          providerPaymentId: utr,
           metadata: metaUpdate as Prisma.InputJsonValue,
         },
       });
@@ -430,7 +423,9 @@ export class ConfirmPaymentService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        throw new BadRequestException('This UPI reference was already used');
+        throw new BadRequestException(
+          'This UTR was already used on another order. Enter the UTR from your payment for this order only.',
+        );
       }
       throw error;
     }

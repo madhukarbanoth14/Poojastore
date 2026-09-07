@@ -126,17 +126,24 @@ class MarketplaceApi {
 
   Future<void> submitUpiUtr({
     required String paymentId,
-    String? utr,
+    required String utr,
+    required int amountPaidMinor,
     String? screenshotBase64,
   }) async {
     await _api.dio.post(
       '/payments/$paymentId/upi-submit',
       data: {
-        if (utr != null && utr.trim().isNotEmpty) 'utr': utr.trim(),
+        'utr': utr.trim(),
+        'amountPaidMinor': amountPaidMinor,
         if (screenshotBase64 != null && screenshotBase64.isNotEmpty)
           'screenshotBase64': screenshotBase64,
       },
     );
+  }
+
+  Future<Map<String, dynamic>?> pendingPayment() async {
+    final res = await _api.dio.get('/orders/pending-payment');
+    return res.data['data'] as Map<String, dynamic>?;
   }
 
   Future<List<Map<String, dynamic>>> myOrders() async {

@@ -247,18 +247,35 @@ export class CheckoutService {
     return this.toCheckoutResult(order, payment);
   }
 
+  /** Resume an unpaid UPI order (including ones waiting after a rejected/wrong UTR). */
+  async resumePendingPayment(userId: string) {
+    return this.resumePending(userId);
+  }
+
   private async resumePending(userId: string) {
     const order = await this.prisma.order.findFirst({
       where: {
         userId,
         status: OrderStatus.PENDING_PAYMENT,
-        payments: { some: { status: PaymentStatus.REQUIRES_ACTION } },
+        payments: {
+          some: {
+            provider: 'UPI_QR',
+            status: {
+              in: [PaymentStatus.REQUIRES_ACTION, PaymentStatus.PROCESSING],
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
       include: {
         items: true,
         payments: {
-          where: { status: PaymentStatus.REQUIRES_ACTION },
+          where: {
+            provider: 'UPI_QR',
+            status: {
+              in: [PaymentStatus.REQUIRES_ACTION, PaymentStatus.PROCESSING],
+            },
+          },
           orderBy: { createdAt: 'desc' },
           take: 1,
         },
@@ -266,6 +283,26 @@ export class CheckoutService {
     });
     const payment = order?.payments[0];
     if (!order || !payment) return null;
+
+    // Allow a fresh UTR attempt after a bad submission.
+    if (payment.status === PaymentStatus.PROCESSING) {
+      await this.prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.REQUIRES_ACTION,
+          metadata: {
+            ...((payment.metadata as Record<string, unknown>) ?? {}),
+            resumedAt: new Date().toISOString(),
+            previousUtrAttempt:
+              typeof (payment.metadata as Record<string, unknown>)?.utr ===
+              'string'
+                ? (payment.metadata as Record<string, unknown>).utr
+                : payment.providerPaymentId,
+          } as Prisma.InputJsonValue,
+        },
+      });
+      payment.status = PaymentStatus.REQUIRES_ACTION;
+    }
 
     const cart = await this.prisma.cart.upsert({
       where: { userId },

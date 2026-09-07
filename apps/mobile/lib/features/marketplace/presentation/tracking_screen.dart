@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ps_widgets.dart';
 import 'kits_screen.dart';
@@ -93,7 +94,13 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                   final step = steps[i];
                   final done = step['done'] == true;
                   final last = i == steps.length - 1;
-                  return Row(
+                  final code = step['code'] as String? ?? '';
+                  final awaitingPay =
+                      _order?['status'] == 'PENDING_PAYMENT' && code == 'PAID';
+                  final label = (step['label'] as String? ?? '')
+                      .replaceAll('Payment confirmed', 'Paid')
+                      .replaceAll('Order placed', 'Placed');
+                  final row = Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Column(
@@ -121,22 +128,34 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              step['label'] as String? ?? '',
+                              label,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: done ? t.text : t.textMuted,
+                                color: awaitingPay
+                                    ? AppColors.orange
+                                    : (done ? t.text : t.textMuted),
+                                decoration: awaitingPay
+                                    ? TextDecoration.underline
+                                    : TextDecoration.none,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              _when(step),
+                              awaitingPay
+                                  ? 'Tap to finish payment at checkout'
+                                  : _when(step),
                               style: TextStyle(fontSize: 12, color: t.textMuted),
                             ),
                           ],
                         ),
                       ),
                     ],
+                  );
+                  if (!awaitingPay) return row;
+                  return InkWell(
+                    onTap: () => context.push('/checkout'),
+                    child: row,
                   );
                 }),
               ],

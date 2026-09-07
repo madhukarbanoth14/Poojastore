@@ -48,6 +48,15 @@ export class OrdersController {
     return { success: true, data };
   }
 
+  @Get('pending-payment')
+  @ApiOperation({
+    summary: 'Resume UPI checkout for an awaiting-payment order',
+  })
+  async pendingPayment(@CurrentUser() user: AuthenticatedUser) {
+    const data = await this.checkout.resumePendingPayment(user.id);
+    return { success: true, data };
+  }
+
   @Post('refer')
   @ApiOperation({ summary: 'SMS a kit referral to a family member' })
   async referKit(

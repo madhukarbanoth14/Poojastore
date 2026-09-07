@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { clientFetch } from "@/lib/client";
 import { formatMoney } from "@/lib/format";
@@ -49,9 +49,11 @@ function StepDots({ step, lastLabel }: { step: Step; lastLabel: string }) {
   );
 }
 
-export default function CheckoutPage() {
+function CheckoutPageInner() {
   const { user, cart, ready, refreshCart } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resumePay = searchParams.get("resume") === "1";
   const [step, setStep] = useState<Step>(1);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressId, setAddressId] = useState<string>("");
@@ -92,6 +94,37 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (ready && !user) router.replace("/login?next=/checkout");
   }, [ready, user, router]);
+
+  useEffect(() => {
+    if (!ready || !user || !resumePay || upiPayment) return;
+    let cancelled = false;
+    setBusy(true);
+    setError(null);
+    void clientFetch<{
+      order: { id: string };
+      payment: Payment;
+    } | null>("/orders/pending-payment")
+      .then(async (data) => {
+        if (cancelled) return;
+        if (!data?.payment || data.payment.provider !== "UPI_QR") {
+          setError("No awaiting UPI payment found. Add kits to cart to checkout.");
+          return;
+        }
+        await refreshCart();
+        setUpiPayment(data.payment);
+        setPendingOrderId(data.order.id);
+        setStep(4);
+      })
+      .catch((err: Error) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setBusy(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, user, resumePay, upiPayment, refreshCart]);
 
   useEffect(() => {
     void loadRazorpay().catch(() => undefined);
@@ -680,5 +713,14 @@ function AddressFields({
       <input className="input-ps" placeholder="State" value={state} onChange={(e) => onState(e.target.value)} />
       <input className="input-ps" placeholder="PIN" value={postal} onChange={(e) => onPostal(e.target.value)} />
     </div>
+  );
+}
+
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<p className="py-16 text-center text-muted">Loading checkout…</p>}>
+      <CheckoutPageInner />
+    </Suspense>
   );
 }

@@ -55,6 +55,7 @@ class UpiPaySheet extends StatefulWidget {
 
 class _UpiPaySheetState extends State<UpiPaySheet> {
   final _utr = TextEditingController();
+  final _amountPaid = TextEditingController();
   bool _busy = false;
   bool _copied = false;
   bool _brokenCompanyQr = false;
@@ -202,7 +203,32 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
   @override
   void dispose() {
     _utr.dispose();
+    _amountPaid.dispose();
     super.dispose();
+  }
+
+  int? _parseAmountMinor(String raw) {
+    final cleaned = raw.trim().replaceAll(',', '').replaceFirst(RegExp(r'^₹\s?'), '');
+    if (cleaned.isEmpty) return null;
+    if (!RegExp(r'^\d+(\.\d{1,2})?$').hasMatch(cleaned)) return null;
+    final rupees = double.tryParse(cleaned);
+    if (rupees == null || rupees <= 0) return null;
+    return (rupees * 100).round();
+  }
+
+  String _normalizeUtr(String raw) =>
+      raw.trim().replaceAll(RegExp(r'[\s-]'), '');
+
+  String? _clientUtrError(String utr) {
+    if (!RegExp(r'^\d{12}$').hasMatch(utr)) {
+      return 'Enter the exact 12-digit UTR from PhonePe / Google Pay / Paytm. This reference is not valid.';
+    }
+    if (RegExp(r'^(\d)\1{11}$').hasMatch(utr) ||
+        utr == '123456789012' ||
+        utr == '000000000000') {
+      return 'This UTR does not look like a real payment reference. Copy it from your payment success screen.';
+    }
+    return null;
   }
 
   Future<void> _pickScreenshot() async {
@@ -240,15 +266,28 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
       _error = null;
     });
     try {
+      final utr = _normalizeUtr(_utr.text);
+      final utrError = _clientUtrError(utr);
+      if (utrError != null) throw StateError(utrError);
+      final amountPaidMinor = _parseAmountMinor(_amountPaid.text);
+      if (amountPaidMinor == null) {
+        throw StateError('Enter the amount you paid (must match the QR amount).');
+      }
+      if (amountPaidMinor != _amountMinor) {
+        throw StateError(
+          'Amount does not match this order (expected $_amountLabel). Use the UTR from the payment of this exact amount — other UTRs are not accepted.',
+        );
+      }
       await widget.api.submitUpiUtr(
         paymentId: widget.payment['id'] as String,
-        utr: _utr.text.trim().isEmpty ? null : _utr.text,
+        utr: utr,
+        amountPaidMinor: amountPaidMinor,
         screenshotBase64: _screenshotDataUrl,
       );
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = e.toString().replaceFirst('Bad state: ', ''));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -353,13 +392,27 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
             ],
             const SizedBox(height: 14),
             const Text(
+              'Amount paid (₹)',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _amountPaid,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                hintText: 'Must be ${_amountLabel.replaceFirst('₹', '').trim()}',
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 12),
+            const Text(
               'UPI reference / UTR',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
             ),
             const SizedBox(height: 6),
             TextField(
               controller: _utr,
-              textCapitalization: TextCapitalization.characters,
+              keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 hintText: '12-digit UTR from your payment app',
               ),
@@ -391,16 +444,16 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
             ],
             const SizedBox(height: 12),
             PsSaffronButton(
-              label: _busy ? 'Saving…' : 'I have paid',
+              label: _busy ? 'Checking…' : 'I have paid',
               loading: _busy,
-              onPressed:
-                  _utr.text.trim().length >= 8 || _screenshotDataUrl != null
-                      ? _submit
-                      : null,
+              onPressed: _normalizeUtr(_utr.text).length == 12 &&
+                      _parseAmountMinor(_amountPaid.text) != null
+                  ? _submit
+                  : null,
             ),
             const SizedBox(height: 10),
             const Text(
-              'Enter the UTR after paying — the order confirms automatically. A screenshot is optional backup.',
+              'Wrong UTRs or UTRs from a different amount are rejected immediately.',
               style: TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.4),
             ),
           ],

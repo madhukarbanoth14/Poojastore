@@ -113,12 +113,21 @@ export default function OrderDetailPage() {
             ) : null}
             {order.status === "PENDING_PAYMENT" &&
             order.payments?.some((p) => p.provider === "UPI_QR") ? (
-              <p className="mt-3 text-sm text-maroon">
-                UPI payment is waiting for confirmation
-                {order.payments.find((p) => p.provider === "UPI_QR")?.providerPaymentId
-                  ? ` (UTR ${order.payments.find((p) => p.provider === "UPI_QR")?.providerPaymentId}).`
-                  : ". Scan the QR at checkout and send the UTR if you have not already."}
-              </p>
+              <div className="mt-3 space-y-2">
+                <p className="text-sm text-maroon">
+                  UPI payment is waiting for confirmation
+                  {order.payments.find((p) => p.provider === "UPI_QR")?.providerPaymentId
+                    ? ` (UTR ${order.payments.find((p) => p.provider === "UPI_QR")?.providerPaymentId}).`
+                    : ". Scan the QR at checkout and enter the UTR if you have not already."}
+                </p>
+                <button
+                  type="button"
+                  className="btn-orange"
+                  onClick={() => router.push("/checkout?resume=1")}
+                >
+                  Continue to pay
+                </button>
+              </div>
             ) : null}
             {order.tracking?.returnStatus && order.tracking.returnStatus !== "NONE" ? (
               <p className="mt-1 text-sm text-muted">
@@ -160,19 +169,52 @@ export default function OrderDetailPage() {
               </p>
             ) : null}
             <ol className="mt-4 grid grid-cols-3 gap-2 text-center sm:grid-cols-6">
-              {compactSteps.map((step) => (
-                <li key={step.code} className="min-w-0">
-                  <span
-                    className={`mx-auto block h-2.5 w-2.5 rounded-full ${
-                      step.done ? "bg-orange" : "border border-gold bg-paper"
-                    }`}
-                  />
-                  <p className={`mt-2 truncate text-[11px] font-semibold ${step.done ? "text-maroon" : "text-muted"}`}>
-                    {step.label.replace("Payment confirmed", "Paid").replace("Order placed", "Placed")}
-                  </p>
-                </li>
-              ))}
+              {compactSteps.map((step) => {
+                const label = step.label
+                  .replace("Payment confirmed", "Paid")
+                  .replace("Order placed", "Placed");
+                const awaitingPay =
+                  order.status === "PENDING_PAYMENT" && step.code === "PAID";
+                if (awaitingPay) {
+                  return (
+                    <li key={step.code} className="min-w-0">
+                      <button
+                        type="button"
+                        className="w-full"
+                        onClick={() => router.push("/checkout?resume=1")}
+                      >
+                        <span className="mx-auto block h-2.5 w-2.5 rounded-full border border-gold bg-paper" />
+                        <p className="mt-2 truncate text-[11px] font-semibold text-orange underline decoration-orange/50 underline-offset-2">
+                          {label}
+                        </p>
+                      </button>
+                    </li>
+                  );
+                }
+                return (
+                  <li key={step.code} className="min-w-0">
+                    <span
+                      className={`mx-auto block h-2.5 w-2.5 rounded-full ${
+                        step.done ? "bg-orange" : "border border-gold bg-paper"
+                      }`}
+                    />
+                    <p
+                      className={`mt-2 truncate text-[11px] font-semibold ${
+                        step.done ? "text-maroon" : "text-muted"
+                      }`}
+                    >
+                      {label}
+                    </p>
+                  </li>
+                );
+              })}
             </ol>
+            {order.status === "PENDING_PAYMENT" ? (
+              <p className="mt-3 text-center text-xs text-muted">
+                Tap <span className="font-semibold text-orange">Paid</span> to return to
+                checkout and finish UPI payment.
+              </p>
+            ) : null}
           </section>
 
           {address ? (

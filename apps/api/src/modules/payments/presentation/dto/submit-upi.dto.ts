@@ -1,15 +1,40 @@
-import { IsOptional, IsString, Matches, ValidateIf } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
 export class SubmitUpiDto {
+  @ApiProperty({
+    example: '542696738084',
+    description: '12-digit UPI UTR from the payment success screen',
+  })
+  @IsString()
+  @Matches(/^[0-9]{12}$/, {
+    message:
+      'Enter the exact 12-digit UTR from PhonePe / Google Pay / Paytm. This reference is not valid.',
+  })
+  utr!: string;
+
+  @ApiProperty({
+    example: 111100,
+    description: 'Amount paid in paise — must match the order QR amount',
+  })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50_000_000)
+  amountPaidMinor!: number;
+
+  @ApiPropertyOptional()
   @IsOptional()
   @ValidateIf((_, value) => value != null && String(value).trim() !== '')
-  @IsString()
-  @Matches(/^[A-Za-z0-9]{8,22}$/, {
-    message: 'Enter the 8–22 character UPI reference / UTR from your payment app',
-  })
-  utr?: string;
-
-  @IsOptional()
   @IsString()
   screenshotBase64?: string;
 }
