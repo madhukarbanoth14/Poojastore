@@ -10,6 +10,7 @@ import { ConfirmPaymentService } from './confirm-payment.service';
 import { MockPaymentGateway } from '../infrastructure/mock.gateway';
 import { RazorpayGateway } from '../infrastructure/razorpay.gateway';
 import { StripeGateway } from '../infrastructure/stripe.gateway';
+import { UpiQrGateway } from '../infrastructure/upi-qr.gateway';
 import type { PaymentGateway } from '../domain/payment.types';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class RefundPaymentService {
     private readonly mock: MockPaymentGateway,
     private readonly razorpay: RazorpayGateway,
     private readonly stripe: StripeGateway,
+    private readonly upiQr: UpiQrGateway,
   ) {}
 
   async refund(params: {
@@ -98,6 +100,8 @@ export class RefundPaymentService {
         return this.razorpay;
       case PaymentProvider.STRIPE:
         return this.stripe;
+      case PaymentProvider.UPI_QR:
+        return this.upiQr;
       case PaymentProvider.MOCK:
         return this.mock;
       default:

@@ -1,3 +1,5 @@
+import 'kit_item_taxonomy.dart';
+
 class SamagriLine {
   const SamagriLine({
     required this.slug,
@@ -19,11 +21,15 @@ class SamagriLine {
   final int quantity;
   final bool optional;
 
+  String shortName(bool te) => te ? nameTe : nameEn;
+
+  String packLabel(bool te) => (te ? packTe : packEn) ?? '';
+
   String displayName(bool te) {
-    final name = te ? nameTe : nameEn;
-    final pack = te ? packTe : packEn;
-    final qty = (pack == null || pack.isEmpty) && quantity > 1 ? ' ×$quantity' : '';
-    if (pack == null || pack.isEmpty) return '$name$qty';
+    final name = shortName(te);
+    final pack = packLabel(te);
+    final qty = pack.isEmpty && quantity > 1 ? ' ×$quantity' : '';
+    if (pack.isEmpty) return '$name$qty';
     return '$name — $pack';
   }
 
@@ -42,6 +48,7 @@ class SamagriFestivalList {
     required this.subtitleEn,
     required this.subtitleTe,
     required this.kitPriceMinor,
+    this.kitMrpMinor = 0,
     required this.items,
   });
 
@@ -52,89 +59,332 @@ class SamagriFestivalList {
   final String subtitleEn;
   final String subtitleTe;
   final int kitPriceMinor;
+  final int kitMrpMinor;
   final List<SamagriLine> items;
 
   String title(bool te) => te ? titleTe : titleEn;
   String subtitle(bool te) => te ? subtitleTe : subtitleEn;
 }
 
-/// Vinayaka Chavithi home puja list.
-const ganeshHomePujaList = SamagriFestivalList(
-  id: 'ganesh-home-puja',
-  kitSlug: 'ganesh-chaturthi-home-puja',
-  titleEn: 'Ganesh Chaturthi Home Puja',
-  titleTe: 'వినాయక చవితి ఇంటి పూజ',
-  subtitleEn: 'Home puja samagri for Vinayaka Chavithi.',
-  subtitleTe: 'వినాయక చవితి ఇంటి పూజా సామగ్రి.',
-  kitPriceMinor: 75000,
+/// Vinayaka Chavithi eco-friendly Mini / Mega kits (Excel price master).
+const ganeshMiniHomeList = SamagriFestivalList(
+  id: "ganesh-mini-home",
+  kitSlug: "ganesh-mini-home-puja",
+  titleEn: "Mini Home Pooja Kit",
+  titleTe: "మినీ ఇంటి పూజ కిట్",
+  subtitleEn: "Eco-friendly clay Ganesh idol plus compact home puja samagri.",
+  subtitleTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహంతో ఇంటి పూజా సామగ్రి.",
+  kitPriceMinor: 111100,
+  kitMrpMinor: 160000,
   items: [
-    SamagriLine(slug: 'samagri-turmeric', nameEn: 'Turmeric', nameTe: 'పసుపు', priceMinor: 4000, packEn: '50g', packTe: '50 గ్రాములు'),
-    SamagriLine(slug: 'samagri-kumkum', nameEn: 'Kumkum', nameTe: 'కుంకుమ', priceMinor: 5000, packEn: '50g', packTe: '50 గ్రాములు'),
-    SamagriLine(slug: 'samagri-bukka-gulal', nameEn: 'Bukka gulal', nameTe: 'బుక్కా గులాల్', priceMinor: 4000, packEn: '50g', packTe: '50 గ్రాములు'),
-    SamagriLine(slug: 'samagri-large-wick', nameEn: 'Large wick', nameTe: 'పెద్ద వత్తి', priceMinor: 3000),
-    SamagriLine(slug: 'samagri-incense', nameEn: 'Incense sticks', nameTe: 'అగరబత్తులు', priceMinor: 4000, packEn: '1 packet', packTe: '1 ప్యాకెట్'),
-    SamagriLine(slug: 'samagri-oil', nameEn: 'Oil', nameTe: 'నూనె', priceMinor: 28000, packEn: '500 ml', packTe: '500 మి.లీ.'),
-    SamagriLine(slug: 'samagri-camphor', nameEn: 'Camphor', nameTe: 'కర్పూరం', priceMinor: 5000, packEn: '25g', packTe: '25 గ్రాములు'),
-    SamagriLine(slug: 'samagri-cotton-vastra', nameEn: 'Cotton vastra', nameTe: 'పత్తి వస్త్రం', priceMinor: 8000),
-    SamagriLine(slug: 'samagri-betel-nuts', nameEn: 'Betel nuts', nameTe: 'వక్కలు', priceMinor: 8000, quantity: 12),
-    SamagriLine(slug: 'samagri-dates', nameEn: 'Dates', nameTe: 'ఖర్జూరాలు', priceMinor: 8000, quantity: 12),
-    SamagriLine(slug: 'samagri-sambrani', nameEn: 'Sambrani', nameTe: 'సాంబ్రాణి', priceMinor: 6000, packEn: '50g', packTe: '50 గ్రాములు'),
-    SamagriLine(slug: 'samagri-attar', nameEn: 'Attar', nameTe: 'అత్తరు', priceMinor: 8000),
-    SamagriLine(slug: 'samagri-rose-water', nameEn: 'Rose water', nameTe: 'పన్నీరు', priceMinor: 5000),
-    SamagriLine(slug: 'samagri-honey', nameEn: 'Honey', nameTe: 'తేనె', priceMinor: 12000),
-    SamagriLine(slug: 'samagri-ghee', nameEn: 'Ghee', nameTe: 'నెయ్యి', priceMinor: 25000),
-    SamagriLine(slug: 'samagri-gandham', nameEn: 'Sandal paste (Gandham)', nameTe: 'గంధం', priceMinor: 8000, packEn: '30g', packTe: '30 గ్రాములు'),
-    SamagriLine(slug: 'samagri-white-cloth', nameEn: 'White cloth', nameTe: 'తెల్ల బట్ట', priceMinor: 8000),
-    SamagriLine(slug: 'samagri-kankana-thread', nameEn: 'Kankana thread', nameTe: 'కంకణాల దారం', priceMinor: 2000),
-    SamagriLine(slug: 'samagri-turmeric-roots', nameEn: 'Turmeric roots', nameTe: 'పసుపు కొమ్ములు', priceMinor: 6000, quantity: 11),
-    SamagriLine(slug: 'samagri-dried-coconut', nameEn: 'Dried coconut halves', nameTe: 'కుడుకలు', priceMinor: 19900, quantity: 2),
-    SamagriLine(slug: 'samagri-coconuts', nameEn: 'Coconuts', nameTe: 'కొబ్బరికాయలు', priceMinor: 6000, quantity: 2),
+    SamagriLine(slug: "samagri-dhoop-cups", nameEn: "Dhoop cups", nameTe: "ధూపం కప్పులు", priceMinor: 4000, quantity: 2),
+    SamagriLine(slug: "samagri-matchbox", nameEn: "Matchbox", nameTe: "అగ్గిపెట్టె", priceMinor: 1500),
+    SamagriLine(slug: "samagri-kankana-thread", nameEn: "Kankana thread", nameTe: "కంకణాల దారం", priceMinor: 2000),
+    SamagriLine(slug: "samagri-kumkum", nameEn: "Kumkum", nameTe: "కుంకుమ", priceMinor: 5000, packEn: "10g", packTe: "10 గ్రా"),
+    SamagriLine(slug: "samagri-yajnopavita", nameEn: "Yajnopavita", nameTe: "యజ్ఞోపవీతం", priceMinor: 5000),
+    SamagriLine(slug: "samagri-sutli", nameEn: "Sutli thread", nameTe: "సుత్లీ దారం", priceMinor: 2000),
+    SamagriLine(slug: "samagri-turmeric", nameEn: "Turmeric (Pasupu)", nameTe: "పసుపు", priceMinor: 4000, packEn: "10g", packTe: "10 గ్రా"),
+    SamagriLine(slug: "samagri-gandham", nameEn: "Sandal paste (Gandham)", nameTe: "గంధం", priceMinor: 8000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-akshatalu", nameEn: "Akshatalu (turmeric rice)", nameTe: "అక్షింతలు", priceMinor: 4000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-gulal", nameEn: "Gulal", nameTe: "గులాల్", priceMinor: 4000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-bukka", nameEn: "Bukka", nameTe: "బుక్కా", priceMinor: 4000),
+    SamagriLine(slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", priceMinor: 5000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", priceMinor: 4000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-leaf-cups", nameEn: "Prasadam leaf cups", nameTe: "ప్రసాదం దోనెలు", priceMinor: 4000, quantity: 10),
+    SamagriLine(slug: "samagri-jaggery", nameEn: "Jaggery", nameTe: "బెల్లం", priceMinor: 8000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-honey", nameEn: "Honey", nameTe: "తేనె", priceMinor: 12000, packEn: "25 ml", packTe: "25 మి.లీ."),
+    SamagriLine(slug: "samagri-rava", nameEn: "Rava", nameTe: "రవ్వ", priceMinor: 4000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-sugar-crystals", nameEn: "Sugar crystals", nameTe: "పంచదార బిళ్లలు", priceMinor: 4000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-coconuts", nameEn: "Coconuts", nameTe: "కొబ్బరికాయలు", priceMinor: 6000),
+    SamagriLine(slug: "samagri-rose-water", nameEn: "Rose water", nameTe: "పన్నీరు", priceMinor: 5000, packEn: "25 ml", packTe: "25 మి.లీ."),
+    SamagriLine(slug: "samagri-ghee", nameEn: "Ghee", nameTe: "నెయ్యి", priceMinor: 25000, packEn: "25 ml", packTe: "25 మి.లీ."),
+    SamagriLine(slug: "samagri-oil", nameEn: "Oil", nameTe: "నూనె", priceMinor: 28000, packEn: "50 ml", packTe: "50 మి.లీ."),
+    SamagriLine(slug: "samagri-betel-leaves", nameEn: "Betel leaves", nameTe: "తమలపాకులు", priceMinor: 3000, quantity: 5),
+    SamagriLine(slug: "samagri-betel-nuts", nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు", priceMinor: 8000),
+    SamagriLine(slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", priceMinor: 6000),
+    SamagriLine(slug: "samagri-cotton-wicks", nameEn: "Cotton wicks", nameTe: "వత్తులు", priceMinor: 3000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-eco-ganesh-idol", nameEn: "Eco-friendly clay Ganesh idol", nameTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-red-cloth", nameEn: "Red cloth", nameTe: "ఎర్రని బట్ట", priceMinor: 8000),
+    SamagriLine(slug: "samagri-paper-umbrella", nameEn: "Paper umbrella", nameTe: "కాగితపు గొడుగు", priceMinor: 8000),
+    SamagriLine(slug: "samagri-pooja-book", nameEn: "Pooja vidhanam book", nameTe: "పూజా విధానం పుస్తకం", priceMinor: 8000),
   ],
 );
 
-/// Mandapam / larger Vinayaka Chavithi list (previous Ganesh Puja kit).
-const ganeshPoojaList = SamagriFestivalList(
-  id: 'ganesh-pooja',
-  kitSlug: 'ganesh-chaturthi-pooja-samagri',
-  titleEn: 'Ganesh Mandapam Kit',
-  titleTe: 'గణేష్ మండపం కిట్',
-  subtitleEn: 'Mandapam samagri for Vinayaka Chavithi — view first, then Homam.',
-  subtitleTe: 'వినాయక చవితి మండపం సామగ్రి — ముందు మండపం, తర్వాత హోమం.',
+const ganeshMiniOfficeList = SamagriFestivalList(
+  id: "ganesh-mini-office",
+  kitSlug: "ganesh-mini-office-puja",
+  titleEn: "Mini Office Pooja Kit",
+  titleTe: "మినీ ఆఫీస్ పూజ కిట్",
+  subtitleEn: "Eco-friendly clay Ganesh idol plus office desk puja samagri.",
+  subtitleTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహంతో ఆఫీస్ పూజా సామగ్రి.",
   kitPriceMinor: 149900,
+  kitMrpMinor: 189900,
   items: [
-    SamagriLine(slug: 'samagri-turmeric', nameEn: 'Turmeric', nameTe: 'పసుపు', priceMinor: 4000, packEn: '100g', packTe: '100గ్రా'),
-    SamagriLine(slug: 'samagri-kumkum', nameEn: 'Kumkum', nameTe: 'కుంకుమ', priceMinor: 5000, packEn: '100g', packTe: '100గ్రా'),
-    SamagriLine(slug: 'samagri-gandham', nameEn: 'Sandal paste (Gandham)', nameTe: 'గంధం', priceMinor: 8000),
-    SamagriLine(slug: 'samagri-incense', nameEn: 'Incense sticks', nameTe: 'అగరవత్తులు', priceMinor: 4000, packEn: '1 pack', packTe: '1 ప్యాక్'),
-    SamagriLine(slug: 'samagri-camphor', nameEn: 'Arati camphor', nameTe: 'హారతి కర్పూరం', priceMinor: 5000, packEn: '1 large', packTe: '1 పెద్దది'),
-    SamagriLine(slug: 'samagri-dhoti', nameEn: 'Dhoti', nameTe: 'దోవతి', priceMinor: 39900, packEn: '9×5', packTe: '9×5'),
-    SamagriLine(slug: 'samagri-sela', nameEn: 'Sela (shawl)', nameTe: 'శేల', priceMinor: 19900),
-    SamagriLine(slug: 'samagri-dried-coconut', nameEn: 'Dried coconut halves', nameTe: 'ఎండిన కుడకలు', priceMinor: 19900, quantity: 5),
-    SamagriLine(slug: 'samagri-betel-nuts', nameEn: 'Betel nuts', nameTe: 'వక్కలు', priceMinor: 8000, packEn: '100g', packTe: '100గ్రా'),
-    SamagriLine(slug: 'samagri-dates', nameEn: 'Dates', nameTe: 'ఖర్జూరాలు', priceMinor: 8000, packEn: '100g', packTe: '100గ్రా'),
-    SamagriLine(slug: 'samagri-turmeric-roots', nameEn: 'Turmeric roots', nameTe: 'పసుపు కొమ్ములు', priceMinor: 6000, packEn: '100g', packTe: '100గ్రా'),
-    SamagriLine(slug: 'samagri-betel-leaves', nameEn: 'Betel leaves', nameTe: 'తమలపాకులు', priceMinor: 3000, optional: true),
-    SamagriLine(slug: 'samagri-bananas', nameEn: 'Bananas', nameTe: 'అరటిపండ్లు', priceMinor: 6000, optional: true),
-    SamagriLine(slug: 'samagri-copper-pot', nameEn: 'Copper pot (Chembu)', nameTe: 'చెంబు (రాగి)', priceMinor: 24900, optional: true),
-    SamagriLine(slug: 'samagri-kankana-thread', nameEn: 'Kankana thread', nameTe: 'కంకణ దారం', priceMinor: 2000),
-    SamagriLine(slug: 'samagri-yajnopavita', nameEn: 'Yajnopavita', nameTe: 'యజ్ఞోపవీతం', priceMinor: 5000, quantity: 2, packEn: '1 large, 1 small', packTe: 'పెద్దది, చిన్నది'),
-    SamagriLine(slug: 'samagri-flowers', nameEn: 'Loose flowers', nameTe: 'విడి పువ్వులు', priceMinor: 8000, optional: true),
-    SamagriLine(slug: 'samagri-garland', nameEn: 'Flower garlands', nameTe: 'పూల దండలు', priceMinor: 10000, optional: true),
-    SamagriLine(slug: 'samagri-coconuts', nameEn: 'Coconuts', nameTe: 'కొబ్బరికాయలు', priceMinor: 6000, quantity: 2),
-    SamagriLine(slug: 'samagri-white-thread', nameEn: 'White thread', nameTe: 'తెల్ల దారం', priceMinor: 2000),
-    SamagriLine(slug: 'samagri-navadhanyalu', nameEn: 'Navadhanyalu', nameTe: 'నవధాన్యాలు', priceMinor: 9000, packEn: '1/2 kg', packTe: '1/2 కిలో'),
-    SamagriLine(slug: 'samagri-akhanda-deepam', nameEn: 'Akhanda deepam (clay)', nameTe: 'అఖండ దీపం (మట్టిది)', priceMinor: 14900),
-    SamagriLine(slug: 'samagri-diya-wicks', nameEn: 'Lamp wicks', nameTe: 'దీపం వత్తులు', priceMinor: 3000, quantity: 5),
-    SamagriLine(slug: 'samagri-oil', nameEn: 'Oil', nameTe: 'నూనె', priceMinor: 28000, packEn: '2 liters', packTe: '2 లీటర్లు'),
-    SamagriLine(slug: 'samagri-durva', nameEn: 'Patri and garika', nameTe: 'పత్రి, గరిక', priceMinor: 3000, optional: true),
-    SamagriLine(slug: 'samagri-bell', nameEn: 'Bell', nameTe: 'గంట', priceMinor: 12000, optional: true),
-    SamagriLine(slug: 'samagri-arati-plate', nameEn: 'Harathi plate', nameTe: 'హారతి ప్లేటు', priceMinor: 15000, optional: true),
-    SamagriLine(slug: 'samagri-plates', nameEn: 'Trays', nameTe: 'ట్రేలు', priceMinor: 12000, quantity: 2, optional: true),
-    SamagriLine(slug: 'samagri-glasses', nameEn: 'Glasses', nameTe: 'గ్లాసులు', priceMinor: 4000, quantity: 2, optional: true),
-    SamagriLine(slug: 'samagri-undrallu', nameEn: 'Undrallu (prasad)', nameTe: 'ఉండ్రాళ్లు', priceMinor: 8000, optional: true),
-    SamagriLine(slug: 'samagri-laddu', nameEn: 'Laddu (prasad)', nameTe: 'లడ్డూ', priceMinor: 8000, optional: true),
-    SamagriLine(slug: 'samagri-small-diyas', nameEn: 'Small lamps', nameTe: 'చిన్న దీపాలు', priceMinor: 8000),
-    SamagriLine(slug: 'samagri-cotton-wicks', nameEn: 'Wicks', nameTe: 'వత్తులు', priceMinor: 3000, packEn: '1 pack', packTe: '1 ప్యాక్'),
+    SamagriLine(slug: "samagri-dhoop-cups", nameEn: "Dhoop cups", nameTe: "ధూపం కప్పులు", priceMinor: 4000, quantity: 2),
+    SamagriLine(slug: "samagri-matchbox", nameEn: "Matchbox", nameTe: "అగ్గిపెట్టె", priceMinor: 1500, quantity: 2),
+    SamagriLine(slug: "samagri-kankana-thread", nameEn: "Kankana thread", nameTe: "కంకణాల దారం", priceMinor: 2000),
+    SamagriLine(slug: "samagri-kumkum", nameEn: "Kumkum", nameTe: "కుంకుమ", priceMinor: 5000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-yajnopavita", nameEn: "Yajnopavita", nameTe: "యజ్ఞోపవీతం", priceMinor: 5000),
+    SamagriLine(slug: "samagri-sutli", nameEn: "Sutli thread", nameTe: "సుత్లీ దారం", priceMinor: 2000),
+    SamagriLine(slug: "samagri-turmeric", nameEn: "Turmeric (Pasupu)", nameTe: "పసుపు", priceMinor: 4000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-gandham", nameEn: "Sandal paste (Gandham)", nameTe: "గంధం", priceMinor: 8000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-akshatalu", nameEn: "Akshatalu (turmeric rice)", nameTe: "అక్షింతలు", priceMinor: 4000, packEn: "2000g", packTe: "2000 గ్రా"),
+    SamagriLine(slug: "samagri-gulal", nameEn: "Gulal", nameTe: "గులాల్", priceMinor: 4000, quantity: 12),
+    SamagriLine(slug: "samagri-bukka", nameEn: "Bukka", nameTe: "బుక్కా", priceMinor: 4000, quantity: 12),
+    SamagriLine(slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", priceMinor: 5000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", priceMinor: 4000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-leaf-cups", nameEn: "Prasadam leaf cups", nameTe: "ప్రసాదం దోనెలు", priceMinor: 4000, quantity: 25),
+    SamagriLine(slug: "samagri-jaggery", nameEn: "Jaggery", nameTe: "బెల్లం", priceMinor: 8000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-honey", nameEn: "Honey", nameTe: "తేనె", priceMinor: 12000, packEn: "50 ml", packTe: "50 మి.లీ."),
+    SamagriLine(slug: "samagri-rava", nameEn: "Rava", nameTe: "రవ్వ", priceMinor: 4000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-sugar-crystals", nameEn: "Sugar crystals", nameTe: "పంచదార బిళ్లలు", priceMinor: 4000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-coconuts", nameEn: "Coconuts", nameTe: "కొబ్బరికాయలు", priceMinor: 6000),
+    SamagriLine(slug: "samagri-rose-water", nameEn: "Rose water", nameTe: "పన్నీరు", priceMinor: 5000, packEn: "50 ml", packTe: "50 మి.లీ."),
+    SamagriLine(slug: "samagri-ghee", nameEn: "Ghee", nameTe: "నెయ్యి", priceMinor: 25000, packEn: "100 ml", packTe: "100 మి.లీ."),
+    SamagriLine(slug: "samagri-oil", nameEn: "Oil", nameTe: "నూనె", priceMinor: 28000, packEn: "250 ml", packTe: "250 మి.లీ."),
+    SamagriLine(slug: "samagri-betel-leaves", nameEn: "Betel leaves", nameTe: "తమలపాకులు", priceMinor: 3000, quantity: 10),
+    SamagriLine(slug: "samagri-betel-nuts", nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు", priceMinor: 8000, quantity: 5),
+    SamagriLine(slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", priceMinor: 6000, quantity: 5),
+    SamagriLine(slug: "samagri-cotton-wicks", nameEn: "Cotton wicks", nameTe: "వత్తులు", priceMinor: 3000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-eco-ganesh-idol", nameEn: "Eco-friendly clay Ganesh idol", nameTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-red-cloth", nameEn: "Red cloth", nameTe: "ఎర్రని బట్ట", priceMinor: 8000),
+    SamagriLine(slug: "samagri-paper-umbrella", nameEn: "Paper umbrella", nameTe: "కాగితపు గొడుగు", priceMinor: 8000),
+    SamagriLine(slug: "samagri-pooja-book", nameEn: "Pooja vidhanam book", nameTe: "పూజా విధానం పుస్తకం", priceMinor: 8000),
+  ],
+);
+
+const ganeshMiniMandapamList = SamagriFestivalList(
+  id: "ganesh-mini-mandapam",
+  kitSlug: "ganesh-mini-mandapam",
+  titleEn: "Mini Mandapam Kit",
+  titleTe: "మినీ మండపం కిట్",
+  subtitleEn: "Eco-friendly clay Ganesh idol plus small mandapam / community samagri.",
+  subtitleTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహంతో చిన్న మండపం సామగ్రి.",
+  kitPriceMinor: 199900,
+  kitMrpMinor: 239900,
+  items: [
+    SamagriLine(slug: "samagri-dhoop-cups", nameEn: "Dhoop cups", nameTe: "ధూపం కప్పులు", priceMinor: 4000, quantity: 5),
+    SamagriLine(slug: "samagri-matchbox", nameEn: "Matchbox", nameTe: "అగ్గిపెట్టె", priceMinor: 1500, quantity: 5),
+    SamagriLine(slug: "samagri-kankana-thread", nameEn: "Kankana thread", nameTe: "కంకణాల దారం", priceMinor: 2000, quantity: 10),
+    SamagriLine(slug: "samagri-kumkum", nameEn: "Kumkum", nameTe: "కుంకుమ", priceMinor: 5000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-yajnopavita", nameEn: "Yajnopavita", nameTe: "యజ్ఞోపవీతం", priceMinor: 5000, quantity: 10),
+    SamagriLine(slug: "samagri-sutli", nameEn: "Sutli thread", nameTe: "సుత్లీ దారం", priceMinor: 2000, quantity: 10),
+    SamagriLine(slug: "samagri-turmeric", nameEn: "Turmeric (Pasupu)", nameTe: "పసుపు", priceMinor: 4000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-gandham", nameEn: "Sandal paste (Gandham)", nameTe: "గంధం", priceMinor: 8000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-akshatalu", nameEn: "Akshatalu (turmeric rice)", nameTe: "అక్షింతలు", priceMinor: 4000, packEn: "5000g", packTe: "5000 గ్రా"),
+    SamagriLine(slug: "samagri-gulal", nameEn: "Gulal", nameTe: "గులాల్", priceMinor: 4000, quantity: 50),
+    SamagriLine(slug: "samagri-bukka", nameEn: "Bukka", nameTe: "బుక్కా", priceMinor: 4000, quantity: 50),
+    SamagriLine(slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", priceMinor: 5000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", priceMinor: 4000, packEn: "5 packs", packTe: "5 ప్యాక్‌లు", quantity: 5),
+    SamagriLine(slug: "samagri-leaf-cups", nameEn: "Prasadam leaf cups", nameTe: "ప్రసాదం దోనెలు", priceMinor: 4000, quantity: 100),
+    SamagriLine(slug: "samagri-jaggery", nameEn: "Jaggery", nameTe: "బెల్లం", priceMinor: 8000, packEn: "1000g", packTe: "1000 గ్రా"),
+    SamagriLine(slug: "samagri-honey", nameEn: "Honey", nameTe: "తేనె", priceMinor: 12000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-rava", nameEn: "Rava", nameTe: "రవ్వ", priceMinor: 4000, packEn: "1000g", packTe: "1000 గ్రా"),
+    SamagriLine(slug: "samagri-sugar-crystals", nameEn: "Sugar crystals", nameTe: "పంచదార బిళ్లలు", priceMinor: 4000, packEn: "500g", packTe: "500 గ్రా"),
+    SamagriLine(slug: "samagri-coconuts", nameEn: "Coconuts", nameTe: "కొబ్బరికాయలు", priceMinor: 6000, quantity: 18),
+    SamagriLine(slug: "samagri-rose-water", nameEn: "Rose water", nameTe: "పన్నీరు", priceMinor: 5000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-ghee", nameEn: "Ghee", nameTe: "నెయ్యి", priceMinor: 25000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-oil", nameEn: "Oil", nameTe: "నూనె", priceMinor: 28000, packEn: "2000 ml", packTe: "2000 మి.లీ."),
+    SamagriLine(slug: "samagri-betel-leaves", nameEn: "Betel leaves", nameTe: "తమలపాకులు", priceMinor: 3000, quantity: 100),
+    SamagriLine(slug: "samagri-betel-nuts", nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు", priceMinor: 8000, quantity: 50),
+    SamagriLine(slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", priceMinor: 6000, quantity: 25),
+    SamagriLine(slug: "samagri-cotton-wicks", nameEn: "Cotton wicks", nameTe: "వత్తులు", priceMinor: 3000, packEn: "10 packs", packTe: "10 ప్యాక్‌లు", quantity: 10),
+    SamagriLine(slug: "samagri-eco-ganesh-idol", nameEn: "Eco-friendly clay Ganesh idol", nameTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-red-cloth", nameEn: "Red cloth", nameTe: "ఎర్రని బట్ట", priceMinor: 8000, packEn: "3 m", packTe: "3 మీ"),
+    SamagriLine(slug: "samagri-paper-umbrella", nameEn: "Paper umbrella", nameTe: "కాగితపు గొడుగు", priceMinor: 8000),
+    SamagriLine(slug: "samagri-pooja-book", nameEn: "Pooja vidhanam book", nameTe: "పూజా విధానం పుస్తకం", priceMinor: 8000),
+  ],
+);
+
+const ganeshMegaHomeList = SamagriFestivalList(
+  id: "ganesh-mega-home",
+  kitSlug: "ganesh-mega-home-puja",
+  titleEn: "Mega Home Pooja Kit",
+  titleTe: "మెగా ఇంటి పూజ కిట్",
+  subtitleEn: "Eco-friendly clay Ganesh idol plus a fuller home Chaturthi list.",
+  subtitleTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహంతో పూర్తి ఇంటి పూజా సామగ్రి.",
+  kitPriceMinor: 299900,
+  kitMrpMinor: 339900,
+  items: [
+    SamagriLine(slug: "samagri-eco-ganesh-idol", nameEn: "Eco-friendly clay Ganesh idol", nameTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-markatam-ganesh", nameEn: "Markatam Ganesh", nameTe: "మార్కటం గణేష్", priceMinor: 14900),
+    SamagriLine(slug: "samagri-turmeric", nameEn: "Turmeric (Pasupu)", nameTe: "పసుపు", priceMinor: 4000, packEn: "10g", packTe: "10 గ్రా"),
+    SamagriLine(slug: "samagri-kumkum", nameEn: "Kumkum", nameTe: "కుంకుమ", priceMinor: 5000, packEn: "10g", packTe: "10 గ్రా"),
+    SamagriLine(slug: "samagri-sindoor", nameEn: "Sindoor", nameTe: "సింధూరం", priceMinor: 4000, packEn: "5g", packTe: "5 గ్రా"),
+    SamagriLine(slug: "samagri-bukka", nameEn: "Bukka", nameTe: "బుక్కా", priceMinor: 4000),
+    SamagriLine(slug: "samagri-gulal", nameEn: "Gulal", nameTe: "గులాల్", priceMinor: 4000, packEn: "5g", packTe: "5 గ్రా"),
+    SamagriLine(slug: "samagri-rice-flour", nameEn: "Rice flour", nameTe: "బియ్యం పిండి", priceMinor: 6000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-rice", nameEn: "Rice", nameTe: "బియ్యం", priceMinor: 24900, packEn: "1000g", packTe: "1000 గ్రా"),
+    SamagriLine(slug: "samagri-astagandham", nameEn: "Astagandham", nameTe: "అష్టగంధం", priceMinor: 8000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-javadhu", nameEn: "Javadhu", nameTe: "జావాదు", priceMinor: 8000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-attar", nameEn: "Attar", nameTe: "అత్తరు", priceMinor: 8000, packEn: "1 bottle", packTe: "1 సీసా"),
+    SamagriLine(slug: "samagri-dhoop-cups", nameEn: "Dhoop cups", nameTe: "ధూపం కప్పులు", priceMinor: 4000, quantity: 20),
+    SamagriLine(slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", priceMinor: 4000, packEn: "2 packs", packTe: "2 ప్యాక్‌లు", quantity: 2),
+    SamagriLine(slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", priceMinor: 5000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-pacha-karpuram", nameEn: "Pacha karpuram", nameTe: "పచ్చ కర్పూరం", priceMinor: 8000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-cotton-wicks", nameEn: "Cotton wicks", nameTe: "వత్తులు", priceMinor: 3000, packEn: "2 packs", packTe: "2 ప్యాక్‌లు", quantity: 2),
+    SamagriLine(slug: "samagri-puvvu-wicks", nameEn: "Puvvu vathulu", nameTe: "పువ్వు వత్తులు", priceMinor: 4000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-jileda-wicks", nameEn: "Jileda vathulu", nameTe: "జిలేడు వత్తులు", priceMinor: 4000, packEn: "1 pack", packTe: "1 ప్యాక్"),
+    SamagriLine(slug: "samagri-puja-vastras", nameEn: "Puja vastras", nameTe: "పూజా వస్త్రాలు", priceMinor: 19900),
+    SamagriLine(slug: "samagri-akhanda-deepam", nameEn: "Akhanda deepam", nameTe: "అఖండ దీపం", priceMinor: 14900),
+    SamagriLine(slug: "samagri-dates", nameEn: "Dates", nameTe: "ఖర్జూరాలు", priceMinor: 8000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", priceMinor: 6000, quantity: 11),
+    SamagriLine(slug: "samagri-betel-nuts", nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు", priceMinor: 8000, quantity: 11),
+    SamagriLine(slug: "samagri-poha", nameEn: "Poha (Atukulu)", nameTe: "అటుకులు", priceMinor: 8000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-jaggery", nameEn: "Jaggery", nameTe: "బెల్లం", priceMinor: 8000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-cloves", nameEn: "Cloves", nameTe: "లవంగాలు", priceMinor: 4000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-cardamom", nameEn: "Cardamom", nameTe: "యాలకులు", priceMinor: 6000, packEn: "25g", packTe: "25 గ్రా"),
+    SamagriLine(slug: "samagri-white-thread", nameEn: "White thread", nameTe: "తెల్ల దారం", priceMinor: 2000, packEn: "1 roll", packTe: "1 రోల్"),
+    SamagriLine(slug: "samagri-sutli", nameEn: "Sutli thread", nameTe: "సుత్లీ దారం", priceMinor: 2000, packEn: "1 roll", packTe: "1 రోల్"),
+    SamagriLine(slug: "samagri-moli-thread", nameEn: "Moli thread", nameTe: "మౌలి దారం", priceMinor: 3000, quantity: 10),
+    SamagriLine(slug: "samagri-garland", nameEn: "Flower garland", nameTe: "పూల మాల", priceMinor: 10000, quantity: 2),
+    SamagriLine(slug: "samagri-jenu", nameEn: "Jenu", nameTe: "జేను", priceMinor: 4000, quantity: 2),
+    SamagriLine(slug: "samagri-head-band", nameEn: "Head band", nameTe: "తలపట్టీ", priceMinor: 4000, quantity: 2),
+    SamagriLine(slug: "samagri-ghee", nameEn: "Ghee", nameTe: "నెయ్యి", priceMinor: 25000, packEn: "250 ml", packTe: "250 మి.లీ."),
+    SamagriLine(slug: "samagri-honey", nameEn: "Honey", nameTe: "తేనె", priceMinor: 12000, packEn: "250 ml", packTe: "250 మి.లీ."),
+    SamagriLine(slug: "samagri-rose-water", nameEn: "Rose water", nameTe: "పన్నీరు", priceMinor: 5000, packEn: "250 ml", packTe: "250 మి.లీ."),
+    SamagriLine(slug: "samagri-gomutra", nameEn: "Gomutra", nameTe: "గోమూత్రం", priceMinor: 5000, packEn: "100 ml", packTe: "100 మి.లీ."),
+    SamagriLine(slug: "samagri-gangajal", nameEn: "Gangajal", nameTe: "గంగాజలం", priceMinor: 5000, packEn: "100 ml", packTe: "100 మి.లీ."),
+    SamagriLine(slug: "samagri-oil", nameEn: "Oil", nameTe: "నూనె", priceMinor: 28000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-muggu-colours", nameEn: "Muggu colours", nameTe: "ముగ్గు రంగులు", priceMinor: 8000, packEn: "500g", packTe: "500 గ్రా"),
+    SamagriLine(slug: "samagri-backdrop", nameEn: "Backdrop", nameTe: "నేపథ్యం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-asanam", nameEn: "Asanam", nameTe: "ఆసనం", priceMinor: 14900),
+    SamagriLine(slug: "samagri-god-asanam", nameEn: "Deity asanam", nameTe: "దేవత ఆసనం", priceMinor: 14900),
+    SamagriLine(slug: "samagri-dona-cups", nameEn: "Dona cups", nameTe: "దోనెలు", priceMinor: 4000, quantity: 25),
+    SamagriLine(slug: "samagri-khandwa", nameEn: "Khandwa", nameTe: "ఖండ్వా", priceMinor: 8000),
+    SamagriLine(slug: "samagri-blouse-pieces", nameEn: "Blouse pieces", nameTe: "జాకెట్ పీసు", priceMinor: 39900),
+    SamagriLine(slug: "samagri-umbrella", nameEn: "Umbrella", nameTe: "గొడుగు", priceMinor: 8000),
+    SamagriLine(slug: "samagri-shubh-labh", nameEn: "Shubh Labh sticker", nameTe: "శుభ లాభ్ స్టిక్కర్", priceMinor: 3000),
+    SamagriLine(slug: "samagri-peacock-feathers", nameEn: "Peacock feathers", nameTe: "నెమలి ఈకలు", priceMinor: 8000, packEn: "small bunch", packTe: "చిన్న కట్ట"),
+    SamagriLine(slug: "samagri-pooja-book", nameEn: "Pooja vidhanam book", nameTe: "పూజా విధానం పుస్తకం", priceMinor: 8000),
+  ],
+);
+
+const ganeshMegaOfficeList = SamagriFestivalList(
+  id: "ganesh-mega-office",
+  kitSlug: "ganesh-mega-office-puja",
+  titleEn: "Mega Office Pooja Kit",
+  titleTe: "మెగా ఆఫీస్ కిట్",
+  subtitleEn: "Eco-friendly clay Ganesh idol plus larger office shrine samagri.",
+  subtitleTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహంతో పెద్ద ఆఫీస్ పూజా సామగ్రి.",
+  kitPriceMinor: 333300,
+  kitMrpMinor: 373300,
+  items: [
+    SamagriLine(slug: "samagri-eco-ganesh-idol", nameEn: "Eco-friendly clay Ganesh idol", nameTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-markatam-ganesh", nameEn: "Markatam Ganesh", nameTe: "మార్కటం గణేష్", priceMinor: 14900),
+    SamagriLine(slug: "samagri-turmeric", nameEn: "Turmeric (Pasupu)", nameTe: "పసుపు", priceMinor: 4000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-kumkum", nameEn: "Kumkum", nameTe: "కుంకుమ", priceMinor: 5000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-sindoor", nameEn: "Sindoor", nameTe: "సింధూరం", priceMinor: 4000, packEn: "10g", packTe: "10 గ్రా"),
+    SamagriLine(slug: "samagri-bukka", nameEn: "Bukka", nameTe: "బుక్కా", priceMinor: 4000, quantity: 12),
+    SamagriLine(slug: "samagri-gulal", nameEn: "Gulal", nameTe: "గులాల్", priceMinor: 4000, quantity: 12),
+    SamagriLine(slug: "samagri-rice-flour", nameEn: "Rice flour", nameTe: "బియ్యం పిండి", priceMinor: 6000, packEn: "500g", packTe: "500 గ్రా"),
+    SamagriLine(slug: "samagri-rice", nameEn: "Rice", nameTe: "బియ్యం", priceMinor: 24900, packEn: "2500g", packTe: "2500 గ్రా"),
+    SamagriLine(slug: "samagri-astagandham", nameEn: "Astagandham", nameTe: "అష్టగంధం", priceMinor: 8000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-javadhu", nameEn: "Javadhu", nameTe: "జావాదు", priceMinor: 8000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-attar", nameEn: "Attar", nameTe: "అత్తరు", priceMinor: 8000, packEn: "1 bottle", packTe: "1 సీసా"),
+    SamagriLine(slug: "samagri-dhoop-cups", nameEn: "Dhoop cups", nameTe: "ధూపం కప్పులు", priceMinor: 4000, quantity: 30),
+    SamagriLine(slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", priceMinor: 4000, packEn: "5 packs", packTe: "5 ప్యాక్‌లు", quantity: 5),
+    SamagriLine(slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", priceMinor: 5000, packEn: "150g", packTe: "150 గ్రా"),
+    SamagriLine(slug: "samagri-pacha-karpuram", nameEn: "Pacha karpuram", nameTe: "పచ్చ కర్పూరం", priceMinor: 8000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-cotton-wicks", nameEn: "Cotton wicks", nameTe: "వత్తులు", priceMinor: 3000, packEn: "5 packs", packTe: "5 ప్యాక్‌లు", quantity: 5),
+    SamagriLine(slug: "samagri-puvvu-wicks", nameEn: "Puvvu vathulu", nameTe: "పువ్వు వత్తులు", priceMinor: 4000, packEn: "2 packs", packTe: "2 ప్యాక్‌లు", quantity: 2),
+    SamagriLine(slug: "samagri-jileda-wicks", nameEn: "Jileda vathulu", nameTe: "జిలేడు వత్తులు", priceMinor: 4000, packEn: "2 packs", packTe: "2 ప్యాక్‌లు", quantity: 2),
+    SamagriLine(slug: "samagri-puja-vastras", nameEn: "Puja vastras", nameTe: "పూజా వస్త్రాలు", priceMinor: 19900, quantity: 2),
+    SamagriLine(slug: "samagri-akhanda-deepam", nameEn: "Akhanda deepam", nameTe: "అఖండ దీపం", priceMinor: 14900, quantity: 2),
+    SamagriLine(slug: "samagri-dates", nameEn: "Dates", nameTe: "ఖర్జూరాలు", priceMinor: 8000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", priceMinor: 6000, quantity: 21),
+    SamagriLine(slug: "samagri-betel-nuts", nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు", priceMinor: 8000, quantity: 25),
+    SamagriLine(slug: "samagri-poha", nameEn: "Poha (Atukulu)", nameTe: "అటుకులు", priceMinor: 8000, packEn: "500g", packTe: "500 గ్రా"),
+    SamagriLine(slug: "samagri-jaggery", nameEn: "Jaggery", nameTe: "బెల్లం", priceMinor: 8000, packEn: "500g", packTe: "500 గ్రా"),
+    SamagriLine(slug: "samagri-cloves", nameEn: "Cloves", nameTe: "లవంగాలు", priceMinor: 4000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-cardamom", nameEn: "Cardamom", nameTe: "యాలకులు", priceMinor: 6000, packEn: "50g", packTe: "50 గ్రా"),
+    SamagriLine(slug: "samagri-white-thread", nameEn: "White thread", nameTe: "తెల్ల దారం", priceMinor: 2000, quantity: 2),
+    SamagriLine(slug: "samagri-sutli", nameEn: "Sutli thread", nameTe: "సుత్లీ దారం", priceMinor: 2000, quantity: 2),
+    SamagriLine(slug: "samagri-moli-thread", nameEn: "Moli thread", nameTe: "మౌలి దారం", priceMinor: 3000, quantity: 25),
+    SamagriLine(slug: "samagri-garland", nameEn: "Flower garland", nameTe: "పూల మాల", priceMinor: 10000, quantity: 5),
+    SamagriLine(slug: "samagri-jenu", nameEn: "Jenu", nameTe: "జేను", priceMinor: 4000, quantity: 5),
+    SamagriLine(slug: "samagri-head-band", nameEn: "Head band", nameTe: "తలపట్టీ", priceMinor: 4000, quantity: 5),
+    SamagriLine(slug: "samagri-ghee", nameEn: "Ghee", nameTe: "నెయ్యి", priceMinor: 25000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-honey", nameEn: "Honey", nameTe: "తేనె", priceMinor: 12000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-rose-water", nameEn: "Rose water", nameTe: "పన్నీరు", priceMinor: 5000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-gomutra", nameEn: "Gomutra", nameTe: "గోమూత్రం", priceMinor: 5000, packEn: "250 ml", packTe: "250 మి.లీ."),
+    SamagriLine(slug: "samagri-gangajal", nameEn: "Gangajal", nameTe: "గంగాజలం", priceMinor: 5000, packEn: "250 ml", packTe: "250 మి.లీ."),
+    SamagriLine(slug: "samagri-oil", nameEn: "Oil", nameTe: "నూనె", priceMinor: 28000, packEn: "1000 ml", packTe: "1000 మి.లీ."),
+    SamagriLine(slug: "samagri-muggu-colours", nameEn: "Muggu colours", nameTe: "ముగ్గు రంగులు", priceMinor: 8000, packEn: "1000g", packTe: "1000 గ్రా"),
+    SamagriLine(slug: "samagri-backdrop", nameEn: "Backdrop", nameTe: "నేపథ్యం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-asanam", nameEn: "Asanam", nameTe: "ఆసనం", priceMinor: 14900),
+    SamagriLine(slug: "samagri-god-asanam", nameEn: "Deity asanam", nameTe: "దేవత ఆసనం", priceMinor: 14900),
+    SamagriLine(slug: "samagri-dona-cups", nameEn: "Dona cups", nameTe: "దోనెలు", priceMinor: 4000, quantity: 50),
+    SamagriLine(slug: "samagri-khandwa", nameEn: "Khandwa", nameTe: "ఖండ్వా", priceMinor: 8000),
+    SamagriLine(slug: "samagri-blouse-pieces", nameEn: "Blouse pieces", nameTe: "జాకెట్ పీసు", priceMinor: 39900, quantity: 2),
+    SamagriLine(slug: "samagri-umbrella", nameEn: "Umbrella", nameTe: "గొడుగు", priceMinor: 8000),
+    SamagriLine(slug: "samagri-shubh-labh", nameEn: "Shubh Labh sticker", nameTe: "శుభ లాభ్ స్టిక్కర్", priceMinor: 3000, quantity: 2),
+    SamagriLine(slug: "samagri-peacock-feathers", nameEn: "Peacock feathers", nameTe: "నెమలి ఈకలు", priceMinor: 8000, packEn: "1 bunch", packTe: "1 కట్ట"),
+    SamagriLine(slug: "samagri-pooja-book", nameEn: "Pooja vidhanam book", nameTe: "పూజా విధానం పుస్తకం", priceMinor: 8000),
+  ],
+);
+
+const ganeshMegaMandapamList = SamagriFestivalList(
+  id: "ganesh-mega-mandapam",
+  kitSlug: "ganesh-mega-mandapam",
+  titleEn: "Mega Mandapam Kit",
+  titleTe: "మెగా మండపం కిట్",
+  subtitleEn: "Eco-friendly clay Ganesh idol plus nine-day mandapam samagri.",
+  subtitleTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహంతో తొమ్మిది రోజుల మండపం సామగ్రి.",
+  kitPriceMinor: 399900,
+  kitMrpMinor: 439900,
+  items: [
+    SamagriLine(slug: "samagri-eco-ganesh-idol", nameEn: "Eco-friendly clay Ganesh idol", nameTe: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-markatam-ganesh", nameEn: "Markatam Ganesh", nameTe: "మార్కటం గణేష్", priceMinor: 14900),
+    SamagriLine(slug: "samagri-turmeric", nameEn: "Turmeric (Pasupu)", nameTe: "పసుపు", priceMinor: 4000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-kumkum", nameEn: "Kumkum", nameTe: "కుంకుమ", priceMinor: 5000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-sindoor", nameEn: "Sindoor", nameTe: "సింధూరం", priceMinor: 4000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-bukka", nameEn: "Bukka", nameTe: "బుక్కా", priceMinor: 4000, quantity: 50),
+    SamagriLine(slug: "samagri-gulal", nameEn: "Gulal", nameTe: "గులాల్", priceMinor: 4000, quantity: 50),
+    SamagriLine(slug: "samagri-rice-flour", nameEn: "Rice flour", nameTe: "బియ్యం పిండి", priceMinor: 6000, packEn: "1000g", packTe: "1000 గ్రా"),
+    SamagriLine(slug: "samagri-rice", nameEn: "Rice", nameTe: "బియ్యం", priceMinor: 24900, packEn: "5000g", packTe: "5000 గ్రా"),
+    SamagriLine(slug: "samagri-astagandham", nameEn: "Astagandham", nameTe: "అష్టగంధం", priceMinor: 8000, packEn: "250g", packTe: "250 గ్రా"),
+    SamagriLine(slug: "samagri-javadhu", nameEn: "Javadhu", nameTe: "జావాదు", priceMinor: 8000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-attar", nameEn: "Attar", nameTe: "అత్తరు", priceMinor: 8000, quantity: 2),
+    SamagriLine(slug: "samagri-dhoop-cups", nameEn: "Dhoop cups", nameTe: "ధూపం కప్పులు", priceMinor: 4000, quantity: 100),
+    SamagriLine(slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", priceMinor: 4000, packEn: "10 packs", packTe: "10 ప్యాక్‌లు", quantity: 10),
+    SamagriLine(slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", priceMinor: 5000, packEn: "500g", packTe: "500 గ్రా"),
+    SamagriLine(slug: "samagri-pacha-karpuram", nameEn: "Pacha karpuram", nameTe: "పచ్చ కర్పూరం", priceMinor: 8000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-cotton-wicks", nameEn: "Cotton wicks", nameTe: "వత్తులు", priceMinor: 3000, packEn: "10 packs", packTe: "10 ప్యాక్‌లు", quantity: 10),
+    SamagriLine(slug: "samagri-puvvu-wicks", nameEn: "Puvvu vathulu", nameTe: "పువ్వు వత్తులు", priceMinor: 4000, packEn: "5 packs", packTe: "5 ప్యాక్‌లు", quantity: 5),
+    SamagriLine(slug: "samagri-jileda-wicks", nameEn: "Jileda vathulu", nameTe: "జిలేడు వత్తులు", priceMinor: 4000, packEn: "5 packs", packTe: "5 ప్యాక్‌లు", quantity: 5),
+    SamagriLine(slug: "samagri-puja-vastras", nameEn: "Puja vastras", nameTe: "పూజా వస్త్రాలు", priceMinor: 19900, quantity: 3),
+    SamagriLine(slug: "samagri-akhanda-deepam", nameEn: "Akhanda deepam", nameTe: "అఖండ దీపం", priceMinor: 14900, quantity: 4),
+    SamagriLine(slug: "samagri-dates", nameEn: "Dates", nameTe: "ఖర్జూరాలు", priceMinor: 8000, packEn: "500g", packTe: "500 గ్రా"),
+    SamagriLine(slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", priceMinor: 6000, quantity: 50),
+    SamagriLine(slug: "samagri-betel-nuts", nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు", priceMinor: 8000, quantity: 100),
+    SamagriLine(slug: "samagri-poha", nameEn: "Poha (Atukulu)", nameTe: "అటుకులు", priceMinor: 8000, packEn: "1000g", packTe: "1000 గ్రా"),
+    SamagriLine(slug: "samagri-jaggery", nameEn: "Jaggery", nameTe: "బెల్లం", priceMinor: 8000, packEn: "2000g", packTe: "2000 గ్రా"),
+    SamagriLine(slug: "samagri-cloves", nameEn: "Cloves", nameTe: "లవంగాలు", priceMinor: 4000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-cardamom", nameEn: "Cardamom", nameTe: "యాలకులు", priceMinor: 6000, packEn: "100g", packTe: "100 గ్రా"),
+    SamagriLine(slug: "samagri-white-thread", nameEn: "White thread", nameTe: "తెల్ల దారం", priceMinor: 2000, quantity: 5),
+    SamagriLine(slug: "samagri-sutli", nameEn: "Sutli thread", nameTe: "సుత్లీ దారం", priceMinor: 2000, quantity: 5),
+    SamagriLine(slug: "samagri-moli-thread", nameEn: "Moli thread", nameTe: "మౌలి దారం", priceMinor: 3000, quantity: 100),
+    SamagriLine(slug: "samagri-garland", nameEn: "Flower garland", nameTe: "పూల మాల", priceMinor: 10000, quantity: 20),
+    SamagriLine(slug: "samagri-jenu", nameEn: "Jenu", nameTe: "జేను", priceMinor: 4000, quantity: 20),
+    SamagriLine(slug: "samagri-head-band", nameEn: "Head band", nameTe: "తలపట్టీ", priceMinor: 4000, quantity: 20),
+    SamagriLine(slug: "samagri-ghee", nameEn: "Ghee", nameTe: "నెయ్యి", priceMinor: 25000, packEn: "1000 ml", packTe: "1000 మి.లీ."),
+    SamagriLine(slug: "samagri-honey", nameEn: "Honey", nameTe: "తేనె", priceMinor: 12000, packEn: "1000 ml", packTe: "1000 మి.లీ."),
+    SamagriLine(slug: "samagri-rose-water", nameEn: "Rose water", nameTe: "పన్నీరు", priceMinor: 5000, packEn: "1000 ml", packTe: "1000 మి.లీ."),
+    SamagriLine(slug: "samagri-gomutra", nameEn: "Gomutra", nameTe: "గోమూత్రం", priceMinor: 5000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-gangajal", nameEn: "Gangajal", nameTe: "గంగాజలం", priceMinor: 5000, packEn: "500 ml", packTe: "500 మి.లీ."),
+    SamagriLine(slug: "samagri-oil", nameEn: "Oil", nameTe: "నూనె", priceMinor: 28000, packEn: "3000 ml", packTe: "3000 మి.లీ."),
+    SamagriLine(slug: "samagri-muggu-colours", nameEn: "Muggu colours", nameTe: "ముగ్గు రంగులు", priceMinor: 8000, packEn: "3000g", packTe: "3000 గ్రా"),
+    SamagriLine(slug: "samagri-backdrop", nameEn: "Backdrop", nameTe: "నేపథ్యం", priceMinor: 19900),
+    SamagriLine(slug: "samagri-asanam", nameEn: "Asanam", nameTe: "ఆసనం", priceMinor: 14900, quantity: 2),
+    SamagriLine(slug: "samagri-god-asanam", nameEn: "Deity asanam", nameTe: "దేవత ఆసనం", priceMinor: 14900),
+    SamagriLine(slug: "samagri-dona-cups", nameEn: "Dona cups", nameTe: "దోనెలు", priceMinor: 4000, quantity: 200),
+    SamagriLine(slug: "samagri-khandwa", nameEn: "Khandwa", nameTe: "ఖండ్వా", priceMinor: 8000, quantity: 2),
+    SamagriLine(slug: "samagri-blouse-pieces", nameEn: "Blouse pieces", nameTe: "జాకెట్ పీసు", priceMinor: 39900, quantity: 3),
+    SamagriLine(slug: "samagri-umbrella", nameEn: "Umbrella", nameTe: "గొడుగు", priceMinor: 8000),
+    SamagriLine(slug: "samagri-shubh-labh", nameEn: "Shubh Labh sticker", nameTe: "శుభ లాభ్ స్టిక్కర్", priceMinor: 3000, quantity: 5),
+    SamagriLine(slug: "samagri-peacock-feathers", nameEn: "Peacock feathers", nameTe: "నెమలి ఈకలు", priceMinor: 8000, quantity: 2),
+    SamagriLine(slug: "samagri-pooja-book", nameEn: "Pooja vidhanam book", nameTe: "పూజా విధానం పుస్తకం", priceMinor: 8000, quantity: 2),
   ],
 );
 
@@ -147,6 +397,7 @@ const ganeshHomamList = SamagriFestivalList(
   subtitleEn: 'Complete Ganesh puja / homam samagri from the Pooja Store Excel list.',
   subtitleTe: 'docs/pooja_samagri.xlsx లోని గణేష్ పూజ హోమం సామాగ్రి జాబితా.',
   kitPriceMinor: 199900,
+  kitMrpMinor: 249900,
   items: [
     SamagriLine(slug: 'samagri-homa-powder', nameEn: 'Homa powder', nameTe: 'హోమం పొడి', priceMinor: 14900, packEn: '1 kg', packTe: '1కిలో'),
     SamagriLine(slug: 'samagri-poha', nameEn: 'Poha (Atukulu)', nameTe: 'అటుకులు', priceMinor: 8000, packEn: '1/2 kg', packTe: '1/2కిలో'),
@@ -215,9 +466,17 @@ const varalakshmiList = SamagriFestivalList(
   ],
 );
 
+const ganeshEcoKitLists = [
+  ganeshMiniHomeList,
+  ganeshMiniOfficeList,
+  ganeshMiniMandapamList,
+  ganeshMegaHomeList,
+  ganeshMegaOfficeList,
+  ganeshMegaMandapamList,
+];
+
 const festivalSamagriLists = [
-  ganeshHomePujaList,
-  ganeshPoojaList,
+  ...ganeshEcoKitLists,
   ganeshHomamList,
   varalakshmiList,
 ];
@@ -227,4 +486,34 @@ SamagriFestivalList samagriListById(String? id) {
     (list) => list.id == id,
     orElse: () => ganeshHomamList,
   );
+}
+
+SamagriFestivalList? samagriListByKitSlug(String slug) {
+  for (final list in festivalSamagriLists) {
+    if (list.kitSlug == slug) return list;
+  }
+  return null;
+}
+
+List<SamagriLine> withOptionalOfferings(List<SamagriLine> items) {
+  final slugs = items.map((item) => item.slug).toSet();
+  final names = items.map((item) => item.nameEn.toLowerCase()).toSet();
+  return [
+    ...items,
+    ...kitOptionalOfferings
+        .where(
+          (extra) =>
+              !slugs.contains(extra.slug) &&
+              !names.contains(extra.nameEn.toLowerCase()),
+        )
+        .map(
+          (extra) => SamagriLine(
+            slug: extra.slug,
+            nameEn: extra.nameEn,
+            nameTe: extra.nameTe,
+            priceMinor: extra.priceMinor,
+            optional: true,
+          ),
+        ),
+  ];
 }

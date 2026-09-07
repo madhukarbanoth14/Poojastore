@@ -116,6 +116,18 @@ class EnvironmentVariables {
 
   @IsString()
   @IsOptional()
+  UPI_VPA?: string;
+
+  @IsString()
+  @IsOptional()
+  UPI_PAYEE_NAME?: string;
+
+  @IsString()
+  @IsOptional()
+  UPI_QR_IMAGE_URL?: string;
+
+  @IsString()
+  @IsOptional()
   VENDOR_NAME?: string;
 
   @IsString()
@@ -151,9 +163,10 @@ function assertLivePaymentsConfigured(env: EnvironmentVariables) {
     hasRazorpayKeys &&
     (env.NODE_ENV === 'production' ? !!env.RAZORPAY_WEBHOOK_SECRET : true);
   const hasStripe = !!env.STRIPE_SECRET_KEY && !!env.STRIPE_WEBHOOK_SECRET;
-  if (!hasRazorpay && !hasStripe) {
+  const hasUpi = !!env.UPI_VPA || !!env.UPI_QR_IMAGE_URL;
+  if (!hasRazorpay && !hasStripe && !hasUpi) {
     failures.push(
-      'PAYMENT_MODE=live requires Razorpay (IN) and/or Stripe (US/CA) keys + webhook secrets',
+      'PAYMENT_MODE=live requires Razorpay, Stripe, or a company UPI QR (UPI_VPA / UPI_QR_IMAGE_URL)',
     );
   }
   if (failures.length) {

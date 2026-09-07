@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-type Payment = {
+export type Payment = {
   id: string;
   provider: string;
   amountMinor: number;
@@ -18,13 +18,27 @@ type Payment = {
   checkoutUrl?: string;
   metadata?: {
     keyId?: string;
-    amount?: number;
+    amount?: number | string;
     currency?: string;
     name?: string;
     description?: string;
     prefill?: Record<string, string | undefined>;
+    vpa?: string;
+    payeeName?: string;
+    upiUri?: string;
+    phonepeUri?: string;
+    gpayUri?: string;
+    gpayAltUri?: string;
+    paytmUri?: string;
+    bhimUri?: string;
+    qrImageUrl?: string;
+    orderNumber?: string;
+    utr?: string;
+    hasScreenshot?: boolean;
   };
 };
+
+export type PaymentCompletion = "completed" | "upi";
 
 export function loadRazorpay() {
   return new Promise<void>((resolve, reject) => {
@@ -54,10 +68,14 @@ export function loadRazorpay() {
   });
 }
 
-export async function completePayment(payment: Payment) {
+export async function completePayment(payment: Payment): Promise<PaymentCompletion> {
+  if (payment.provider === "UPI_QR") {
+    return "upi";
+  }
+
   if (payment.provider === "MOCK") {
     await clientFetch(`/payments/${payment.id}/mock-confirm`, { method: "POST" });
-    return;
+    return "completed";
   }
 
   if (payment.provider === "RAZORPAY") {
@@ -99,16 +117,29 @@ export async function completePayment(payment: Payment) {
         razorpaySignature: result.razorpay_signature,
       }),
     });
-    return;
+    return "completed";
   }
 
   if (payment.provider === "STRIPE") {
     if (!payment.checkoutUrl) throw new Error("Stripe checkout URL is missing");
     window.location.assign(payment.checkoutUrl);
-    return;
+    return "completed";
   }
 
   throw new Error(`Unsupported payment provider: ${payment.provider}`);
+}
+
+export async function submitUpiUtr(
+  paymentId: string,
+  input: { utr?: string; screenshotBase64?: string },
+) {
+  return clientFetch(`/payments/${paymentId}/upi-submit`, {
+    method: "POST",
+    body: JSON.stringify({
+      utr: input.utr?.trim() || undefined,
+      screenshotBase64: input.screenshotBase64,
+    }),
+  });
 }
 
 export async function listAddresses() {

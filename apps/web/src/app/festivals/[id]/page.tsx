@@ -105,7 +105,8 @@ export default async function FestivalDetailPage({
       id: tab.slug,
       label: locale === "te" ? tab.labelTe : tab.labelEn,
       product,
-      imageSrc: festivalImage(fest.id) || kitImage(tab.slug, tab.labelEn),
+      imageSrc:
+        product?.imageUrl || kitImage(tab.slug, tab.labelEn) || festivalImage(fest.id),
       imageAlt: title,
       about: fest.description,
       speciality:

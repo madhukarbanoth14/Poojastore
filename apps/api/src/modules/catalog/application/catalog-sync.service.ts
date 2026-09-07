@@ -2,31 +2,88 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CurrencyCode, Market, ProductType } from '@prisma/client';
 import { PrismaService } from '../../../core/database/prisma.service';
 
+const RETIRED_FESTIVAL_SLUGS = [
+  'ganesh-chaturthi-home-puja',
+  'ganesh-chaturthi-pooja-samagri',
+];
+
 const FESTIVAL_KITS = [
   {
-    slug: 'ganesh-chaturthi-home-puja',
-    name: 'Ganesh Chaturthi Home Puja Kit',
-    nameTe: 'వినాయక చవితి ఇంటి పూజ కిట్',
+    slug: 'ganesh-mini-home-puja',
+    name: 'Mini Home Pooja Kit',
+    nameTe: 'మినీ ఇంటి పూజ కిట్',
     description:
-      'Home puja samagri for Vinayaka Chavithi — turmeric, kumkum, oil, camphor, vastra, and daily offerings.',
+      'Complete eco-friendly Vinayaka Chavithi kit with a clay Ganesh idol — no POP, safe for visarjan.',
     descriptionTe:
-      'వినాయక చవితి ఇంటి పూజా సామగ్రి — పసుపు, కుంకుమ, నూనె, కర్పూరం, వస్త్రం.',
-    priceMinor: 75000,
-    mrpMinor: 99900,
+      'పూర్తి పర్యావరణ అనుకూల వినాయక చవితి కిట్ — మట్టి గణేష్ విగ్రహం. POP కాదు, విసర్జనకు సురక్షితం.',
+    priceMinor: 111100,
+    mrpMinor: 160000,
     sortOrder: 11,
     festival: 'ganesh',
   },
   {
-    slug: 'ganesh-chaturthi-pooja-samagri',
-    name: 'Ganesh Mandapam Kit',
-    nameTe: 'గణేష్ మండపం కిట్',
+    slug: 'ganesh-mini-office-puja',
+    name: 'Mini Office Pooja Kit',
+    nameTe: 'మినీ ఆఫీస్ పూజ కిట్',
     description:
-      'Mandapam / larger Vinayaka Chavithi samagri — dhoti, sela, clay akhanda deepam, and the full diary list.',
+      'Complete eco-friendly Vinayaka Chavithi kit with a clay Ganesh idol — sized for an office desk or cabin shrine.',
     descriptionTe:
-      'మండపం / పెద్ద వినాయక చవితి సామగ్రి — దోవతి, శేల, మట్టి అఖండ దీపం.',
+      'పూర్తి పర్యావరణ అనుకూల మినీ ఆఫీస్ కిట్ — మట్టి గణేష్ విగ్రహం.',
     priceMinor: 149900,
     mrpMinor: 189900,
     sortOrder: 12,
+    festival: 'ganesh',
+  },
+  {
+    slug: 'ganesh-mini-mandapam',
+    name: 'Mini Mandapam Kit',
+    nameTe: 'మినీ మండపం కిట్',
+    description:
+      'Complete eco-friendly Vinayaka Chavithi kit with a clay Ganesh idol — community / small mandapam quantities.',
+    descriptionTe:
+      'పూర్తి పర్యావరణ అనుకూల మినీ మండపం కిట్ — మట్టి గణేష్ విగ్రహం.',
+    priceMinor: 199900,
+    mrpMinor: 239900,
+    sortOrder: 13,
+    festival: 'ganesh',
+  },
+  {
+    slug: 'ganesh-mega-home-puja',
+    name: 'Mega Home Pooja Kit',
+    nameTe: 'మెగా ఇంటి పూజ కిట్',
+    description:
+      'Complete eco-friendly Vinayaka Chavithi kit with a clay Ganesh idol — fuller home list for a longer stay.',
+    descriptionTe:
+      'పూర్తి పర్యావరణ అనుకూల మెగా ఇంటి కిట్ — మట్టి గణేష్ విగ్రహం.',
+    priceMinor: 299900,
+    mrpMinor: 339900,
+    sortOrder: 14,
+    festival: 'ganesh',
+  },
+  {
+    slug: 'ganesh-mega-office-puja',
+    name: 'Mega Office Pooja Kit',
+    nameTe: 'మెగా ఆఫీస్ కిట్',
+    description:
+      'Complete eco-friendly Vinayaka Chavithi kit with a clay Ganesh idol — larger office shrine quantities.',
+    descriptionTe:
+      'పూర్తి పర్యావరణ అనుకూల మెగా ఆఫీస్ కిట్ — మట్టి గణేష్ విగ్రహం.',
+    priceMinor: 333300,
+    mrpMinor: 373300,
+    sortOrder: 15,
+    festival: 'ganesh',
+  },
+  {
+    slug: 'ganesh-mega-mandapam',
+    name: 'Mega Mandapam Kit',
+    nameTe: 'మెగా మండపం కిట్',
+    description:
+      'Complete eco-friendly Vinayaka Chavithi kit with a clay Ganesh idol — nine-day mandapam quantities.',
+    descriptionTe:
+      'పూర్తి పర్యావరణ అనుకూల మెగా మండపం కిట్ — మట్టి గణేష్ విగ్రహం.',
+    priceMinor: 399900,
+    mrpMinor: 439900,
+    sortOrder: 16,
     festival: 'ganesh',
   },
   {
@@ -132,6 +189,10 @@ export class CatalogSyncService implements OnModuleInit {
       });
       this.logger.log(`Created missing catalog kit ${kit.slug}`);
     }
+    await this.prisma.product.updateMany({
+      where: { slug: { in: [...RETIRED_FESTIVAL_SLUGS] } },
+      data: { isActive: false },
+    });
   }
 
   private async renameSatyanarayanTelugu() {

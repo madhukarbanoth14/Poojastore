@@ -115,13 +115,9 @@ class _KitsScreenState extends ConsumerState<KitsScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  Text(
-                                    formatInr(k['priceMinor'] as int),
-                                    style: const TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.text,
-                                    ),
+                                  _KitListPrice(
+                                    priceMinor: k['priceMinor'] as int,
+                                    mrpMinor: k['mrpMinor'] as int?,
                                   ),
                                 ],
                               ),
@@ -139,6 +135,41 @@ class _KitsScreenState extends ConsumerState<KitsScreen> {
                     );
                   },
                 ),
+    );
+  }
+}
+
+class _KitListPrice extends StatelessWidget {
+  const _KitListPrice({required this.priceMinor, this.mrpMinor});
+
+  final int priceMinor;
+  final int? mrpMinor;
+
+  @override
+  Widget build(BuildContext context) {
+    final showMrp = mrpMinor != null && mrpMinor! > priceMinor;
+    return Row(
+      children: [
+        Text(
+          formatInr(priceMinor),
+          style: const TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w700,
+            color: AppColors.text,
+          ),
+        ),
+        if (showMrp) ...[
+          const SizedBox(width: 8),
+          Text(
+            formatInr(mrpMinor!),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textMuted,
+              decoration: TextDecoration.lineThrough,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

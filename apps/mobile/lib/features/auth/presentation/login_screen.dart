@@ -251,26 +251,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: auth.loading ? null : () => continueWithApple(ref, context),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF221013),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(50),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.apple, size: 20),
-                      const SizedBox(width: 10),
-                      Text(
-                        l10n.continueWithApple,
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => context.push('/poojari/apply'),

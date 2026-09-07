@@ -75,6 +75,16 @@ describe('validateEnv production gates', () => {
     ).not.toThrow();
   });
 
+  it('accepts live company UPI QR without Razorpay', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        PAYMENT_MODE: 'live',
+        UPI_VPA: 'store@okhdfcbank',
+      }),
+    ).not.toThrow();
+  });
+
   it('rejects live payments without gateway secrets', () => {
     expect(() =>
       validateEnv({

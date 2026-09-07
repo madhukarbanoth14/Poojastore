@@ -3,16 +3,22 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../features/marketplace/data/marketplace_api.dart';
 import 'razorpay_checkout.dart';
 
-/// Completes MOCK / Razorpay / Stripe payment returned by checkout APIs.
-Future<void> completePayment({
+enum PaymentCompletion { completed, upi }
+
+/// Completes MOCK / Razorpay / Stripe / company UPI QR payment from checkout APIs.
+Future<PaymentCompletion> completePayment({
   required MarketplaceApi api,
   required Map<String, dynamic> payment,
 }) async {
   final provider = payment['provider'] as String? ?? '';
 
+  if (provider == 'UPI_QR') {
+    return PaymentCompletion.upi;
+  }
+
   if (provider == 'MOCK') {
     await api.mockConfirmPayment(payment['id'] as String);
-    return;
+    return PaymentCompletion.completed;
   }
 
   if (provider == 'RAZORPAY') {
@@ -26,7 +32,7 @@ Future<void> completePayment({
       razorpayPaymentId: result.paymentId,
       razorpaySignature: result.signature,
     );
-    return;
+    return PaymentCompletion.completed;
   }
 
   if (provider == 'STRIPE') {
@@ -35,7 +41,7 @@ Future<void> completePayment({
       throw StateError('Stripe checkout URL is missing');
     }
     await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    return;
+    return PaymentCompletion.completed;
   }
 
   throw StateError('Unsupported payment provider: $provider');

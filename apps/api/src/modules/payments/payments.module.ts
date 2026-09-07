@@ -7,6 +7,7 @@ import { VerifyRazorpayService } from './application/verify-razorpay.service';
 import { MockPaymentGateway } from './infrastructure/mock.gateway';
 import { RazorpayGateway } from './infrastructure/razorpay.gateway';
 import { StripeGateway } from './infrastructure/stripe.gateway';
+import { UpiQrGateway } from './infrastructure/upi-qr.gateway';
 import { PaymentsController } from './presentation/payments.controller';
 
 @Module({
@@ -16,6 +17,7 @@ import { PaymentsController } from './presentation/payments.controller';
     MockPaymentGateway,
     RazorpayGateway,
     StripeGateway,
+    UpiQrGateway,
     PaymentOrchestratorService,
     ConfirmPaymentService,
     RefundPaymentService,

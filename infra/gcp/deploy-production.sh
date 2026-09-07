@@ -81,6 +81,17 @@ fi
 CORS_ORIGINS="${CORS_ORIGINS_OVERRIDE:-https://pavitraseva.in,https://www.pavitraseva.in,https://pavitra-seva-web-tcjernzh5a-el.a.run.app}"
 PUBLIC_API_BASE_URL="${PUBLIC_API_BASE_URL_OVERRIDE:-https://pooja-api-production-tcjernzh5a-el.a.run.app}"
 
+# Never push Razorpay test keys onto production.
+if [[ "${RAZORPAY_KEY_ID:-}" == rzp_test* ]]; then
+  echo "Skipping Razorpay: local .env has test keys."
+  unset RAZORPAY_KEY_ID RAZORPAY_KEY_SECRET RAZORPAY_WEBHOOK_SECRET
+fi
+
+# Website-relative QR paths need a public HTTPS URL in production metadata.
+if [[ "${UPI_QR_IMAGE_URL:-}" == /* ]]; then
+  UPI_QR_IMAGE_URL="https://pavitraseva.in${UPI_QR_IMAGE_URL}"
+fi
+
 if [[ -z "${GOOGLE_CLIENT_IDS:-}" ]]; then
   GOOGLE_CLIENT_IDS="$(gcloud run services describe "$SERVICE" \
     --account="$ACCOUNT" --project="$PROJECT" --region="$REGION" \
@@ -124,8 +135,35 @@ if [[ -n "${RAZORPAY_KEY_ID:-}" && -n "${RAZORPAY_KEY_SECRET:-}" ]]; then
     SECRETS="${SECRETS},RAZORPAY_WEBHOOK_SECRET=pooja-production-razorpay-webhook-secret:latest"
   fi
   echo "Razorpay keys will be mounted on Cloud Run (PAYMENT_MODE=live)."
-else
-  echo "WARNING: RAZORPAY_KEY_ID/SECRET not set — checkout will use MOCK."
+elif gcloud secrets describe pooja-production-razorpay-key-id \
+    --account="$ACCOUNT" --project="$PROJECT" >/dev/null 2>&1; then
+  SECRETS="${SECRETS},RAZORPAY_KEY_ID=pooja-production-razorpay-key-id:latest,RAZORPAY_KEY_SECRET=pooja-production-razorpay-key-secret:latest"
+  echo "Keeping existing production Razorpay secrets (not overwritten)."
+fi
+
+# VPA contains @ so it cannot go in --set-env-vars (^@^ delimiter).
+if [[ -n "${UPI_VPA:-}" ]]; then
+  upsert_secret pooja-production-upi-vpa "$UPI_VPA"
+  gcloud secrets add-iam-policy-binding pooja-production-upi-vpa \
+    --account="$ACCOUNT" --project="$PROJECT" \
+    --member="serviceAccount:${SA}" \
+    --role="roles/secretmanager.secretAccessor" --quiet >/dev/null
+  SECRETS="${SECRETS},UPI_VPA=pooja-production-upi-vpa:latest"
+  PAYMENT_MODE=live
+  echo "Company UPI VPA will be mounted (PAYMENT_MODE=live)."
+fi
+
+ENV_EXTRA=""
+if [[ -n "${UPI_PAYEE_NAME:-}" ]]; then
+  ENV_EXTRA="${ENV_EXTRA}@UPI_PAYEE_NAME=${UPI_PAYEE_NAME}"
+fi
+if [[ -n "${UPI_QR_IMAGE_URL:-}" ]]; then
+  ENV_EXTRA="${ENV_EXTRA}@UPI_QR_IMAGE_URL=${UPI_QR_IMAGE_URL}"
+  PAYMENT_MODE=live
+fi
+
+if [[ "$PAYMENT_MODE" != "live" ]]; then
+  echo "WARNING: Razorpay and company UPI are unset — checkout will use MOCK."
 fi
 
 gcloud run deploy "$SERVICE" \
@@ -146,7 +184,7 @@ gcloud run deploy "$SERVICE" \
   --subnet=default \
   --vpc-egress=private-ranges-only \
   --set-secrets="$SECRETS" \
-  --set-env-vars="^@^NODE_ENV=development@API_PREFIX=api@API_VERSION=1@JWT_ACCESS_TTL_SECONDS=900@JWT_REFRESH_TTL_SECONDS=2592000@OTP_LENGTH=6@OTP_TTL_SECONDS=300@OTP_MAX_ATTEMPTS=5@OTP_MAX_REQUESTS_PER_HOUR=5@OTP_RETURN_IN_RESPONSE=true@SMS_PROVIDER=console@SWAGGER_ENABLED=false@PAYMENT_MODE=${PAYMENT_MODE}@PUBLIC_API_BASE_URL=${PUBLIC_API_BASE_URL}@CORS_ORIGINS=${CORS_ORIGINS}@LOG_LEVEL=info@GOOGLE_CLIENT_IDS=${GOOGLE_CLIENT_IDS:-}"
+  --set-env-vars="^@^NODE_ENV=development@API_PREFIX=api@API_VERSION=1@JWT_ACCESS_TTL_SECONDS=900@JWT_REFRESH_TTL_SECONDS=2592000@OTP_LENGTH=6@OTP_TTL_SECONDS=300@OTP_MAX_ATTEMPTS=5@OTP_MAX_REQUESTS_PER_HOUR=5@OTP_RETURN_IN_RESPONSE=true@SMS_PROVIDER=console@SWAGGER_ENABLED=false@PAYMENT_MODE=${PAYMENT_MODE}@PUBLIC_API_BASE_URL=${PUBLIC_API_BASE_URL}@CORS_ORIGINS=${CORS_ORIGINS}@LOG_LEVEL=info@GOOGLE_CLIENT_IDS=${GOOGLE_CLIENT_IDS:-}${ENV_EXTRA}"
 
 URL="$(gcloud run services describe "$SERVICE" --account="$ACCOUNT" --project="$PROJECT" --region="$REGION" --format='value(status.url)')"
 echo "Deployed: $URL"

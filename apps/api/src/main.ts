@@ -59,11 +59,21 @@ async function bootstrap() {
     config.get<string>('payments.razorpay.keyId') ||
     process.env.RAZORPAY_KEY_ID ||
     '';
-  logger.log(
-    razorpayKey
-      ? `Payments: Razorpay ${razorpayKey.startsWith('rzp_live') ? 'live' : 'test'} ready`
-      : 'Payments: Razorpay keys missing; India checkout uses mock',
-  );
+  const upiVpa =
+    config.get<string>('payments.upi.vpa') || process.env.UPI_VPA || '';
+  const upiQr =
+    config.get<string>('payments.upi.qrImageUrl') ||
+    process.env.UPI_QR_IMAGE_URL ||
+    '';
+  if (upiVpa || upiQr) {
+    logger.log('Payments: company UPI QR ready (India checkout skips Razorpay)');
+  } else if (razorpayKey) {
+    logger.log(
+      `Payments: Razorpay ${razorpayKey.startsWith('rzp_live') ? 'live' : 'test'} ready`,
+    );
+  } else {
+    logger.log('Payments: Razorpay keys missing; India checkout uses mock');
+  }
 }
 
 void bootstrap();

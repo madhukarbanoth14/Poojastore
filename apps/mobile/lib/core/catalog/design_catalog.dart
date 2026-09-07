@@ -136,9 +136,9 @@ final upcomingFestivals = [
     date: '14 Sep 2026',
     target: DateTime(2026, 9, 14),
     description:
-        'Ganesh Chaturthi marks the birth of Lord Ganesha, worshipped as the remover of obstacles and lord of new beginnings. Families install a clay idol at home for 1.5, 3, 5, 7 or 11 days before immersion.',
+        'Ganesh Chaturthi marks the birth of Lord Ganesha. Choose an eco-friendly Mini or Mega kit for home, office, or mandapam — each with a clay Ganesh idol (no POP) and complete samagri.',
     speciality:
-        'The festival centers on daily aarti, offering 21 durva grass blades and modak, and a community visarjan procession on the final day.',
+        'Every Pavitra Seva Ganesh kit is fully eco-friendly: a clay Ganesh idol, no POP, safe for visarjan, with Mini or Mega samagri for home, office, or mandapam.',
     steps: [
       'Clean the puja space and install the idol facing east or north.',
       'Perform Prana Pratishtha to invoke life into the idol.',
@@ -146,11 +146,11 @@ final upcomingFestivals = [
       'Perform aarti morning and evening through the festival.',
       'Immerse the idol in water on the chosen day (visarjan).',
     ],
-    items: ganeshHomePujaList.items.map((line) => line.displayName(false)).toList(),
-    kitName: 'Ganesh Chaturthi Home Puja Kit',
-    kitPrice: 750,
-    kitSlug: 'ganesh-chaturthi-home-puja',
-    pricedItems: ganeshHomePujaList.items,
+    items: ganeshMiniHomeList.items.map((line) => line.displayName(false)).toList(),
+    kitName: 'Mini Home Pooja Kit',
+    kitPrice: 1111,
+    kitSlug: 'ganesh-mini-home-puja',
+    pricedItems: ganeshMiniHomeList.items,
   ),
   FestivalGuide(
     id: 'navratri',

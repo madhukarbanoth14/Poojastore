@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { writeCity } from "@/lib/client";
-import { LOCATION_PRESETS, cityLabel } from "@/lib/location";
+import { LOCATION_PRESETS, cityLabel, localizeCityName } from "@/lib/location";
 import { t } from "@/lib/copy";
 import type { Locale } from "@/lib/types";
 
@@ -52,7 +52,7 @@ export function LocationPicker({
       >
         {LOCATION_PRESETS.map((loc) => (
           <option key={loc.name} value={loc.name} className="text-maroon">
-            {cityOnly ? loc.name : cityLabel(loc.name)}
+            {cityOnly ? localizeCityName(loc.name, locale) : cityLabel(loc.name, locale)}
           </option>
         ))}
       </select>

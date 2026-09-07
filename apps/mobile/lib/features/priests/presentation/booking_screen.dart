@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/payments/payment_flow.dart';
+import '../../../core/payments/upi_pay_sheet.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -99,10 +99,13 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           );
       final payment = result['payment'] as Map<String, dynamic>?;
       if (payment != null) {
-        await completePayment(
+        if (!mounted) return;
+        final paid = await completeOrCollectUpi(
+          context: context,
           api: ref.read(marketplaceApiProvider),
           payment: payment,
         );
+        if (!paid || !mounted) return;
       }
       if (!mounted) return;
       final booking = result['booking'] as Map<String, dynamic>?;
@@ -114,6 +117,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               : 'Day $_dateIdx';
       final timeLabel = _times[_timeIdx ?? 0];
       final ritual = _rituals[_ritualIdx ?? 0];
+      final pending = payment?['provider'] == 'UPI_QR';
       context.go(
         '/booking-confirm?name=${Uri.encodeComponent(priest['fullName'] as String)}'
         '&mode=${widget.mode}'
@@ -121,7 +125,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         '&time=${Uri.encodeComponent(timeLabel)}'
         '&id=${Uri.encodeComponent(id)}'
         '&ritual=${Uri.encodeComponent(ritual)}'
-        '&fee=${Uri.encodeComponent(formatInr((priest['basePriceMinor'] as int) + (priest['travelFeeMinor'] as int)))}',
+        '&fee=${Uri.encodeComponent(formatInr((priest['basePriceMinor'] as int) + (priest['travelFeeMinor'] as int)))}'
+        '${pending ? '&pending=1' : ''}',
       );
     } catch (e) {
       setState(() => _error = '$e');

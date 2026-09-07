@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -11,9 +12,12 @@ import {
   PaymentStatus,
   PriestBookingStatus,
   Prisma,
+  Role,
 } from '@prisma/client';
 import { PrismaService } from '../../../core/database/prisma.service';
 import { PushNotificationService } from '../../notifications/application/push-notification.service';
+import type { AuthenticatedUser } from '../../auth/domain/authenticated-user';
+import { parsePaymentScreenshot } from '../infrastructure/parse-payment-screenshot';
 
 @Injectable()
 export class ConfirmPaymentService {
@@ -319,6 +323,130 @@ export class ConfirmPaymentService {
     return this.markSucceeded({
       paymentId,
       providerPaymentId: `mock_pay_${payment.id}`,
+    });
+  }
+
+  async submitUpiProof(
+    paymentId: string,
+    userId: string,
+    input: { utr?: string; screenshotBase64?: string },
+  ) {
+    const utr = input.utr?.trim().toUpperCase() ?? '';
+    const screenshot = input.screenshotBase64?.trim() ?? '';
+    if (!utr && !screenshot) {
+      throw new BadRequestException(
+        'Enter a UTR or upload the payment screenshot',
+      );
+    }
+
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { order: true },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    if (payment.order.userId !== userId) {
+      throw new BadRequestException('Payment does not belong to user');
+    }
+    if (payment.provider !== PaymentProvider.UPI_QR) {
+      throw new BadRequestException('This payment is not a UPI QR payment');
+    }
+    if (payment.status === PaymentStatus.SUCCEEDED) {
+      return payment;
+    }
+    if (
+      payment.status !== PaymentStatus.REQUIRES_ACTION &&
+      payment.status !== PaymentStatus.PROCESSING
+    ) {
+      throw new BadRequestException(
+        `Cannot submit UPI proof for status ${payment.status}`,
+      );
+    }
+
+    if (screenshot) {
+      const parsed = parsePaymentScreenshot(screenshot);
+      await this.prisma.upiPaymentProof.upsert({
+        where: { paymentId: payment.id },
+        create: {
+          paymentId: payment.id,
+          mimeType: parsed.mimeType,
+          image: parsed.image,
+        },
+        update: {
+          mimeType: parsed.mimeType,
+          image: parsed.image,
+        },
+      });
+    }
+
+    const providerPaymentId =
+      utr ||
+      payment.providerPaymentId ||
+      `shot${payment.id.replace(/-/g, '').slice(0, 18)}`;
+
+    try {
+      return await this.prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.PROCESSING,
+          providerPaymentId,
+          metadata: {
+            ...(payment.metadata as Record<string, unknown>),
+            ...(utr ? { utr } : {}),
+            hasScreenshot:
+              Boolean(screenshot) ||
+              Boolean(
+                (payment.metadata as Record<string, unknown>).hasScreenshot,
+              ),
+            submittedAt: new Date().toISOString(),
+          } as Prisma.InputJsonValue,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new BadRequestException('This UPI reference was already used');
+      }
+      throw error;
+    }
+  }
+
+  async getUpiProof(paymentId: string, user: AuthenticatedUser) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { order: true, upiProof: true },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    if (payment.order.userId !== user.id && user.role !== Role.ADMIN) {
+      throw new ForbiddenException('Payment proof is not available');
+    }
+    if (!payment.upiProof) {
+      throw new NotFoundException('No payment screenshot was uploaded');
+    }
+    return payment.upiProof;
+  }
+
+  async adminConfirmUpi(paymentId: string, adminUserId: string) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { order: true },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    if (payment.provider !== PaymentProvider.UPI_QR) {
+      throw new BadRequestException('This payment is not a UPI QR payment');
+    }
+    const meta = (payment.metadata as Record<string, unknown>) ?? {};
+    const utr =
+      payment.providerPaymentId ||
+      (typeof meta.utr === 'string' ? meta.utr : `upi_${payment.id}`);
+    return this.markSucceeded({
+      paymentId: payment.id,
+      providerPaymentId: utr,
+      raw: {
+        adminConfirmedBy: adminUserId,
+        confirmedAt: new Date().toISOString(),
+      },
     });
   }
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { clientFetch } from "@/lib/client";
+import { clientFetch, clientFetchBlob } from "@/lib/client";
 import { formatMoney, formatWhen } from "@/lib/format";
 import { itemName, orderStatusLabel, statusTone } from "@/lib/order-display";
 import type { Order } from "@/lib/types";
@@ -188,6 +188,42 @@ export default function AdminOrderDetailPage() {
         <p className="text-xs text-muted">{formatWhen(order.createdAt)}</p>
       </section>
 
+      {order.payments?.some((p) => p.provider === "UPI_QR" && p.status !== "SUCCEEDED") ? (
+        <section className="card-temple mt-4 p-5">
+          <h2 className="font-semibold">UPI payment</h2>
+          {order.payments
+            .filter((p) => p.provider === "UPI_QR")
+            .map((p) => (
+              <div key={p.id} className="mt-3 space-y-2">
+                <p className="text-sm text-muted">
+                  Status: {p.status}
+                  {p.providerPaymentId || p.metadata?.utr
+                    ? ` · UTR ${p.providerPaymentId || p.metadata?.utr}`
+                    : p.metadata?.hasScreenshot
+                      ? " · screenshot uploaded"
+                      : " · waiting for UTR or screenshot"}
+                </p>
+                {p.metadata?.hasScreenshot ? <UpiProofImage paymentId={p.id} /> : null}
+                <button
+                  type="button"
+                  className="btn-maroon"
+                  disabled={busy !== null || p.status === "SUCCEEDED"}
+                  onClick={() => {
+                    setBusy("upi");
+                    setError(null);
+                    void clientFetch(`/payments/${p.id}/upi-admin-confirm`, { method: "POST" })
+                      .then(() => load())
+                      .catch((err: Error) => setError(err.message))
+                      .finally(() => setBusy(null));
+                  }}
+                >
+                  {busy === "upi" ? "Confirming…" : "Confirm UPI received"}
+                </button>
+              </div>
+            ))}
+        </section>
+      ) : null}
+
       <section className="card-temple mt-4 p-5">
         <h2 className="font-semibold">1. Confirm the order</h2>
         <p className="mt-2 text-sm text-muted">
@@ -355,5 +391,36 @@ export default function AdminOrderDetailPage() {
         </ul>
       </section>
     </div>
+  );
+}
+
+function UpiProofImage({ paymentId }: { paymentId: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    let alive = true;
+    void clientFetchBlob(`/payments/${paymentId}/upi-proof`)
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob);
+        if (alive) setUrl(objectUrl);
+      })
+      .catch(() => {
+        if (alive) setUrl(null);
+      });
+    return () => {
+      alive = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [paymentId]);
+
+  if (!url) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={url}
+      alt="Customer payment screenshot"
+      className="mt-2 max-h-72 w-full rounded-xl border border-divider object-contain bg-white"
+    />
   );
 }

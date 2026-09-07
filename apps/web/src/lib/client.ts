@@ -135,3 +135,12 @@ export async function clientFetch<T>(
   }
   return (json.data ?? json) as T;
 }
+
+export async function clientFetchBlob(path: string): Promise<Blob> {
+  const token = getAccessToken();
+  const headers = new Headers();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const res = await fetch(`${BASE}${path}`, { headers });
+  if (!res.ok) throw new Error(`Request failed (${res.status})`);
+  return res.blob();
+}

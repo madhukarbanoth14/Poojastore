@@ -6,7 +6,14 @@ import { GoldButton, Kicker } from "@/components/ui";
 import { PanchangDateField, usePanchangDate } from "@/components/panchang-almanac-card";
 import { t } from "@/lib/copy";
 import { cityLabel, timezoneForCity } from "@/lib/location";
-import { localizeTerm, tithiShort, windowPhrase } from "@/lib/panchang-copy";
+import {
+  dateShortLabel,
+  formatAlmanacTime,
+  localizeTerm,
+  pl,
+  tithiShort,
+  windowPhrase,
+} from "@/lib/panchang-copy";
 import type { Locale, PanchangToday } from "@/lib/types";
 
 function panchangLabel(value?: string, fallback = "—") {
@@ -30,9 +37,12 @@ export function HomePanchangPanel({
     timezoneForCity(city),
   );
   const tithi = tithiShort(panchang?.tithi, locale);
-  const labeled =
-    panchang && typeof panchang.dateLabel === "string" ? panchang.dateLabel : null;
-  const dateLine = [labeled || panchang?.date, cityLabel(city)].filter(Boolean).join(" · ");
+  const dateLine = [
+    dateShortLabel(panchang?.date ?? date, locale),
+    cityLabel(city, locale),
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const isToday = date === today;
 
   return (
@@ -62,43 +72,43 @@ export function HomePanchangPanel({
 
       <dl className="hero-almanac">
         <div>
-          <dt>{locale === "te" ? "యోగం" : "Yoga"}</dt>
+          <dt>{pl(locale, "yoga")}</dt>
           <dd>{localizeTerm(panchang?.yoga, locale)}</dd>
         </div>
         <div>
-          <dt>{locale === "te" ? "కరణం" : "Karana"}</dt>
+          <dt>{pl(locale, "karana")}</dt>
           <dd>{localizeTerm(panchang?.karana, locale)}</dd>
         </div>
         <div>
-          <dt>{locale === "te" ? "సూర్యోదయం" : "Sunrise"}</dt>
-          <dd>{panchangLabel(panchang?.sunrise)}</dd>
+          <dt>{pl(locale, "sunrise")}</dt>
+          <dd>{formatAlmanacTime(panchang?.sunrise, locale)}</dd>
         </div>
         <div>
-          <dt>{locale === "te" ? "సూర్యాస్తమయం" : "Sunset"}</dt>
-          <dd>{panchangLabel(panchang?.sunset)}</dd>
+          <dt>{pl(locale, "sunset")}</dt>
+          <dd>{formatAlmanacTime(panchang?.sunset, locale)}</dd>
         </div>
         <div>
-          <dt>{locale === "te" ? "వర్జ్యం" : "Varjyam"}</dt>
+          <dt>{pl(locale, "varjyam")}</dt>
           <dd>{windowPhrase(panchang?.varjyam, locale)}</dd>
         </div>
         <div>
-          <dt>{locale === "te" ? "దుర్ముహూర్తం" : "Durmuhurtham"}</dt>
+          <dt>{pl(locale, "durmuhurtham")}</dt>
           <dd>{windowPhrase(panchang?.durmuhurtham, locale)}</dd>
         </div>
         <div>
-          <dt>Rahu Kalam</dt>
+          <dt>{pl(locale, "rahu")}</dt>
           <dd>{windowPhrase(panchang?.rahuKalam, locale)}</dd>
         </div>
         <div>
-          <dt>Yamagandam</dt>
+          <dt>{pl(locale, "yama")}</dt>
           <dd>{windowPhrase(panchang?.yamagandam, locale)}</dd>
         </div>
         <div>
-          <dt>Gulika</dt>
+          <dt>{pl(locale, "gulika")}</dt>
           <dd>{windowPhrase(panchang?.gulikaKalam, locale)}</dd>
         </div>
         <div>
-          <dt>Abhijit</dt>
+          <dt>{pl(locale, "abhijit")}</dt>
           <dd>{windowPhrase(panchang?.abhijitMuhurtham, locale)}</dd>
         </div>
       </dl>

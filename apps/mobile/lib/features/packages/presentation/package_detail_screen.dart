@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/payments/payment_flow.dart';
+import '../../../core/payments/upi_pay_sheet.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/l10n.dart';
 import '../../marketplace/presentation/kits_screen.dart';
@@ -88,11 +88,13 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen> {
             addonSlugs: _addons.toList(),
           );
       final payment = result['payment'] as Map<String, dynamic>;
-      await completePayment(
+      if (!mounted) return;
+      final paid = await completeOrCollectUpi(
+        context: context,
         api: ref.read(marketplaceApiProvider),
         payment: payment,
       );
-      if (!mounted) return;
+      if (!paid || !mounted) return;
       context.go('/package-bookings');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.packageBooked)),

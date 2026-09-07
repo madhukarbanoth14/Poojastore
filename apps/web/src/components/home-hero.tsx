@@ -1,7 +1,8 @@
 import { HomeGreeting } from "@/components/home-greeting";
+import { HomeOmSeal } from "@/components/home-om-seal";
 import { HomePanchangPanel } from "@/components/home-panchang-panel";
 import { LocationPicker } from "@/components/location-picker";
-import { MandalaWatermark, YantraRings } from "@/components/ornaments";
+import { MandalaWatermark } from "@/components/ornaments";
 import { t } from "@/lib/copy";
 import type { Locale, PanchangToday } from "@/lib/types";
 
@@ -34,19 +35,7 @@ export function HomeHero({
         <div className="mt-10 grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
           <HomePanchangPanel locale={locale} initial={panchang} city={city} shopCta={shopCta} />
 
-          <div className="hero-shrine relative mx-auto hidden aspect-square w-full max-w-[20rem] lg:block lg:self-start lg:-mt-12">
-            <div className="absolute inset-[18%] rounded-full bg-orange/22 blur-3xl" />
-            <YantraRings className="yantra-spin pointer-events-none absolute inset-0 opacity-50" />
-            <div className="absolute inset-[16%] z-[1] overflow-hidden rounded-full">
-              <div className="hero-seal h-full w-full">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/brand/pavitra_seva_seal.png"
-                  alt="Pavitra Seva lotus, Om, and diya"
-                />
-              </div>
-            </div>
-          </div>
+          <HomeOmSeal locale={locale} />
         </div>
       </div>
     </section>

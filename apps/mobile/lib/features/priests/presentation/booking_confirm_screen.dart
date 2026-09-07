@@ -11,6 +11,7 @@ class BookingConfirmScreen extends StatelessWidget {
     this.bookingId = 'PB-70542',
     this.ritual = 'Griha Pravesh',
     this.fee = '₹0',
+    this.pendingUpi = false,
   });
 
   final String priestName;
@@ -20,16 +21,19 @@ class BookingConfirmScreen extends StatelessWidget {
   final String bookingId;
   final String ritual;
   final String fee;
+  final bool pendingUpi;
 
   @override
   Widget build(BuildContext context) {
     return ConfirmSuccessScreen(
-      title: 'Booking Confirmed!',
-      subtitle: '$priestName will $modeLine on $dateLabel, $timeLabel.',
+      title: pendingUpi ? 'Booking placed' : 'Booking Confirmed!',
+      subtitle: pendingUpi
+          ? 'We recorded your UPI reference. $priestName is confirmed after we verify the credit.'
+          : '$priestName will $modeLine on $dateLabel, $timeLabel.',
       rows: [
         ('Booking ID', bookingId),
         ('Ritual', ritual),
-        ('Fee Paid', fee),
+        (pendingUpi ? 'Fee' : 'Fee Paid', fee),
       ],
     );
   }

@@ -27,14 +27,6 @@ export type FestivalGuide = {
   guideId?: string;
 };
 
-const GANESH_HOMAM_STEPS = [
-  "Set the homa kunda facing east on a clean, slightly raised spot. Place the idol or photo nearby, light camphor, and kindle the fire with ghee and samithalu.",
-  "Take sankalpam — name, gotra, and the wish for the homam — then invoke Lord Ganesha as Vighnaharta before any other offering.",
-  "Offer homa powder, navadhanyalu, poha, jaggery, and durva into the fire with each mantra. Keep the flame fed with ghee; do not let it die mid-ritual.",
-  "Perform purnahuti with coconut, fruits, vastra, and camphor. This seals the homam.",
-  "Offer aarti, take prasad, and let the ashes cool before visarjan or keeping a pinch as vibhuti.",
-];
-
 const GANESH_PUJA_DETAIL_EN = [
   "Choose a Shubha muhurat if you can, especially on Chaturthi. Place a wooden plank or chowki, spread a red or yellow cloth, and keep the clay idol facing east or north. A small kalash with mango leaves and a coconut can sit to the deity’s right.",
   "After Prana Pratishtha, treat the murti as a living guest: padya (water for the feet), arghya, achamana, snana or a simple wipe, vastra (dhoti and sela), yajnopavita, gandham, kumkum, and flowers. Offer 21 blades of durva (garika) and modak or undrallu as naivedyam — these are Ganesha’s dearest offerings.",
@@ -47,16 +39,6 @@ const GANESH_PUJA_DETAIL_TE = [
   "విగ్రహం ఒక రోజుకంటే ఎక్కువ ఉంటే అఖండ దీపం వెలిగించండి. ఉదయం, సాయంత్రం కర్పూరం, అగరవత్తి, గంటతో హారతి చేయండి. నిర్ణయించిన రోజున విగ్రహాన్ని ప్రదక్షిణ చేసి, కృతజ్ఞత చెప్పి, చెరువు, నది లేదా ఇంట్లో నీటి పాత్రలో నిమజ్జనం చేసి ఆ నీటిని మొక్క వద్ద పోయండి.",
 ];
 
-const GANESH_HOMAM_DETAIL_EN = [
-  "A Ganesh homam is done when the family wants a stronger blessing for a new house, business, wedding, or to remove persistent obstacles. It can follow the home puja or stand alone with a priest.",
-  "Keep ghee warm, samithalu dry, and water nearby. Offerings go into the fire, not onto the idol. After purnahuti, sit quietly for a few minutes; the last aarti is the close of the rite.",
-];
-
-const GANESH_HOMAM_DETAIL_TE = [
-  "కొత్త ఇల్లు, వ్యాపారం, వివాహం లేదా నిలకడగా ఉన్న ఆటంకాలు తొలగించుకోవడానికి గణేష్ హోమం చేస్తారు. ఇంటి పూజ తర్వాత లేదా పూజారితో ప్రత్యేకంగా చేయవచ్చు.",
-  "నెయ్యి వెచ్చగా, సమితలు పొడిగా, నీరు దగ్గరగా ఉంచండి. హోమ ద్రవ్యాలు అగ్నిలో వేయాలి, విగ్రహంపై కాదు. పూర్ణాహుతి తర్వాత కొద్ది నిమిషాలు నిశ్శబ్దంగా ఉండి, హారతితో ముగించండి.",
-];
-
 export const upcomingFestivals: FestivalGuide[] = [
   {
     id: "ganesh",
@@ -66,9 +48,9 @@ export const upcomingFestivals: FestivalGuide[] = [
     dateTe: "14 సెప్టెంబర్ 2026",
     target: "2026-09-14",
     description:
-      "Ganesh Chaturthi marks the birth of Lord Ganesha, worshipped as the remover of obstacles and lord of new beginnings. Families install a clay idol at home for 1.5, 3, 5, 7 or 11 days before immersion.",
+      "Ganesh Chaturthi marks the birth of Lord Ganesha. Choose an eco-friendly Mini or Mega kit for home, office, or mandapam — each packed with a clay Ganesh idol (no POP) and complete samagri for visarjan-safe puja.",
     speciality:
-      "Ganesh Chaturthi is the homecoming of Vighnaharta — families welcome a clay Ganesha, treat him as an honoured guest for 1.5, 3, 5, 7 or 11 days, then return him to water. The speciality is this living hospitality: 21 durva blades, modak or undrallu, an akhanda deepam, daily aarti, and visarjan as a lesson in letting obstacles go so new work can begin.",
+      "Every Pavitra Seva Ganesh kit is fully eco-friendly: a clay Ganesh idol, no POP, safe for visarjan, with complete Mini or Mega samagri for home, office, or mandapam.",
     steps: [
       "Clean the pooja space and install the idol facing east or north.",
       "Perform Prana Pratishtha to invoke life into the idol.",
@@ -77,65 +59,91 @@ export const upcomingFestivals: FestivalGuide[] = [
       "Immerse the idol in water on the chosen day (visarjan).",
     ],
     items: [
-      "Turmeric 50g",
-      "Kumkum 50g",
-      "Bukka gulal 50g",
-      "Large wick",
-      "Incense 1 packet",
-      "Oil 500 ml",
-      "Camphor 25g",
-      "Cotton vastra",
-      "Betel nuts ×12",
-      "Dates ×12",
-      "Sambrani 50g",
-      "Attar",
-      "Rose water",
-      "Honey",
-      "Ghee",
-      "Gandham 30g",
-      "White cloth",
-      "Kankana thread",
-      "Turmeric roots ×11",
-      "Kudukalu ×2",
-      "Coconuts ×2",
+      "Eco-friendly clay Ganesh idol",
+      "Turmeric 10g",
+      "Kumkum 10g",
+      "Gandham 25g",
+      "Akshatalu 25g",
+      "Camphor",
+      "Incense",
+      "Oil 50 ml",
+      "Ghee 25 ml",
+      "Honey 25 ml",
+      "Coconut",
+      "Betel leaves ×5",
+      "Red cloth",
+      "Paper umbrella",
+      "Pooja vidhanam book",
     ],
-    kitName: "Ganesh Chaturthi Home Puja Kit",
-    kitPrice: 75000,
-    kitSlug: "ganesh-chaturthi-home-puja",
+    kitName: "Mini Home Pooja Kit",
+    kitPrice: 111100,
+    kitSlug: "ganesh-mini-home-puja",
     kitTabs: [
       {
-        slug: "ganesh-chaturthi-home-puja",
-        labelEn: "Home Puja kit",
-        labelTe: "ఇంటి పూజ కిట్",
+        slug: "ganesh-mini-home-puja",
+        labelEn: "Mini Home",
+        labelTe: "మినీ ఇల్లు",
         specialityEn:
-          "Ganesh Chaturthi is the homecoming of Vighnaharta — families welcome a clay Ganesha, treat him as an honoured guest for 1.5, 3, 5, 7 or 11 days, then return him to water. The speciality is this living hospitality: 21 durva blades, modak or undrallu, an akhanda deepam, daily aarti, and visarjan as a lesson in letting obstacles go so new work can begin.",
+          "Fully eco-friendly Mini Home kit with a clay Ganesh idol — no POP, visarjan-safe. Compact samagri for a household Vinayaka Chavithi puja.",
         specialityTe:
-          "వినాయక చవితి అంటే విఘ్నహర్తను ఇంటికి ఆహ్వానించడం. మట్టి గణేశుని 1.5, 3, 5, 7 లేదా 11 రోజులు అతిథిగా సేవించి, నీటిలో నిమజ్జనం చేస్తారు. ప్రత్యేకత ఈ ఆతిథ్యమే: 21 గరిక పత్రాలు, ఉండ్రాళ్లు/మోదకం, అఖండ దీపం, ప్రతిరోజూ హారతి, ఆటంకాలు వదిలి కొత్త పని మొదలుపెట్టే సంకేతంగా విసర్జన.",
+          "పూర్తి పర్యావరణ అనుకూల మినీ ఇంటి కిట్ — మట్టి గణేష్ విగ్రహం, POP కాదు, విసర్జనకు సురక్షితం.",
         processDetailEn: GANESH_PUJA_DETAIL_EN,
         processDetailTe: GANESH_PUJA_DETAIL_TE,
       },
       {
-        slug: "ganesh-chaturthi-pooja-samagri",
-        labelEn: "Ganesh Mandapam Kit",
-        labelTe: "గణేష్ మండపం కిట్",
+        slug: "ganesh-mini-office-puja",
+        labelEn: "Mini Office",
+        labelTe: "మినీ ఆఫీస్",
         specialityEn:
-          "The mandapam kit is for a larger shrine or public setup — dhoti, sela, clay akhanda deepam, navadhanyalu, and the fuller Chaturthi diary list.",
+          "Fully eco-friendly Mini Office kit with a clay Ganesh idol — sized for a desk or cabin shrine at work.",
         specialityTe:
-          "మండపం కిట్ పెద్ద గృహ లేదా బహిరంగ ఏర్పాటుకు — దోవతి, శేల, మట్టి అఖండ దీపం, నవధాన్యాలు, పూర్తి చవితి సామగ్రి.",
+          "పూర్తి పర్యావరణ అనుకూల మినీ ఆఫీస్ కిట్ — మట్టి గణేష్ విగ్రహం. డెస్క్ లేదా క్యాబిన్ పూజకు.",
         processDetailEn: GANESH_PUJA_DETAIL_EN,
         processDetailTe: GANESH_PUJA_DETAIL_TE,
       },
       {
-        slug: "ganesh-puja-homam-samagri",
-        labelEn: "Ganesh Homam kit",
-        labelTe: "గణేష్ హోమం కిట్",
-        steps: GANESH_HOMAM_STEPS,
+        slug: "ganesh-mini-mandapam",
+        labelEn: "Mini Mandapam",
+        labelTe: "మినీ మండపం",
         specialityEn:
-          "Ganesh homam takes the same Chaturthi devotion into the fire. Offerings of ghee, samithalu, navadhanyalu, and durva are given to Agni so Ganesha’s blessing reaches the whole household — often chosen for a new beginning, a stubborn obstacle, or when a priest leads the rite.",
+          "Fully eco-friendly Mini Mandapam kit with a clay Ganesh idol — community quantities for a short mandapam celebration.",
         specialityTe:
-          "గణేష్ హోమం చవితి భక్తిని అగ్నిలోకి తీసుకువెళ్తుంది. నెయ్యి, సమితలు, నవధాన్యాలు, గరిక అగ్నికి సమర్పించి ఇల్లంతా ఆశీస్సు పొందేలా చేస్తారు — కొత్త ఆరంభం, పెద్ద ఆటంకం, లేదా పూజారి నడిపించే విధికి ఎంచుకుంటారు.",
-        processDetailEn: GANESH_HOMAM_DETAIL_EN,
-        processDetailTe: GANESH_HOMAM_DETAIL_TE,
+          "పూర్తి పర్యావరణ అనుకూల మినీ మండపం కిట్ — మట్టి గణేష్ విగ్రహం. చిన్న మండపం / కమ్యూనిటీ పూజకు.",
+        processDetailEn: GANESH_PUJA_DETAIL_EN,
+        processDetailTe: GANESH_PUJA_DETAIL_TE,
+      },
+      {
+        slug: "ganesh-mega-home-puja",
+        labelEn: "Mega Home",
+        labelTe: "మెగా ఇల్లు",
+        specialityEn:
+          "Fully eco-friendly Mega Home kit with a clay Ganesh idol — a fuller list for a longer Chaturthi stay at home.",
+        specialityTe:
+          "పూర్తి పర్యావరణ అనుకూల మెగా ఇంటి కిట్ — మట్టి గణేష్ విగ్రహం. ఎక్కువ రోజుల ఇంటి పూజకు.",
+        processDetailEn: GANESH_PUJA_DETAIL_EN,
+        processDetailTe: GANESH_PUJA_DETAIL_TE,
+      },
+      {
+        slug: "ganesh-mega-office-puja",
+        labelEn: "Mega Office",
+        labelTe: "మెగా ఆఫీస్",
+        specialityEn:
+          "Fully eco-friendly Mega Office kit with a clay Ganesh idol — larger shrine quantities for daily aarti through the festival.",
+        specialityTe:
+          "పూర్తి పర్యావరణ అనుకూల మెగా ఆఫీస్ కిట్ — మట్టి గణేష్ విగ్రహం. పెద్ద ఆఫీస్ పూజకు.",
+        processDetailEn: GANESH_PUJA_DETAIL_EN,
+        processDetailTe: GANESH_PUJA_DETAIL_TE,
+      },
+      {
+        slug: "ganesh-mega-mandapam",
+        labelEn: "Mega Mandapam",
+        labelTe: "మెగా మండపం",
+        specialityEn:
+          "Fully eco-friendly Mega Mandapam kit with a clay Ganesh idol — nine-day mandapam / large community quantities.",
+        specialityTe:
+          "పూర్తి పర్యావరణ అనుకూల మెగా మండపం కిట్ — మట్టి గణేష్ విగ్రహం. తొమ్మిది రోజుల మండపం / పెద్ద కమ్యూనిటీ పూజకు.",
+        processDetailEn: GANESH_PUJA_DETAIL_EN,
+        processDetailTe: GANESH_PUJA_DETAIL_TE,
       },
     ],
   },

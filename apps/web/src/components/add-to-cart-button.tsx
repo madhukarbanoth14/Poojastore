@@ -10,11 +10,13 @@ export function AddToCartButton({
   selectedItemKeys,
   label = "Add to cart",
   className = "",
+  compact = false,
 }: {
   productId: string;
   selectedItemKeys?: string[];
   label?: string;
   className?: string;
+  compact?: boolean;
 }) {
   const { user, refreshCart } = useAuth();
   const router = useRouter();
@@ -47,11 +49,12 @@ export function AddToCartButton({
   }
 
   return (
-    <div className="w-full">
+    <div className={compact ? "shrink-0" : "w-full"}>
       <button
         type="button"
         onClick={() => void add()}
         disabled={busy}
+        aria-label={label}
         className={`btn-orange disabled:opacity-60 ${className}`}
       >
         {busy ? "Adding…" : label}

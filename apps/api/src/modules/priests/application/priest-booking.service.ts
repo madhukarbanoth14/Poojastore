@@ -237,9 +237,12 @@ export class PriestBookingService {
         id: payment.id,
         provider: payment.provider,
         status: payment.status,
+        amountMinor: payment.amountMinor,
+        currency: payment.currency,
         checkoutUrl: payment.checkoutUrl,
         clientSecret: payment.clientSecret,
         providerOrderId: payment.providerOrderId,
+        metadata: payment.metadata,
       },
     };
   }

@@ -10,6 +10,8 @@ class CatalogImages {
   static const servicesPrefix = 'assets/images/services';
 
   static const _kitFallbacks = <String, String>{
+    'ganesh-mini': '$kitsPrefix/ganesh-chaturthi-kit.png',
+    'ganesh-mega': '$kitsPrefix/ganesh-chaturthi-kit.png',
     'ganesh': '$kitsPrefix/ganesh-chaturthi-kit.png',
     'ganesh-chaturthi': '$kitsPrefix/ganesh-chaturthi-kit.png',
     'ganesh-chaturthi-home': '$kitsPrefix/ganesh-chaturthi-kit.png',
@@ -52,8 +54,103 @@ class CatalogImages {
     'griha-pravesh-kit',
     'vehicle-puja-kit',
     'ganesh-chaturthi-kit',
+    'ganesh-mini-home-puja',
+    'ganesh-mini-office-puja',
+    'ganesh-mini-mandapam',
+    'ganesh-mega-home-puja',
+    'ganesh-mega-office-puja',
+    'ganesh-mega-mandapam',
     'daily-puja-kit',
   };
+
+  static const samagriPrefix = 'assets/images/samagri';
+
+  static const _knownSamagriFiles = {
+    'samagri-21-patri',
+    'samagri-akhanda-deepam',
+    'samagri-akshatalu',
+    'samagri-asanam',
+    'samagri-astagandham',
+    'samagri-attar',
+    'samagri-backdrop',
+    'samagri-betel-leaves',
+    'samagri-betel-nuts',
+    'samagri-blouse-pieces',
+    'samagri-bukka',
+    'samagri-camphor',
+    'samagri-cardamom',
+    'samagri-cloves',
+    'samagri-coconuts',
+    'samagri-cotton-wicks',
+    'samagri-dates',
+    'samagri-dhoop-cups',
+    'samagri-dona-cups',
+    'samagri-flowers',
+    'samagri-fruits',
+    'samagri-eco-ganesh-idol',
+    'samagri-gandham',
+    'samagri-gangajal',
+    'samagri-garland',
+    'samagri-ghee',
+    'samagri-god-asanam',
+    'samagri-gomutra',
+    'samagri-gulal',
+    'samagri-head-band',
+    'samagri-honey',
+    'samagri-incense',
+    'samagri-isthari-leaves',
+    'samagri-jaggery',
+    'samagri-javadhu',
+    'samagri-jenu',
+    'samagri-jileda-wicks',
+    'samagri-kankana-thread',
+    'samagri-khandwa',
+    'samagri-kumkum',
+    'samagri-laddu',
+    'samagri-leaf-cups',
+    'samagri-markatam-ganesh',
+    'samagri-matchbox',
+    'samagri-moli-thread',
+    'samagri-muggu-colours',
+    'samagri-oil',
+    'samagri-pacha-karpuram',
+    'samagri-panchamritam',
+    'samagri-paper-umbrella',
+    'samagri-peacock-feathers',
+    'samagri-poha',
+    'samagri-pooja-book',
+    'samagri-puja-vastras',
+    'samagri-puvvu-wicks',
+    'samagri-rava',
+    'samagri-red-cloth',
+    'samagri-rice',
+    'samagri-rice-flour',
+    'samagri-rose-water',
+    'samagri-shubh-labh',
+    'samagri-sindoor',
+    'samagri-sugar-crystals',
+    'samagri-sutli',
+    'samagri-turmeric',
+    'samagri-turmeric-roots',
+    'samagri-umbrella',
+    'samagri-undrallu',
+    'samagri-white-thread',
+    'samagri-yajnopavita',
+  };
+
+  static const _samagriAliases = {
+    'samagri-durva': 'samagri-isthari-leaves',
+    'samagri-sandal-paste': 'samagri-gandham',
+    'samagri-prasadam-leaf-cups': 'samagri-leaf-cups',
+  };
+
+  static String? samagriAsset(String? slug) {
+    final key = (slug ?? '').trim().toLowerCase();
+    if (key.isEmpty) return null;
+    final mapped = _samagriAliases[key] ?? key;
+    if (_knownSamagriFiles.contains(mapped)) return '$samagriPrefix/$mapped.png';
+    return null;
+  }
 }
 
 class CatalogImage extends StatelessWidget {

@@ -51,3 +51,33 @@ export function stripeWebhookSecret(config: ConfigService): string {
     process.env.STRIPE_WEBHOOK_SECRET,
   ]);
 }
+
+export function upiVpa(config: ConfigService): string {
+  return firstNonEmpty([
+    config.get<string>('payments.upi.vpa'),
+    config.get<string>('UPI_VPA'),
+    process.env.UPI_VPA,
+  ]);
+}
+
+export function upiPayeeName(config: ConfigService): string {
+  return (
+    firstNonEmpty([
+      config.get<string>('payments.upi.payeeName'),
+      config.get<string>('UPI_PAYEE_NAME'),
+      process.env.UPI_PAYEE_NAME,
+    ]) || 'Pavitra Seva'
+  );
+}
+
+export function upiQrImageUrl(config: ConfigService): string {
+  return firstNonEmpty([
+    config.get<string>('payments.upi.qrImageUrl'),
+    config.get<string>('UPI_QR_IMAGE_URL'),
+    process.env.UPI_QR_IMAGE_URL,
+  ]);
+}
+
+export function upiConfigured(config: ConfigService): boolean {
+  return Boolean(upiVpa(config) || upiQrImageUrl(config));
+}

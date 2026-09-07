@@ -1,3 +1,5 @@
+import type { Locale } from "./types";
+
 export type Market = "IN" | "US" | "CA";
 
 export type LocationPreset = {
@@ -19,6 +21,27 @@ export const LOCATION_PRESETS: LocationPreset[] = [
 
 export const DEFAULT_CITY = "Hyderabad";
 
+const CITY_TE: Record<string, string> = {
+  Hyderabad: "హైదరాబాద్",
+  Bengaluru: "బెంగళూరు",
+  Delhi: "ఢిల్లీ",
+  Mumbai: "ముంబై",
+  "New York": "న్యూయార్క్",
+  "New Jersey": "న్యూజెర్సీ",
+  Toronto: "టొరంటో",
+};
+
+const REGION_TE: Record<string, string> = {
+  India: "భారతదేశం",
+  USA: "అమెరికా",
+  Canada: "కెనడా",
+};
+
+export function localizeCityName(name: string, locale: Locale = "en") {
+  if (locale !== "te") return name;
+  return CITY_TE[name] ?? name;
+}
+
 export function locationByName(name: string | null | undefined): LocationPreset {
   const found = LOCATION_PRESETS.find(
     (item) => item.name.toLowerCase() === (name ?? "").trim().toLowerCase(),
@@ -26,9 +49,11 @@ export function locationByName(name: string | null | undefined): LocationPreset 
   return found ?? LOCATION_PRESETS[0]!;
 }
 
-export function cityLabel(name: string | null | undefined) {
+export function cityLabel(name: string | null | undefined, locale: Locale = "en") {
   const loc = locationByName(name);
-  return `${loc.name}, ${loc.region}`;
+  const city = locale === "te" ? (CITY_TE[loc.name] ?? loc.name) : loc.name;
+  const region = locale === "te" ? (REGION_TE[loc.region] ?? loc.region) : loc.region;
+  return `${city}, ${region}`;
 }
 
 export function marketForCity(name: string | null | undefined): Market {

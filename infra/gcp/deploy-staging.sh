@@ -97,8 +97,20 @@ if [[ -n "${RAZORPAY_KEY_ID:-}" && -n "${RAZORPAY_KEY_SECRET:-}" ]]; then
     SECRETS="${SECRETS},RAZORPAY_WEBHOOK_SECRET=pooja-staging-razorpay-webhook-secret:latest"
   fi
   echo "Razorpay test keys will be mounted on Cloud Run."
-else
-  echo "WARNING: RAZORPAY_KEY_ID/SECRET not set — checkout will fall back to MOCK on staging."
+fi
+
+if [[ -n "${UPI_VPA:-}" ]]; then
+  upsert_secret pooja-staging-upi-vpa "$UPI_VPA"
+  SECRETS="${SECRETS},UPI_VPA=pooja-staging-upi-vpa:latest"
+  echo "Company UPI VPA will be mounted on staging."
+fi
+
+ENV_EXTRA=""
+if [[ -n "${UPI_PAYEE_NAME:-}" ]]; then
+  ENV_EXTRA="${ENV_EXTRA}@UPI_PAYEE_NAME=${UPI_PAYEE_NAME}"
+fi
+if [[ -n "${UPI_QR_IMAGE_URL:-}" ]]; then
+  ENV_EXTRA="${ENV_EXTRA}@UPI_QR_IMAGE_URL=${UPI_QR_IMAGE_URL}"
 fi
 
 gcloud run deploy "$SERVICE" \
@@ -118,7 +130,7 @@ gcloud run deploy "$SERVICE" \
   --subnet=default \
   --vpc-egress=private-ranges-only \
   --set-secrets="$SECRETS" \
-  --set-env-vars="^@^NODE_ENV=development@API_PREFIX=api@API_VERSION=1@JWT_ACCESS_TTL_SECONDS=900@JWT_REFRESH_TTL_SECONDS=2592000@OTP_LENGTH=6@OTP_TTL_SECONDS=300@OTP_MAX_ATTEMPTS=5@OTP_MAX_REQUESTS_PER_HOUR=5@OTP_RETURN_IN_RESPONSE=true@SMS_PROVIDER=console@SWAGGER_ENABLED=true@PAYMENT_MODE=mock@PUBLIC_API_BASE_URL=https://pooja-api-staging-tcjernzh5a-el.a.run.app@LOG_LEVEL=info@GOOGLE_CLIENT_IDS=${GOOGLE_CLIENT_IDS:-}"
+  --set-env-vars="^@^NODE_ENV=development@API_PREFIX=api@API_VERSION=1@JWT_ACCESS_TTL_SECONDS=900@JWT_REFRESH_TTL_SECONDS=2592000@OTP_LENGTH=6@OTP_TTL_SECONDS=300@OTP_MAX_ATTEMPTS=5@OTP_MAX_REQUESTS_PER_HOUR=5@OTP_RETURN_IN_RESPONSE=true@SMS_PROVIDER=console@SWAGGER_ENABLED=true@PAYMENT_MODE=mock@PUBLIC_API_BASE_URL=https://pooja-api-staging-tcjernzh5a-el.a.run.app@LOG_LEVEL=info@GOOGLE_CLIENT_IDS=${GOOGLE_CLIENT_IDS:-}${ENV_EXTRA}"
 
 URL="$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format='value(status.url)')"
 echo "Deployed: $URL"

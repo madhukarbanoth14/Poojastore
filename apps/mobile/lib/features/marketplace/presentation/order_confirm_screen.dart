@@ -9,22 +9,25 @@ class OrderConfirmScreen extends StatelessWidget {
     this.amount = '₹0',
     this.slot = 'Today, 6–8 PM',
     this.eta = 'today, 7:00 PM',
+    this.pendingUpi = false,
   });
 
   final String orderId;
   final String amount;
   final String slot;
   final String eta;
+  final bool pendingUpi;
 
   @override
   Widget build(BuildContext context) {
     return ConfirmSuccessScreen(
-      title: 'Order Confirmed!',
-      subtitle:
-          'Payment received. Your order will be packed and delivered by $eta.',
+      title: pendingUpi ? 'Order placed' : 'Order Confirmed!',
+      subtitle: pendingUpi
+          ? 'We recorded your UPI reference. Packing starts after we confirm the credit on our bank statement.'
+          : 'Payment received. Your order will be packed and delivered by $eta.',
       rows: [
         ('Order ID', orderId),
-        ('Amount Paid', amount),
+        (pendingUpi ? 'Amount' : 'Amount Paid', amount),
         ('Delivery Slot', slot),
       ],
       primaryLabel: 'Track delivery',

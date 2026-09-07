@@ -1,9 +1,10 @@
-export function formatMoney(minor: number, currency = "INR") {
+export function formatMoney(minor: number, currency?: string | null) {
+  const code = currency || "INR";
   const major = minor / 100;
   try {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency,
+      currency: code,
       maximumFractionDigits: major >= 100 ? 0 : 2,
     }).format(major);
   } catch {

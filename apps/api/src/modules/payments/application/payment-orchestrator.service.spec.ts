@@ -3,6 +3,20 @@ import { PaymentOrchestratorService } from './payment-orchestrator.service';
 import { MockPaymentGateway } from '../infrastructure/mock.gateway';
 import { RazorpayGateway } from '../infrastructure/razorpay.gateway';
 import { StripeGateway } from '../infrastructure/stripe.gateway';
+import { UpiQrGateway } from '../infrastructure/upi-qr.gateway';
+
+function unusedUpi() {
+  return {
+    provider: PaymentProvider.UPI_QR,
+    supports: () => false,
+    createSession: async () => ({ provider: PaymentProvider.UPI_QR }),
+    refund: async () => ({
+      providerRefundId: 'upi_rfnd',
+      amountMinor: 100,
+      status: 'succeeded' as const,
+    }),
+  } as unknown as UpiQrGateway;
+}
 
 function makeService(mode: string, razorpaySupports = true, stripeSupports = false) {
   const config = {
@@ -32,6 +46,7 @@ function makeService(mode: string, razorpaySupports = true, stripeSupports = fal
         status: 'succeeded' as const,
       }),
     } as unknown as StripeGateway,
+    unusedUpi(),
   );
 }
 
@@ -93,6 +108,7 @@ describe('PaymentOrchestratorService', () => {
           status: 'succeeded' as const,
         }),
       } as unknown as StripeGateway,
+      unusedUpi(),
     );
 
     await expect(

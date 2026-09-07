@@ -111,6 +111,15 @@ export default function OrderDetailPage() {
                 Tracking: <span className="font-semibold">{current.label}</span>
               </p>
             ) : null}
+            {order.status === "PENDING_PAYMENT" &&
+            order.payments?.some((p) => p.provider === "UPI_QR") ? (
+              <p className="mt-3 text-sm text-maroon">
+                UPI payment is waiting for confirmation
+                {order.payments.find((p) => p.provider === "UPI_QR")?.providerPaymentId
+                  ? ` (UTR ${order.payments.find((p) => p.provider === "UPI_QR")?.providerPaymentId}).`
+                  : ". Scan the QR at checkout and send the UTR if you have not already."}
+              </p>
+            ) : null}
             {order.tracking?.returnStatus && order.tracking.returnStatus !== "NONE" ? (
               <p className="mt-1 text-sm text-muted">
                 Return: {order.tracking.returnStatus.toLowerCase().replaceAll("_", " ")}

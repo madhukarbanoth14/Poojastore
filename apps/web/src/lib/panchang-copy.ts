@@ -12,8 +12,8 @@ const labels = {
   durmuhurtham: { en: "Durmuhurtham", te: "దుర్ముహూర్తము" },
   amrit: { en: "Amrit Kalam", te: "అమృతకాలం" },
   rahu: { en: "Rahu Kalam", te: "రాహుకాలం" },
-  yama: { en: "Yamagandam", te: "యమగండ/కేతుకాలం" },
-  gulika: { en: "Gulika Kalam", te: "గులిక కాలం" },
+  yama: { en: "Yamagandam", te: "యమగండం" },
+  gulika: { en: "Gulika Kalam", te: "గుళికకాలం" },
   abhijit: { en: "Abhijit Muhurtham", te: "అభిజిత్ ముహూర్తం" },
   subha: { en: "Subha Gadiyalu", te: "శుభ ఘడియలు" },
   suryaRashi: { en: "Surya Rashi", te: "సూర్యరాశి" },
@@ -308,6 +308,34 @@ export function windowPhrase(
   return `${formatAlmanacTime(win.start, locale)} – ${formatAlmanacTime(win.end, locale)}`;
 }
 
+const MONTHS_TE = [
+  "జనవరి",
+  "ఫిబ్రవరి",
+  "మార్చి",
+  "ఏప్రిల్",
+  "మే",
+  "జూన్",
+  "జూలై",
+  "ఆగష్టు",
+  "సెప్టెంబర్",
+  "అక్టోబర్",
+  "నవంబర్",
+  "డిసెంబర్",
+];
+
+export function dateShortLabel(iso: string | undefined | null, locale: Locale) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  if (locale === "te") return `${d} ${MONTHS_TE[m - 1]} ${y}`;
+  const dt = new Date(Date.UTC(y, m - 1, d, 12));
+  return dt.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export function weekdayDateBanner(p: PanchangToday, locale: Locale) {
   const weekday = localizeTerm(p.weekday as string | undefined, locale);
   const iso = typeof p.date === "string" ? p.date : "";
@@ -315,11 +343,7 @@ export function weekdayDateBanner(p: PanchangToday, locale: Locale) {
   const [y, m, d] = iso.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d, 12));
   if (locale === "te") {
-    const months = [
-      "జనవరి", "ఫిబ్రవరి", "మార్చి", "ఏప్రిల్", "మే", "జూన్",
-      "జూలై", "ఆగష్టు", "సెప్టెంబర్", "అక్టోబర్", "నవంబర్", "డిసెంబర్",
-    ];
-    return `${weekday}, ${months[m - 1]} ${d}, ${y}`;
+    return `${weekday}, ${MONTHS_TE[m - 1]} ${d}, ${y}`;
   }
   return dt.toLocaleDateString("en-IN", {
     weekday: "long",

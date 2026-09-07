@@ -6,7 +6,7 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import {
   ganeshHomamItems,
   ganeshLineLabel,
-  ganeshPoojaItems,
+  ganeshMiniHomeItems,
   ganeshSelectedKeys,
   type GaneshSamagriLine,
 } from "@/lib/ganesh-samagri";
@@ -27,7 +27,7 @@ export function GaneshSamagriTabs({
 }) {
   const [tab, setTab] = useState<"pooja" | "homam">("pooja");
   const [chosenOptional, setChosenOptional] = useState<Set<string>>(new Set());
-  const items = tab === "pooja" ? ganeshPoojaItems : ganeshHomamItems;
+  const items = tab === "pooja" ? ganeshMiniHomeItems : ganeshHomamItems;
   const required = items.filter((item) => !item.optional);
   const optional = items.filter((item) => item.optional);
   const product = tab === "pooja" ? poojaProduct : homamProduct;

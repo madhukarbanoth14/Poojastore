@@ -35,8 +35,8 @@ export default async function KitDetailPage({
         product: kit,
         imageSrc:
           kit?.imageUrl ||
-          festivalImage(family.id) ||
-          kitImage(tab.slug, tab.labelEn),
+          kitImage(tab.slug, tab.labelEn) ||
+          festivalImage(family.id),
         imageAlt: kit?.name ?? (locale === "te" ? family.nameTe : family.name),
         about: family.description,
         speciality:

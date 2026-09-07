@@ -81,6 +81,11 @@ export default () => ({
       cancelUrl:
         process.env.STRIPE_CANCEL_URL ?? 'poojastore://payments/cancel',
     },
+    upi: {
+      vpa: process.env.UPI_VPA ?? '',
+      payeeName: process.env.UPI_PAYEE_NAME ?? 'Pavitra Seva',
+      qrImageUrl: process.env.UPI_QR_IMAGE_URL ?? '',
+    },
   },
   social: {
     requireIdToken: process.env.SOCIAL_AUTH_REQUIRE_ID_TOKEN === 'true',

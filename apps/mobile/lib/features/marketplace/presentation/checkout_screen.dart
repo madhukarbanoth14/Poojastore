@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/payments/payment_flow.dart';
+import '../../../core/payments/upi_pay_sheet.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -94,16 +94,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         deliverySlot: _slots[_slotIdx],
       );
       final payment = result['payment'] as Map<String, dynamic>;
-      await completePayment(api: api, payment: payment);
       if (!mounted) return;
+      final paid = await completeOrCollectUpi(
+        context: context,
+        api: api,
+        payment: payment,
+      );
+      if (!paid || !mounted) return;
       final order = result['order'] as Map<String, dynamic>?;
       final id = order?['id'] as String? ?? '';
       final total = order?['totalMinor'] as int? ??
           (_cart?['subtotalMinor'] as int? ?? 0);
+      final pending = payment['provider'] == 'UPI_QR';
       context.go(
         '/order-confirm?id=${Uri.encodeComponent(id)}'
         '&amount=${Uri.encodeComponent(formatInr(total))}'
-        '&slot=${Uri.encodeComponent(_slots[_slotIdx])}',
+        '&slot=${Uri.encodeComponent(_slots[_slotIdx])}'
+        '${pending ? '&pending=1' : ''}',
       );
     } catch (e) {
       setState(() => _error = e.toString());

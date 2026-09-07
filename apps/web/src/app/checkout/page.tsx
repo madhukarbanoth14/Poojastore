@@ -6,7 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { clientFetch } from "@/lib/client";
 import { formatMoney } from "@/lib/format";
-import { completePayment, listAddresses, loadRazorpay } from "@/lib/payments";
+import { completePayment, listAddresses, loadRazorpay, type Payment } from "@/lib/payments";
+import { UpiPayPanel } from "@/components/upi-pay-panel";
 import type { Address, Cart } from "@/lib/types";
 
 const SLOTS = ["Today, 6–8 PM", "Tomorrow, 9–11 AM", "Tomorrow, 4–6 PM"];
@@ -55,7 +56,7 @@ export default function CheckoutPage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressId, setAddressId] = useState<string>("");
   const [slot, setSlot] = useState(SLOTS[0]!);
-  const [intent, setIntent] = useState<Intent>("self");
+  const [intents, setIntents] = useState<Intent[]>(["self"]);
   const [line1, setLine1] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -71,6 +72,8 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
   const [promoOff, setPromoOff] = useState<number | null>(null);
+  const [upiPayment, setUpiPayment] = useState<Payment | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
 
   const snapshot: Cart | null = cart;
   const total = snapshot?.subtotalMinor ?? 0;
@@ -94,6 +97,11 @@ export default function CheckoutPage() {
     void loadRazorpay().catch(() => undefined);
   }, []);
 
+  const wantsSelf = intents.includes("self");
+  const wantsFamily = intents.includes("family");
+  const wantsRefer = intents.includes("refer");
+  const wantsPay = wantsSelf || wantsFamily;
+
   const hasSelfAddress = Boolean(
     addressId || (line1.trim() && city.trim() && state.trim() && postal.trim()),
   );
@@ -109,16 +117,39 @@ export default function CheckoutPage() {
 
   const canAdvance = useMemo(() => {
     if (step === 1) return Boolean(snapshot?.items.length);
-    if (step === 2) return Boolean(intent);
+    if (step === 2) return intents.length > 0;
     if (step === 3) {
-      if (intent === "family") return hasFamily;
-      if (intent === "refer") return hasRefer;
-      return hasSelfAddress;
+      if (wantsFamily && !hasFamily) return false;
+      if (wantsRefer && !wantsFamily && !hasRefer) return false;
+      if (wantsSelf && !hasSelfAddress) return false;
+      return true;
     }
-    if (intent === "refer") return hasRefer && !inviteSent;
-    if (intent === "family") return hasFamily;
-    return hasSelfAddress;
-  }, [step, snapshot?.items.length, intent, hasFamily, hasRefer, hasSelfAddress, inviteSent]);
+    if (wantsRefer && !wantsPay) return hasRefer && !inviteSent;
+    if (wantsFamily && !hasFamily) return false;
+    if (wantsSelf && !hasSelfAddress) return false;
+    return wantsPay;
+  }, [
+    step,
+    snapshot?.items.length,
+    intents.length,
+    wantsFamily,
+    wantsRefer,
+    wantsSelf,
+    wantsPay,
+    hasFamily,
+    hasRefer,
+    hasSelfAddress,
+    inviteSent,
+  ]);
+
+  function toggleIntent(value: Intent) {
+    setIntents((prev) => {
+      const next = prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value];
+      return next;
+    });
+    setInviteSent(false);
+    setError(null);
+  }
 
   function next() {
     setError(null);
@@ -159,9 +190,30 @@ export default function CheckoutPage() {
     setBusy(true);
     setError(null);
     try {
+      if (wantsRefer && !inviteSent) {
+        const phone = toE164(recipientPhone);
+        if (!recipientName.trim() || !phone) {
+          throw new Error("Enter your family member’s name and mobile number.");
+        }
+        await clientFetch("/orders/refer", {
+          method: "POST",
+          body: JSON.stringify({
+            recipientName: recipientName.trim(),
+            recipientPhone: phone,
+            kitName,
+            shopUrl: `${window.location.origin}/kits`,
+          }),
+        });
+        setInviteSent(true);
+      }
+
+      if (!wantsPay) return;
+
       let shippingAddressId = addressId;
-      if (intent === "family") {
-        const created = await clientFetch<Address>("/addresses", {
+      let familyAddressId: string | undefined;
+
+      if (wantsFamily) {
+        const familyAddr = await clientFetch<Address>("/addresses", {
           method: "POST",
           body: JSON.stringify({
             label: recipientName.trim().slice(0, 40) || "Family",
@@ -173,8 +225,14 @@ export default function CheckoutPage() {
             isDefault: false,
           }),
         });
-        shippingAddressId = created.id;
-      } else if (!shippingAddressId) {
+        if (wantsSelf) {
+          familyAddressId = familyAddr.id;
+        } else {
+          shippingAddressId = familyAddr.id;
+        }
+      }
+
+      if (wantsSelf && !shippingAddressId) {
         const created = await clientFetch<Address>("/addresses", {
           method: "POST",
           body: JSON.stringify({
@@ -190,21 +248,31 @@ export default function CheckoutPage() {
         shippingAddressId = created.id;
       }
 
+      if (!shippingAddressId) {
+        throw new Error("Add a delivery address to continue.");
+      }
+
       const result = await clientFetch<{
         order: { id: string; totalMinor: number };
-        payment: Parameters<typeof completePayment>[0];
+        payment: Payment;
       }>("/orders/checkout", {
         method: "POST",
         body: JSON.stringify({
           shippingAddressId,
+          familyAddressId,
           deliverySlot: slot,
-          intent,
+          intents,
           recipientName: recipientName.trim() || undefined,
           recipientPhone: toE164(recipientPhone) || undefined,
           promoCode: promoCode.trim() || undefined,
         }),
       });
-      await completePayment(result.payment);
+      const kind = await completePayment(result.payment);
+      if (kind === "upi") {
+        setUpiPayment(result.payment);
+        setPendingOrderId(result.order.id);
+        return;
+      }
       await refreshCart();
       router.push(`/orders/${result.order.id}`);
     } catch (err) {
@@ -223,7 +291,7 @@ export default function CheckoutPage() {
   if (!ready) return <p className="px-5 py-16 text-center text-muted">Loading…</p>;
   if (!user) return null;
 
-  const lastLabel = intent === "refer" ? "Send" : "Pay";
+  const lastLabel = wantsPay ? "Pay" : "Send";
 
   return (
     <div className="mx-auto max-w-xl px-5 py-12">
@@ -246,7 +314,7 @@ export default function CheckoutPage() {
                       {item.product.name} × {item.quantity}
                     </span>
                     <span className="text-muted">
-                      {formatMoney(item.lineTotalMinor, snapshot.currency)}
+                      {formatMoney(item.lineTotalMinor, snapshot.currency ?? "INR")}
                     </span>
                   </li>
                 ))}
@@ -263,6 +331,7 @@ export default function CheckoutPage() {
         {step === 2 ? (
           <section>
             <h2 className="font-semibold">Who is this kit for?</h2>
+            <p className="mt-1 text-sm text-muted">Select every option that applies.</p>
             <div className="mt-3 grid gap-2">
               {(
                 [
@@ -270,35 +339,57 @@ export default function CheckoutPage() {
                   [
                     "family",
                     "Buy the same kit for a family member",
-                    "You pay. We deliver to their name, mobile, and address.",
+                    "You pay. We deliver a second kit to their name, mobile, and address.",
                   ],
                   [
                     "refer",
                     "Refer this kit to a family member",
-                    "We text them a link. Your cart stays until you pay for yourself.",
+                    "We text them a link to shop. You can still pay for a kit here.",
                   ],
                 ] as const
-              ).map(([value, label, hint]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => {
-                    setIntent(value);
-                    setInviteSent(false);
-                  }}
-                  className={`rounded-2xl border px-4 py-3 text-left ${
-                    intent === value ? "border-gold bg-blush" : "border-border bg-paper"
-                  }`}
-                >
-                  <p className="text-sm font-semibold">{label}</p>
-                  <p className="mt-1 text-sm text-muted">{hint}</p>
-                </button>
-              ))}
+              ).map(([value, label, hint]) => {
+                const selected = intents.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => toggleIntent(value)}
+                    className={`rounded-2xl border px-4 py-3 text-left ${
+                      selected ? "border-gold bg-blush" : "border-border bg-paper"
+                    }`}
+                  >
+                    <p className="text-sm font-semibold">
+                      {selected ? "✓ " : ""}
+                      {label}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">{hint}</p>
+                  </button>
+                );
+              })}
             </div>
           </section>
         ) : null}
 
-        {step === 3 && intent === "family" ? (
+        {step === 3 && wantsSelf ? (
+          <section>
+            <h2 className="font-semibold">Your delivery address</h2>
+            <AddressFields
+              addresses={addresses}
+              addressId={addressId}
+              onSelect={setAddressId}
+              line1={line1}
+              city={city}
+              state={state}
+              postal={postal}
+              onLine1={setLine1}
+              onCity={setCity}
+              onState={setState}
+              onPostal={setPostal}
+            />
+          </section>
+        ) : null}
+
+        {step === 3 && wantsFamily ? (
           <section className="grid gap-2">
             <h2 className="font-semibold">Family member details</h2>
             <input
@@ -338,11 +429,13 @@ export default function CheckoutPage() {
               value={familyPostal}
               onChange={(e) => setFamilyPostal(e.target.value)}
             />
-            <SlotPicker slot={slot} onChange={setSlot} />
+            {wantsRefer ? (
+              <p className="text-sm text-muted">We will also text this number a shop link.</p>
+            ) : null}
           </section>
         ) : null}
 
-        {step === 3 && intent === "refer" ? (
+        {step === 3 && wantsRefer && !wantsFamily ? (
           <section className="grid gap-2">
             <h2 className="font-semibold">Who should we message?</h2>
             <p className="text-sm text-muted">
@@ -364,27 +457,19 @@ export default function CheckoutPage() {
           </section>
         ) : null}
 
-        {step === 3 && intent === "self" ? (
-          <section>
-            <h2 className="font-semibold">Delivery address</h2>
-            <AddressFields
-              addresses={addresses}
-              addressId={addressId}
-              onSelect={setAddressId}
-              line1={line1}
-              city={city}
-              state={state}
-              postal={postal}
-              onLine1={setLine1}
-              onCity={setCity}
-              onState={setState}
-              onPostal={setPostal}
-            />
-            <SlotPicker slot={slot} onChange={setSlot} />
-          </section>
+        {step === 3 && wantsPay ? <SlotPicker slot={slot} onChange={setSlot} /> : null}
+
+        {step === 4 && upiPayment ? (
+          <UpiPayPanel
+            payment={upiPayment}
+            onPaid={() => {
+              void refreshCart();
+              router.push(`/orders/${pendingOrderId ?? ""}`);
+            }}
+          />
         ) : null}
 
-        {step === 4 ? (
+        {step === 4 && !upiPayment ? (
           <section className="space-y-3">
             <h2 className="font-semibold">Review</h2>
             <ul className="space-y-1 text-sm text-muted">
@@ -395,13 +480,24 @@ export default function CheckoutPage() {
               ))}
               <li>
                 For:{" "}
-                {intent === "self"
-                  ? "You"
-                  : `${recipientName.trim() || "family member"} (${intent === "refer" ? "referral SMS" : "family delivery"})`}
+                {[
+                  wantsSelf ? "You" : null,
+                  wantsFamily
+                    ? `${recipientName.trim() || "family member"} (delivered)`
+                    : null,
+                  wantsRefer
+                    ? `${recipientName.trim() || "family member"} (referral SMS)`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </li>
-              {intent !== "refer" ? <li>Slot: {slot}</li> : null}
+              {wantsSelf && wantsFamily ? (
+                <li>Two kits will be packed — one for you and one for family.</li>
+              ) : null}
+              {wantsPay ? <li>Slot: {slot}</li> : null}
             </ul>
-            {intent !== "refer" ? (
+            {wantsPay ? (
               <div className="flex gap-2">
                 <input
                   className="input-ps flex-1"
@@ -437,7 +533,7 @@ export default function CheckoutPage() {
                 {promoCode} saves {formatMoney(promoOff, snapshot?.currency ?? "INR")}
               </p>
             ) : null}
-            {intent === "refer" && inviteSent ? (
+            {wantsRefer && inviteSent ? (
               <p className="text-sm text-maroon">
                 Message sent. Your kits are still in the cart if you want to pay for yourself.
               </p>
@@ -474,13 +570,13 @@ export default function CheckoutPage() {
             >
               Continue
             </button>
-          ) : intent === "refer" ? (
+          ) : !wantsPay && wantsRefer ? (
             inviteSent ? (
               <button
                 type="button"
                 className="btn-orange"
                 onClick={() => {
-                  setIntent("self");
+                  setIntents((prev) => (prev.includes("self") ? prev : [...prev, "self"]));
                   setInviteSent(false);
                   setStep(3);
                 }}
@@ -497,7 +593,7 @@ export default function CheckoutPage() {
                 {busy ? "Sending…" : "Send message"}
               </button>
             )
-          ) : (
+          ) : upiPayment ? null : (
             <button
               type="button"
               disabled={busy || !canAdvance}

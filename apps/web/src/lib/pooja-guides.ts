@@ -84,10 +84,10 @@ export const poojaGuides: PoojaGuide[] = [
     kind: "deity",
     titleEn: "Ganapati / Vinayaka Chavithi",
     titleTe: "గణపతి పూజ / వినాయక చవితి",
-    kitSlug: "ganesh-chaturthi-home-puja",
+    kitSlug: "ganesh-mini-home-puja",
     deityKitSlug: "ganapati-special-samagri",
     special: [
-      { en: "Ganapati vigraham (clay for Chavithi)", te: "గణపతి విగ్రహం / మట్టి గణపతి" },
+      { en: "Eco-friendly clay Ganesh idol", te: "పర్యావరణ అనుకూల మట్టి గణేష్ విగ్రహం" },
       { en: "21 kinds of patri", te: "21 రకాల పత్రి" },
       { en: "Durva grass", te: "దూర్వా గడ్డి" },
       { en: "Red flowers", te: "ఎర్రని పూలు" },

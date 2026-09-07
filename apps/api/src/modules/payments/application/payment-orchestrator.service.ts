@@ -9,6 +9,7 @@ import {
 import { MockPaymentGateway } from '../infrastructure/mock.gateway';
 import { RazorpayGateway } from '../infrastructure/razorpay.gateway';
 import { StripeGateway } from '../infrastructure/stripe.gateway';
+import { UpiQrGateway } from '../infrastructure/upi-qr.gateway';
 
 function gatewayFailureDetail(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -38,8 +39,9 @@ export class PaymentOrchestratorService {
     mock: MockPaymentGateway,
     razorpay: RazorpayGateway,
     stripe: StripeGateway,
+    upiQr: UpiQrGateway,
   ) {
-    this.gateways = [razorpay, stripe, mock];
+    this.gateways = [upiQr, razorpay, stripe, mock];
   }
 
   resolveGateway(market: Market): PaymentGateway {
@@ -51,7 +53,7 @@ export class PaymentOrchestratorService {
     if (mode === 'live') {
       if (live) return live;
       throw new Error(
-        `No live payment gateway configured for market ${market}. Set Razorpay (IN) or Stripe (US/CA) keys; mock fallback is forbidden when PAYMENT_MODE=live.`,
+        `No live payment gateway configured for market ${market}. Set UPI_VPA (company QR), Razorpay (IN), or Stripe (US/CA); mock fallback is forbidden when PAYMENT_MODE=live.`,
       );
     }
 

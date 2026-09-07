@@ -3,11 +3,13 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   Headers,
   Param,
   ParseUUIDPipe,
   Post,
   Req,
+  StreamableFile,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -26,6 +28,7 @@ import { RefundPaymentService } from '../application/refund-payment.service';
 import { VerifyRazorpayService } from '../application/verify-razorpay.service';
 import { RefundPaymentDto } from './dto/refund-payment.dto';
 import { VerifyRazorpayDto } from './dto/verify-razorpay.dto';
+import { SubmitUpiDto } from './dto/submit-upi.dto';
 import {
   razorpayWebhookSecret,
   stripeSecretKey,
@@ -266,6 +269,47 @@ export class PaymentsController {
     }
 
     return { success: true };
+  }
+
+  @Post(':id/upi-submit')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Submit UPI UTR and/or payment screenshot' })
+  async submitUpi(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: SubmitUpiDto,
+  ) {
+    const payment = await this.confirm.submitUpiProof(id, user.id, {
+      utr: body.utr,
+      screenshotBase64: body.screenshotBase64,
+    });
+    return { success: true, data: payment };
+  }
+
+  @Get(':id/upi-proof')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Download the uploaded UPI payment screenshot' })
+  async upiProof(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const proof = await this.confirm.getUpiProof(id, user);
+    return new StreamableFile(proof.image, {
+      type: proof.mimeType,
+      disposition: 'inline',
+    });
+  }
+
+  @Post(':id/upi-admin-confirm')
+  @ApiBearerAuth()
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Admin confirms a company UPI QR payment' })
+  async adminConfirmUpi(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const payment = await this.confirm.adminConfirmUpi(id, user.id);
+    return { success: true, data: payment };
   }
 
   @Post(':id/mock-confirm')

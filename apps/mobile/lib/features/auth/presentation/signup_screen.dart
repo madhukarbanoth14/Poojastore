@@ -256,16 +256,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                   child: Text(l10n.continueWithGoogle, style: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: auth.loading ? null : () => continueWithApple(ref, context),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF221013),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(50),
-                  ),
-                  child: Text(l10n.continueWithApple, style: const TextStyle(fontWeight: FontWeight.w600)),
-                ),
               ],
             ),
           ),

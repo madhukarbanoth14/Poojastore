@@ -88,6 +88,13 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                   '${order['status']} · ${formatInr(order['totalMinor'] as int)}',
                   style: const TextStyle(color: AppColors.textMuted),
                 ),
+                if (order['status'] == 'PENDING_PAYMENT') ...[
+                  const SizedBox(height: 10),
+                  const Text(
+                    'UPI payment is waiting for confirmation. Packing starts after we verify the credit.',
+                    style: TextStyle(color: AppColors.maroon, height: 1.4),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 ...((order['items'] as List?) ?? const [])
                     .cast<Map<String, dynamic>>()

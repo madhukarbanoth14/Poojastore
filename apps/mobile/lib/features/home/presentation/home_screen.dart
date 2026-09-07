@@ -423,7 +423,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 196,
+              height: 214,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -433,30 +433,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   if (featured.isEmpty) {
                     const fallback = [
                       (
-                        'Ganesh Chaturthi Home Puja Kit',
-                        750,
-                        'ganesh-chaturthi-home-puja',
+                        'Mini Home Pooja Kit',
+                        1111,
+                        1600,
+                        'ganesh-mini-home-puja',
                       ),
                       (
                         'Satyanarayan Puja Samagri',
                         749,
+                        0,
                         'satyanarayan-puja-kit',
                       ),
-                      ('Basic Pooja Samagri', 1299, 'general-pooja-samagri-kit'),
+                      ('Basic Pooja Samagri', 1299, 0, 'general-pooja-samagri-kit'),
                     ];
                     final k = fallback[i];
                     return _KitCard(
                       name: k.$1,
                       price: '₹${k.$2}',
-                      imageAsset: CatalogImages.kitAsset(slug: k.$3, name: k.$1),
-                      onTap: () => context.push('/kits/${k.$3}'),
+                      mrp: k.$3 > k.$2 ? '₹${k.$3}' : null,
+                      imageAsset: CatalogImages.kitAsset(slug: k.$4, name: k.$1),
+                      onTap: () => context.push('/kits/${k.$4}'),
                     );
                   }
                   final k = featured[i];
                   final name = k['name'] as String;
+                  final priceMinor = k['priceMinor'] as int;
+                  final mrpMinor = k['mrpMinor'] as int?;
                   return _KitCard(
                     name: name,
-                    price: formatInr(k['priceMinor'] as int),
+                    price: formatInr(priceMinor),
+                    mrp: mrpMinor != null && mrpMinor > priceMinor
+                        ? formatInr(mrpMinor)
+                        : null,
                     imageAsset: CatalogImages.kitAsset(
                       slug: k['slug'] as String?,
                       name: name,
@@ -636,11 +644,13 @@ class _KitCard extends StatelessWidget {
     required this.name,
     required this.price,
     required this.onTap,
+    this.mrp,
     this.imageAsset,
   });
 
   final String name;
   final String price;
+  final String? mrp;
   final VoidCallback onTap;
   final String? imageAsset;
 
@@ -681,6 +691,15 @@ class _KitCard extends StatelessWidget {
                 color: AppColors.saffron,
               ),
             ),
+            if (mrp != null)
+              Text(
+                mrp!,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textMuted,
+                  decoration: TextDecoration.lineThrough,
+                ),
+              ),
           ],
         ),
       ),

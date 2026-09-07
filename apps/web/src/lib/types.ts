@@ -233,6 +233,13 @@ export type Order = {
     status: string;
     provider: string;
     amountMinor: number;
+    providerPaymentId?: string | null;
+    metadata?: {
+      vpa?: string;
+      utr?: string;
+      hasScreenshot?: boolean;
+      qrImageUrl?: string;
+    };
   }[];
   tracking?: OrderTracking;
   user?: {

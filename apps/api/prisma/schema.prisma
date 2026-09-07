@@ -70,6 +70,7 @@ enum PaymentProvider {
   RAZORPAY
   STRIPE
   MOCK
+  UPI_QR
 }
 
 enum PaymentStatus {
@@ -631,10 +632,22 @@ model Payment {
   updatedAt         DateTime        @updatedAt @map("updated_at")
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  upiProof UpiPaymentProof?
 
   @@index([orderId])
   @@index([providerOrderId])
   @@map("payments")
+}
+
+model UpiPaymentProof {
+  paymentId String   @id @map("payment_id") @db.Uuid
+  mimeType  String   @map("mime_type") @db.VarChar(64)
+  image     Bytes
+  createdAt DateTime @default(now()) @map("created_at")
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("upi_payment_proofs")
 }
 
 model PaymentWebhookEvent {

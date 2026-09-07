@@ -78,6 +78,8 @@ flutter:
     - assets/images/kits/
     - assets/images/festivals/
     - assets/images/services/
+    - assets/images/samagri/
+    - assets/images/payments/
     - assets/images/OM.jpg
     - assets/images/pavitra_seva_logo.jpeg
     - assets/images/pavitra_seva_icon.jpeg

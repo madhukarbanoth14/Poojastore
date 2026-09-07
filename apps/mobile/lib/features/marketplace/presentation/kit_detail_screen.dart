@@ -3,12 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/catalog/catalog_images.dart';
+import '../../../core/catalog/catalog_l10n.dart';
+import '../../../core/catalog/design_catalog.dart';
+import '../../../core/catalog/kit_item_taxonomy.dart';
 import '../../../core/network/fallback_dns.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
 import '../../../core/widgets/ps_widgets.dart';
 import '../../../l10n/l10n.dart';
+import 'kit_shop.dart';
 import 'kits_screen.dart';
 
 class KitDetailScreen extends ConsumerStatefulWidget {
@@ -31,7 +35,11 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    if (parseGaneshKitSlug(widget.slug) == null) {
+      _load();
+    } else {
+      _loading = false;
+    }
   }
 
   Future<void> _load() async {
@@ -39,14 +47,11 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
       final kit =
           await ref.read(marketplaceApiProvider).kitDetail(widget.slug);
       if (!mounted) return;
-      final items = (kit['selectableItems'] as List?)
-              ?.cast<Map<String, dynamic>>() ??
-          (kit['kitItems'] as List?)?.cast<Map<String, dynamic>>() ??
-          const [];
       setState(() {
         _kit = kit;
         _loading = false;
-        _selectDefaults(items);
+        _appendOptionalExtras();
+        _selectDefaults(_items);
       });
     } catch (e) {
       if (mounted) {
@@ -96,6 +101,36 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
 
   bool _isOptional(Map<String, dynamic> item) =>
       item['optional'] == true || item['isOptional'] == true;
+
+  void _appendOptionalExtras() {
+    final kit = _kit;
+    if (kit == null) return;
+    final current = _items;
+    final keys = current.map(_keyOf).toSet();
+    final names = current
+        .map((item) => (item['name'] as String? ?? '').toLowerCase())
+        .toSet();
+    final extras = <Map<String, dynamic>>[];
+    for (final extra in kitOptionalOfferings) {
+      if (keys.contains(extra.slug) ||
+          names.contains(extra.nameEn.toLowerCase())) {
+        continue;
+      }
+      extras.add({
+        'key': extra.slug,
+        'slug': extra.slug,
+        'name': extra.nameEn,
+        'nameTe': extra.nameTe,
+        'quantity': 1,
+        'optional': true,
+        'priceMinor': extra.priceMinor,
+      });
+    }
+    if (extras.isEmpty) return;
+    final selectable = (kit['selectableItems'] as List?)
+        ?.cast<Map<String, dynamic>>();
+    kit['selectableItems'] = [...(selectable ?? current), ...extras];
+  }
 
   void _selectDefaults(List<Map<String, dynamic>> items) {
     _selected
@@ -149,6 +184,21 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final ganesh = parseGaneshKitSlug(widget.slug);
+    if (ganesh != null) {
+      final f = festivalById('ganesh');
+      final te = context.isTelugu;
+      return Scaffold(
+        backgroundColor: AppColors.bg,
+        appBar: const PsHeader(title: 'Pooja Samagri'),
+        body: KitShopView(
+          initialSlug: widget.slug,
+          about: f.localizedDescription(te),
+          speciality: f.localizedSpeciality(te),
+          steps: f.localizedSteps(te),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -191,6 +241,11 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                         color: AppColors.text,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    _KitPrice(
+                      priceMinor: (kit['priceMinor'] as int?) ?? 0,
+                      mrpMinor: kit['mrpMinor'] as int?,
+                    ),
                     const SizedBox(height: 6),
                     Text(
                       description,
@@ -205,9 +260,12 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                     const SizedBox(height: 8),
                     if (_error != null)
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                    ...items
-                        .where((item) => !_isOptional(item))
-                        .map((item) => _itemTile(item, optional: false)),
+                    _KitPhotoGrid(
+                      items: items.where((item) => !_isOptional(item)).toList(),
+                      selected: _selected,
+                      optional: false,
+                      keyOf: _keyOf,
+                    ),
                     if (_hasOptional) ...[
                       const SizedBox(height: 18),
                       PpTitle(l10n.chooseOptionalItems, size: 14),
@@ -221,9 +279,22 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      ...items
-                          .where(_isOptional)
-                          .map((item) => _itemTile(item, optional: true)),
+                      _KitPhotoGrid(
+                        items: items.where(_isOptional).toList(),
+                        selected: _selected,
+                        optional: true,
+                        keyOf: _keyOf,
+                        onToggle: (item) {
+                          final key = _keyOf(item);
+                          setState(() {
+                            if (_selected.contains(key)) {
+                              _selected.remove(key);
+                            } else {
+                              _selected.add(key);
+                            }
+                          });
+                        },
+                      ),
                     ],
                   ],
                 ),
@@ -315,55 +386,201 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
             ],
           );
   }
+}
 
-  Widget _itemTile(Map<String, dynamic> item, {required bool optional}) {
-    final key = _keyOf(item);
-    final selected = _selected.contains(key);
+class _KitPhotoGrid extends StatelessWidget {
+  const _KitPhotoGrid({
+    required this.items,
+    required this.selected,
+    required this.optional,
+    required this.keyOf,
+    this.onToggle,
+  });
+
+  final List<Map<String, dynamic>> items;
+  final Set<String> selected;
+  final bool optional;
+  final String Function(Map<String, dynamic>) keyOf;
+  final ValueChanged<Map<String, dynamic>>? onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final te = context.isTelugu;
+    return Column(
+      children: [
+        for (var i = 0; i < items.length; i += 2)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _card(context, items[i], te)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: i + 1 < items.length
+                      ? _card(context, items[i + 1], te)
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _card(BuildContext context, Map<String, dynamic> item, bool te) {
+    final key = keyOf(item);
+    final checked = selected.contains(key);
+    final name = te
+        ? (item['nameTe'] as String? ?? item['name'] as String? ?? '')
+        : (item['name'] as String? ?? '');
     final pack = item['pack'] as String?;
-    final linePrice = _priceOf(item);
-    return CheckboxListTile(
-      contentPadding: EdgeInsets.zero,
-      value: selected,
-      activeColor: AppColors.maroonDeep,
-      onChanged: !optional && _hasOptional
-          ? null
-          : (value) {
-              setState(() {
-                if (value == true) {
-                  _selected.add(key);
-                } else {
-                  _selected.remove(key);
-                }
-              });
-            },
-      title: Text(
-        item['name'] as String? ?? '',
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      subtitle: Text(
-        [
-          if (pack != null && pack.isNotEmpty) pack,
-          if (optional) context.l10n.optionalItem,
-        ].join(' · '),
-        style: const TextStyle(
-          fontSize: 12,
-          color: AppColors.textMuted,
-        ),
-      ),
-      secondary: linePrice > 0
-          ? Text(
-              formatInr(linePrice),
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppColors.saffron,
+    final slug = (item['slug'] as String?) ?? key;
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    height: 110,
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFF8EF),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(15),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(15),
+                      ),
+                      child: CatalogImage(
+                        asset: CatalogImages.samagriAsset(slug),
+                        width: double.infinity,
+                        height: 110,
+                        radius: 0,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  if (optional)
+                    Positioned(
+                      top: 6,
+                      left: 6,
+                      child: GestureDetector(
+                        onTap: onToggle == null ? null : () => onToggle!(item),
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: checked ? AppColors.maroon : Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.maroon),
+                          ),
+                          child: checked
+                              ? const Icon(
+                                  Icons.check,
+                                  size: 14,
+                                  color: AppColors.cream,
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            )
-          : null,
-      controlAffinity: ListTileControlAffinity.leading,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.text,
+                      ),
+                    ),
+                    if (pack != null && pack.isNotEmpty)
+                      Text(
+                        pack,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textMuted,
+                        ),
+                      )
+                    else
+                      Text(
+                        '×${item['quantity'] as int? ?? 1}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    Text(
+                      optional
+                          ? (te ? 'ఐచ్ఛికం' : 'Optional')
+                          : (te ? 'వినియోగం' : 'Consumable'),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 0.6,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+    );
+  }
+}
+
+class _KitPrice extends StatelessWidget {
+  const _KitPrice({required this.priceMinor, this.mrpMinor});
+
+  final int priceMinor;
+  final int? mrpMinor;
+
+  @override
+  Widget build(BuildContext context) {
+    final mrp = mrpIfHigher(mrpMinor, priceMinor);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text(
+          formatInr(priceMinor),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.text,
+          ),
+        ),
+        if (mrp != null) ...[
+          const SizedBox(width: 8),
+          Text(
+            formatInr(mrp),
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textMuted,
+              decoration: TextDecoration.lineThrough,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

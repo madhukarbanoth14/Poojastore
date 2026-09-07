@@ -33,7 +33,9 @@ export function PanchangExplorer({
         title={locale === "te" ? "దిన పంచాంగం" : "Daily panchangam"}
         subtitle={
           panchang?.disclaimer ??
-          "Civil astronomical approximations for general guidance. Consult a qualified pandit for ritual timing."
+          (locale === "te"
+            ? "సాధారణ మార్గదర్శకం కోసం ఖగోళ అంచనాలు. కర్మకాండ సమయానికి పండితులను సంప్రదించండి."
+            : "Civil astronomical approximations for general guidance. Consult a qualified pandit for ritual timing.")
         }
       />
       <div className="mx-auto max-w-xl px-5 py-10">
@@ -57,11 +59,15 @@ export function PanchangExplorer({
           ) : null}
         </div>
         {loading && !panchang ? (
-          <EmptyNote>Loading panchang…</EmptyNote>
+          <EmptyNote>{locale === "te" ? "పంచాంగం లోడ్ అవుతోంది…" : "Loading panchang…"}</EmptyNote>
         ) : panchang ? (
           <PanchangAlmanacCard panchang={panchang} locale={locale} />
         ) : (
-          <EmptyNote>Panchang needs the API (`GET /panchang/:date`).</EmptyNote>
+          <EmptyNote>
+            {locale === "te"
+              ? "పంచాంగం కోసం API అవసరం."
+              : "Panchang needs the API (`GET /panchang/:date`)."}
+          </EmptyNote>
         )}
       </div>
     </>

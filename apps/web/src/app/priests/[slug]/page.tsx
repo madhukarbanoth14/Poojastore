@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { clientFetch } from "@/lib/client";
 import { formatMoney, formatSlot, initials } from "@/lib/format";
-import { completePayment, listAddresses } from "@/lib/payments";
+import { completePayment, listAddresses, type Payment } from "@/lib/payments";
+import { UpiPayPanel } from "@/components/upi-pay-panel";
 import type { Address, Priest } from "@/lib/types";
 
 export default function PriestDetailPage() {
@@ -25,6 +26,7 @@ export default function PriestDetailPage() {
   const [postal, setPostal] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [upiPayment, setUpiPayment] = useState<Payment | null>(null);
 
   useEffect(() => {
     void clientFetch<Priest>(`/priests/${slug}`)
@@ -69,7 +71,7 @@ export default function PriestDetailPage() {
         });
         addr = created.id;
       }
-      const result = await clientFetch<{ payment: Parameters<typeof completePayment>[0] }>(
+      const result = await clientFetch<{ payment: Payment }>(
         `/priests/${slug}/bookings`,
         {
           method: "POST",
@@ -81,7 +83,11 @@ export default function PriestDetailPage() {
           }),
         },
       );
-      await completePayment(result.payment);
+      const kind = await completePayment(result.payment);
+      if (kind === "upi") {
+        setUpiPayment(result.payment);
+        return;
+      }
       router.push("/account");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Booking failed");
@@ -128,6 +134,11 @@ export default function PriestDetailPage() {
         ))}
       </div>
 
+      {upiPayment ? (
+        <div className="card-temple mt-8 p-6">
+          <UpiPayPanel payment={upiPayment} onPaid={() => router.push("/account")} />
+        </div>
+      ) : (
       <form
         className="card-temple mt-8 space-y-4 p-6"
         onSubmit={(e) => {
@@ -196,6 +207,7 @@ export default function PriestDetailPage() {
           {busy ? "Processing…" : "Pay & confirm"}
         </button>
       </form>
+      )}
     </div>
   );
 }

@@ -192,6 +192,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
           orderId: state.uri.queryParameters['id'] ?? '',
           amount: state.uri.queryParameters['amount'] ?? '₹0',
           slot: state.uri.queryParameters['slot'] ?? 'Today, 6–8 PM',
+          pendingUpi: state.uri.queryParameters['pending'] == '1',
         ),
       ),
       GoRoute(
@@ -297,6 +298,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
           bookingId: state.uri.queryParameters['id'] ?? 'PB-70542',
           ritual: state.uri.queryParameters['ritual'] ?? 'Griha Pravesh',
           fee: state.uri.queryParameters['fee'] ?? '₹0',
+          pendingUpi: state.uri.queryParameters['pending'] == '1',
         ),
       ),
       GoRoute(

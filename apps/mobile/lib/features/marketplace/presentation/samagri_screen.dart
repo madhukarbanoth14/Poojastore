@@ -250,9 +250,32 @@ class _SamagriScreenState extends ConsumerState<SamagriScreen> {
                                   ],
                                 ),
                               ),
-                              Text(
-                                formatInr(kit['priceMinor'] as int? ?? 0),
-                                style: const TextStyle(fontWeight: FontWeight.w700),
+                              Builder(
+                                builder: (context) {
+                                  final price = kit['priceMinor'] as int? ?? 0;
+                                  final mrp = kit['mrpMinor'] as int?;
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        formatInr(price),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      if (mrp != null && mrp > price)
+                                        Text(
+                                          formatInr(mrp),
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.textMuted,
+                                            decoration:
+                                                TextDecoration.lineThrough,
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),

@@ -49,8 +49,6 @@ declare global {
   }
 }
 
-const APPLE_REDIRECT = process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI ?? "";
-
 function loadScript(src: string, id: string) {
   return new Promise<void>((resolve, reject) => {
     const existing = document.getElementById(id) as HTMLScriptElement | null;
@@ -98,7 +96,7 @@ async function waitForGoogle(timeoutMs = 5000) {
 export function SocialAuthButtons({
   disabled,
   googleClientId = "",
-  appleClientId = "",
+  appleClientId: _appleClientId = "",
 }: {
   disabled?: boolean;
   googleClientId?: string;
@@ -115,13 +113,6 @@ export function SocialAuthButtons({
   const nextRef = useRef(next);
   socialLoginRef.current = socialLogin;
   nextRef.current = next;
-
-  useEffect(() => {
-    void loadScript(
-      "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js",
-      "apple-auth",
-    );
-  }, []);
 
   useEffect(() => {
     if (!googleClientId || !googleHost) {
@@ -187,45 +178,6 @@ export function SocialAuthButtons({
     setError("Google Sign-In is not configured yet. Use email and password.");
   }
 
-  async function apple() {
-    setError(null);
-    if (!appleClientId) {
-      setError("Apple Sign-In is not configured yet. Use email and password.");
-      return;
-    }
-    setBusy("apple");
-    try {
-      await loadScript(
-        "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js",
-        "apple-auth",
-      );
-      const redirectURI = APPLE_REDIRECT || `${window.location.origin}/login`;
-      window.AppleID?.auth.init({
-        clientId: appleClientId,
-        scope: "name email",
-        redirectURI,
-        usePopup: true,
-      });
-      const data = await window.AppleID?.auth.signIn();
-      const idToken = data?.authorization?.id_token;
-      if (!idToken) throw new Error("Apple did not return an ID token");
-      const name = [data?.user?.name?.firstName, data?.user?.name?.lastName]
-        .filter(Boolean)
-        .join(" ");
-      await socialLogin({
-        provider: "APPLE",
-        idToken,
-        email: data?.user?.email,
-        fullName: name || undefined,
-      });
-      router.replace(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Apple Sign-In failed");
-    } finally {
-      setBusy(null);
-    }
-  }
-
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
@@ -253,14 +205,6 @@ export function SocialAuthButtons({
       {googleClientId && !googleReady && !error ? (
         <p className="text-center text-xs text-muted">Loading Google…</p>
       ) : null}
-      <button
-        type="button"
-        disabled={disabled || busy !== null}
-        onClick={() => void apple()}
-        className="w-full rounded-full bg-[#221013] px-4 py-3 text-sm font-semibold text-cream disabled:opacity-50"
-      >
-        {busy === "apple" ? "Connecting…" : "Continue with Apple"}
-      </button>
       {error ? <p className="text-center text-sm text-orange">{error}</p> : null}
     </div>
   );
