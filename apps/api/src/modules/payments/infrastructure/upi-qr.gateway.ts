@@ -56,17 +56,10 @@ export function buildUpiAppLinks(params: {
   note: string;
 }) {
   const query = upiPayQuery(params);
-  // Use the standard upi:// intent only. App-specific schemes like
-  // phonepe://pay are often declined by PhonePe with a security error
-  // asking the user to pay via QR / UPI ID instead.
+  // Payload for the QR code only — checkout UI never opens deep links.
   const upiUri = `upi://pay?${query}`;
   return {
     upiUri,
-    phonepeUri: upiUri,
-    gpayUri: upiUri,
-    gpayAltUri: upiUri,
-    paytmUri: upiUri,
-    bhimUri: upiUri,
   };
 }
 
@@ -100,12 +93,8 @@ export class UpiQrGateway implements PaymentGateway {
         payeeName,
         amount: amountRupees,
         currency: input.currency,
+        // Used only to render the QR image — never opened as a deep link.
         upiUri: links?.upiUri,
-        phonepeUri: links?.phonepeUri,
-        gpayUri: links?.gpayUri,
-        gpayAltUri: links?.gpayAltUri,
-        paytmUri: links?.paytmUri,
-        bhimUri: links?.bhimUri,
         qrImageUrl: qrImageUrl || undefined,
         orderNumber: input.orderNumber,
       },

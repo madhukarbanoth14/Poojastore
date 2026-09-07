@@ -100,8 +100,8 @@ export function UpiPayPanel({
       <p className="text-sm text-muted">
         Pay <span className="font-semibold text-maroon">{amount}</span> by{" "}
         <span className="font-semibold text-maroon">scanning this QR</span> in
-        PhonePe, Google Pay, or Paytm. PhonePe often blocks in-app Pay buttons —
-        QR or UPI ID works reliably.
+        PhonePe, Google Pay, or Paytm. We only accept QR payments — no in-app Pay
+        links.
       </p>
       {src ? (
         <div className="flex justify-center rounded-2xl border border-divider bg-white p-4">
@@ -131,15 +131,10 @@ export function UpiPayPanel({
         </div>
       ) : null}
       <ol className="list-decimal space-y-1 pl-5 text-sm text-body">
-        <li>Open PhonePe / GPay / Paytm → Scan QR (or pay to the UPI ID above)</li>
+        <li>Open PhonePe / GPay / Paytm → Scan this QR</li>
         <li>Confirm amount is {amount}</li>
         <li>After paying, enter UTR or upload a screenshot below</li>
       </ol>
-      {payment.metadata?.upiUri ? (
-        <a href={payment.metadata.upiUri} className="btn-outline-gold flex justify-center">
-          Open UPI app (if QR scan is not possible)
-        </a>
-      ) : null}
       <label className="block text-sm font-semibold">
         UPI reference / UTR (optional if you upload a screenshot)
         <input

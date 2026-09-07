@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../features/marketplace/data/marketplace_api.dart';
 import '../theme/app_theme.dart';
@@ -212,22 +211,6 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
     return value;
   }
 
-  Future<void> _openUris(List<String?> uris) async {
-    for (final raw in uris) {
-      if (raw == null || raw.isEmpty) continue;
-      try {
-        final uri = Uri.parse(raw);
-        if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
-      } catch (_) {}
-    }
-    if (mounted) {
-      setState(() {
-        _error =
-            'Install PhonePe, Google Pay, or Paytm to pay from this phone.';
-      });
-    }
-  }
-
   Future<void> _pickScreenshot() async {
     final file = await ImagePicker().pickImage(
       source: ImageSource.gallery,
@@ -253,11 +236,6 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
     if (vpa == null) return;
     await Clipboard.setData(ClipboardData(text: vpa));
     if (mounted) setState(() => _copied = true);
-  }
-
-  Future<void> _openUpi() async {
-    // Standard upi:// only — PhonePe declines phonepe://pay deep links.
-    await _openUris([_upiUri]);
   }
 
   Future<void> _submit() async {
@@ -309,7 +287,7 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Pay $_amountLabel by scanning this QR in PhonePe, Google Pay, or Paytm. PhonePe often blocks in-app Pay buttons — QR or UPI ID works reliably.',
+              'Pay $_amountLabel by scanning this QR in PhonePe, Google Pay, or Paytm. We only accept QR payments — no in-app Pay links.',
               style: const TextStyle(color: AppColors.textMuted, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -375,13 +353,6 @@ class _UpiPaySheetState extends State<UpiPaySheet> {
                     ),
                   ],
                 ),
-              ),
-            ],
-            if (_upiUri != null) ...[
-              const SizedBox(height: 10),
-              OutlinedButton(
-                onPressed: _openUpi,
-                child: const Text('Open UPI app (if QR scan is not possible)'),
               ),
             ],
             const SizedBox(height: 14),
