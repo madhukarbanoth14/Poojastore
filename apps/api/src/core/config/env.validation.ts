@@ -66,6 +66,39 @@ class EnvironmentVariables {
   @IsIn(['console', 'twilio'])
   SMS_PROVIDER!: string;
 
+  @IsIn(['console', 'smtp'])
+  @IsOptional()
+  EMAIL_PROVIDER?: string;
+
+  @IsString()
+  @IsOptional()
+  EMAIL_FROM?: string;
+
+  @IsString()
+  @IsOptional()
+  PUBLIC_WEB_BASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  SMTP_HOST?: string;
+
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  SMTP_PORT?: number;
+
+  @IsString()
+  @IsOptional()
+  SMTP_USER?: string;
+
+  @IsString()
+  @IsOptional()
+  SMTP_PASS?: string;
+
+  @IsBooleanString()
+  @IsOptional()
+  SMTP_SECURE?: string;
+
   @IsString()
   @IsOptional()
   TWILIO_ACCOUNT_SID?: string;
@@ -150,6 +183,16 @@ function assertTwilioConfigured(env: EnvironmentVariables) {
   }
 }
 
+function assertSmtpConfigured(env: EnvironmentVariables) {
+  if ((env.EMAIL_PROVIDER ?? 'console') !== 'smtp') return;
+  const failures: string[] = [];
+  if (!env.SMTP_HOST) failures.push('SMTP_HOST is required');
+  if (!env.EMAIL_FROM) failures.push('EMAIL_FROM is required');
+  if (failures.length) {
+    throw new Error(`SMTP email config rejected:\n- ${failures.join('\n- ')}`);
+  }
+}
+
 function assertLivePaymentsConfigured(env: EnvironmentVariables) {
   if ((env.PAYMENT_MODE ?? 'mock') !== 'live' && env.NODE_ENV !== 'production') {
     return;
@@ -215,6 +258,7 @@ export function validateEnv(config: Record<string, unknown>) {
   }
   assertProductionSafety(validated);
   assertTwilioConfigured(validated);
+  assertSmtpConfigured(validated);
   assertLivePaymentsConfigured(validated);
   // Return the original env map so Razorpay/Stripe keys stay available to
   // ConfigModule (class instances omit keys that were not enumerated).
