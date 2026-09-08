@@ -57,9 +57,47 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     try {
       final api = ref.read(marketplaceApiProvider);
       final addresses = await api.listAddresses();
-      final cart = await api.getCart();
+      var cart = await api.getCart();
       final user = ref.read(authControllerProvider).user;
       final phone = user?.phoneE164 ?? '';
+      final itemCount = (cart['itemCount'] as num?)?.toInt() ??
+          ((cart['items'] as List?)?.length ?? 0);
+      if (itemCount == 0) {
+        final pending = await api.pendingPayment();
+        if (pending != null &&
+            pending['payment'] is Map &&
+            (pending['payment'] as Map)['provider'] == 'UPI_QR') {
+          cart = await api.getCart();
+          if (!mounted) return;
+          setState(() {
+            _addresses = addresses;
+            _cart = cart;
+            _selectedAddressId =
+                addresses.isNotEmpty ? addresses.first['id'] as String : null;
+            if (RegExp(r'^\+91[6-9]\d{9}$').hasMatch(phone)) {
+              _phone.text = phone.replaceFirst('+91', '');
+            }
+          });
+          final payment =
+              Map<String, dynamic>.from(pending['payment'] as Map);
+          final paid = await completeOrCollectUpi(
+            context: context,
+            api: api,
+            payment: payment,
+          );
+          if (!paid || !mounted) return;
+          final order = pending['order'] as Map<String, dynamic>?;
+          final id = order?['id'] as String? ?? '';
+          final total = (payment['amountMinor'] as num?)?.toInt() ?? 0;
+          context.go(
+            '/order-confirm?id=${Uri.encodeComponent(id)}'
+            '&amount=${Uri.encodeComponent(formatInr(total))}'
+            '&slot=${Uri.encodeComponent(_slots[_slotIdx])}'
+            '&pending=1',
+          );
+          return;
+        }
+      }
       if (!mounted) return;
       setState(() {
         _addresses = addresses;

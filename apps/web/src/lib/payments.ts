@@ -131,12 +131,13 @@ export async function completePayment(payment: Payment): Promise<PaymentCompleti
 
 export async function submitUpiUtr(
   paymentId: string,
-  input: { utr?: string; screenshotBase64?: string },
+  input: { utr: string; amountPaidMinor: number; screenshotBase64?: string },
 ) {
   return clientFetch(`/payments/${paymentId}/upi-submit`, {
     method: "POST",
     body: JSON.stringify({
-      utr: input.utr?.trim() || undefined,
+      utr: input.utr.trim(),
+      amountPaidMinor: input.amountPaidMinor,
       screenshotBase64: input.screenshotBase64,
     }),
   });

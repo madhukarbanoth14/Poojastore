@@ -6,6 +6,7 @@ import { submitUpiUtr, type Payment } from "@/lib/payments";
 
 const COMPANY_QR = "/images/payments/company-upi-qr.jpeg";
 const MAX_UPLOAD_BYTES = 900_000;
+const UTR_PATTERN = /^[0-9]{12}$/;
 
 function publicQrSrc(raw?: string) {
   if (!raw) return COMPANY_QR;
@@ -21,6 +22,19 @@ function qrSrc(payment: Payment, brokenDynamic: boolean) {
     return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&ecc=M&data=${encodeURIComponent(upi)}`;
   }
   return publicQrSrc(payment.metadata?.qrImageUrl);
+}
+
+function normalizeUtr(value: string) {
+  return value.trim().replace(/[\s-]/g, "");
+}
+
+function parseAmountToMinor(raw: string): number | null {
+  const cleaned = raw.trim().replace(/,/g, "").replace(/^₹\s?/, "");
+  if (!cleaned) return null;
+  if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
+  const rupees = Number(cleaned);
+  if (!Number.isFinite(rupees) || rupees <= 0) return null;
+  return Math.round(rupees * 100);
 }
 
 /** Resize + JPEG-compress so the base64 body stays under the API limit. */
@@ -50,6 +64,16 @@ async function compressScreenshot(file: File): Promise<{ dataUrl: string; name: 
   return { dataUrl, name: file.name.replace(/\.\w+$/, "") + ".jpg" };
 }
 
+function clientUtrError(utr: string): string | null {
+  if (!UTR_PATTERN.test(utr)) {
+    return "Enter the exact 12-digit UTR from PhonePe / Google Pay / Paytm. This reference is not valid.";
+  }
+  if (/^(\d)\1{11}$/.test(utr) || utr === "123456789012" || utr === "000000000000") {
+    return "This UTR does not look like a real payment reference. Copy it from your payment success screen.";
+  }
+  return null;
+}
+
 export function UpiPayPanel({
   payment,
   onPaid,
@@ -58,6 +82,7 @@ export function UpiPayPanel({
   onPaid: () => void;
 }) {
   const [utr, setUtr] = useState("");
+  const [amountPaid, setAmountPaid] = useState("");
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [screenshotName, setScreenshotName] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -70,7 +95,9 @@ export function UpiPayPanel({
   );
   const vpa = payment.metadata?.vpa;
   const amount = formatMoney(payment.amountMinor, payment.currency ?? "INR");
-  const canSubmit = utr.trim().length >= 8 || Boolean(screenshot);
+  const normalizedUtr = normalizeUtr(utr);
+  const amountPaidMinor = parseAmountToMinor(amountPaid);
+  const canSubmit = Boolean(normalizedUtr || amountPaid.trim()) && !busy;
 
   async function copyVpa() {
     if (!vpa) return;
@@ -104,14 +131,24 @@ export function UpiPayPanel({
     setBusy(true);
     setError(null);
     try {
-      // Prefer UTR for auto-confirm; screenshot is optional proof.
+      const utrError = clientUtrError(normalizedUtr);
+      if (utrError) throw new Error(utrError);
+      if (amountPaidMinor == null) {
+        throw new Error("Enter the amount you paid (must match the QR amount).");
+      }
+      if (amountPaidMinor !== payment.amountMinor) {
+        throw new Error(
+          `Amount does not match this order (expected ${amount}). Use the UTR from the payment of this exact amount — other UTRs are not accepted.`,
+        );
+      }
       await submitUpiUtr(payment.id, {
-        utr: utr.trim() || undefined,
+        utr: normalizedUtr,
+        amountPaidMinor,
         screenshotBase64: screenshot ?? undefined,
       });
       onPaid();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save the payment proof");
+      setError(err instanceof Error ? err.message : "Could not confirm the payment");
     } finally {
       setBusy(false);
     }
@@ -156,16 +193,35 @@ export function UpiPayPanel({
       <ol className="list-decimal space-y-1 pl-5 text-sm text-body">
         <li>Open PhonePe / GPay / Paytm → Scan this QR</li>
         <li>Confirm amount is {amount}</li>
-        <li>Enter the UTR below (order confirms automatically). Screenshot is optional.</li>
+        <li>Enter that same amount and the 12-digit UTR below</li>
       </ol>
+      <label className="block text-sm font-semibold">
+        Amount paid (₹)
+        <input
+          className="input-ps mt-1"
+          value={amountPaid}
+          onChange={(e) => {
+            setAmountPaid(e.target.value);
+            setError(null);
+          }}
+          placeholder={`Must be ${amount.replace("₹", "").trim()}`}
+          inputMode="decimal"
+          autoComplete="off"
+        />
+      </label>
       <label className="block text-sm font-semibold">
         UPI reference / UTR
         <input
           className="input-ps mt-1"
           value={utr}
-          onChange={(e) => setUtr(e.target.value.toUpperCase())}
+          onChange={(e) => {
+            setUtr(e.target.value.replace(/[^\d\s-]/g, ""));
+            setError(null);
+          }}
           placeholder="12-digit UTR from your payment app"
+          inputMode="numeric"
           autoComplete="off"
+          maxLength={14}
         />
       </label>
       <div>
@@ -188,14 +244,14 @@ export function UpiPayPanel({
       <button
         type="button"
         className="btn-orange w-full disabled:opacity-50"
-        disabled={busy || !canSubmit}
+        disabled={!canSubmit}
         onClick={() => void submit()}
       >
-        {busy ? "Saving…" : "I have paid"}
+        {busy ? "Checking…" : "I have paid"}
       </button>
       <p className="text-xs text-muted">
-        Enter the UTR from PhonePe after paying — we confirm the order automatically.
-        A screenshot is optional backup for our team.
+        Wrong UTRs or UTRs from a different amount are rejected immediately. After a
+        valid UTR, we confirm the bank credit for this exact order amount, then pack.
       </p>
     </section>
   );

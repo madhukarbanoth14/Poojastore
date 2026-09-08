@@ -281,6 +281,7 @@ export class PaymentsController {
   ) {
     const payment = await this.confirm.submitUpiProof(id, user.id, {
       utr: body.utr,
+      amountPaidMinor: body.amountPaidMinor,
       screenshotBase64: body.screenshotBase64,
     });
     return { success: true, data: payment };

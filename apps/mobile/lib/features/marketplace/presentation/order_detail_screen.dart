@@ -94,6 +94,11 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                     'UPI payment is waiting for confirmation. Packing starts after we verify the credit.',
                     style: TextStyle(color: AppColors.maroon, height: 1.4),
                   ),
+                  const SizedBox(height: 10),
+                  FilledButton(
+                    onPressed: () => context.push('/checkout'),
+                    child: const Text('Continue to pay'),
+                  ),
                 ],
                 const SizedBox(height: 16),
                 ...((order['items'] as List?) ?? const [])
