@@ -64,6 +64,27 @@ describe('validateEnv production gates', () => {
     ).toThrow(/Twilio/);
   });
 
+  it('rejects smtp without host', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        EMAIL_PROVIDER: 'smtp',
+        EMAIL_FROM: 'Pavitra Seva <noreply@pavitraseva.in>',
+      }),
+    ).toThrow(/SMTP/);
+  });
+
+  it('accepts smtp with host and from', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        EMAIL_PROVIDER: 'smtp',
+        EMAIL_FROM: 'Pavitra Seva <noreply@pavitraseva.in>',
+        SMTP_HOST: 'smtp.example.com',
+      }),
+    ).not.toThrow();
+  });
+
   it('accepts live Razorpay test keys without webhook secret in development', () => {
     expect(() =>
       validateEnv({
