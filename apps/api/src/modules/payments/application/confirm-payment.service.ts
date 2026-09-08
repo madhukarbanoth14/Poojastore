@@ -15,6 +15,7 @@ import {
   Role,
 } from '@prisma/client';
 import { PrismaService } from '../../../core/database/prisma.service';
+import { OrderConfirmationEmailService } from '../../notifications/application/order-confirmation-email.service';
 import { PushNotificationService } from '../../notifications/application/push-notification.service';
 import type { AuthenticatedUser } from '../../auth/domain/authenticated-user';
 import { parsePaymentScreenshot } from '../infrastructure/parse-payment-screenshot';
@@ -30,6 +31,7 @@ export class ConfirmPaymentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly push: PushNotificationService,
+    private readonly orderConfirmationEmail: OrderConfirmationEmailService,
   ) {}
 
   /**
@@ -163,6 +165,12 @@ export class ConfirmPaymentService {
       (error) =>
         this.logger.warn(`Booking confirmation push failed: ${error}`),
     );
+
+    void this.orderConfirmationEmail
+      .sendForOrder(payment.orderId)
+      .catch((error) =>
+        this.logger.warn(`Order confirmation email failed: ${error}`),
+      );
 
     return updated;
   }
@@ -409,6 +417,7 @@ export class ConfirmPaymentService {
 
     // Valid format + matching amount → queue for bank confirmation.
     // Invalid UTR / wrong amount never reach here (thrown above).
+    // Intentionally does NOT auto-confirm: master/#9 auto-confirmed any 8+ char UTR.
     try {
       return await this.prisma.payment.update({
         where: { id: payment.id },

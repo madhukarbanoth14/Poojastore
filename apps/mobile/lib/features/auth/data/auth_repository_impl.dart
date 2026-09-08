@@ -106,12 +106,13 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthUser> updateProfile({String? fullName, String? email}) async {
+  Future<AuthUser> updateProfile({String? fullName, String? email, String? phone}) async {
     final response = await _api.dio.patch(
       '/auth/me',
       data: {
         if (fullName != null) 'fullName': fullName,
         if (email != null && email.isNotEmpty) 'email': email,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
       },
     );
     return AuthUser.fromJson(response.data['data'] as Map<String, dynamic>);

@@ -7,6 +7,7 @@ import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
 import '../../../core/widgets/ps_widgets.dart';
 import '../../../l10n/l10n.dart';
+import '../../auth/presentation/auth_controller.dart';
 import 'kits_screen.dart';
 
 const _slots = [
@@ -34,6 +35,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _city = TextEditingController(text: 'Bengaluru');
   final _state = TextEditingController(text: 'Karnataka');
   final _postal = TextEditingController(text: '560003');
+  final _phone = TextEditingController();
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _city.dispose();
     _state.dispose();
     _postal.dispose();
+    _phone.dispose();
     super.dispose();
   }
 
@@ -55,6 +58,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final api = ref.read(marketplaceApiProvider);
       final addresses = await api.listAddresses();
       var cart = await api.getCart();
+      final user = ref.read(authControllerProvider).user;
+      final phone = user?.phoneE164 ?? '';
       final itemCount = (cart['itemCount'] as num?)?.toInt() ??
           ((cart['items'] as List?)?.length ?? 0);
       if (itemCount == 0) {
@@ -69,6 +74,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             _cart = cart;
             _selectedAddressId =
                 addresses.isNotEmpty ? addresses.first['id'] as String : null;
+            if (RegExp(r'^\+91[6-9]\d{9}$').hasMatch(phone)) {
+              _phone.text = phone.replaceFirst('+91', '');
+            }
           });
           final payment =
               Map<String, dynamic>.from(pending['payment'] as Map);
@@ -96,6 +104,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         _cart = cart;
         _selectedAddressId =
             addresses.isNotEmpty ? addresses.first['id'] as String : null;
+        if (RegExp(r'^\+91[6-9]\d{9}$').hasMatch(phone)) {
+          _phone.text = phone.replaceFirst('+91', '');
+        }
       });
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
@@ -122,6 +133,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       _error = null;
     });
     try {
+      final phone = _phone.text.trim();
+      if (phone.isEmpty) {
+        throw StateError('Enter your mobile number for delivery updates.');
+      }
+      await ref.read(authControllerProvider.notifier).updateProfile(phone: phone);
       await _ensureAddress();
       final api = ref.read(marketplaceApiProvider);
       final result = await api.checkout(
@@ -208,6 +224,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               decoration: const InputDecoration(labelText: 'Postal code'),
             ),
           ],
+          const SizedBox(height: 10),
+          TextField(
+            controller: _phone,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Mobile number',
+              hintText: 'Required for delivery (Google / Apple login)',
+            ),
+          ),
           const SizedBox(height: 16),
           const Text(
             'Delivery Slot',

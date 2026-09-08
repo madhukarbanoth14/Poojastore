@@ -99,6 +99,18 @@ export default () => ({
     provider: process.env.PUSH_PROVIDER ?? 'console',
     fcmServiceAccountJson: process.env.FCM_SERVICE_ACCOUNT_JSON ?? '',
   },
+  email: {
+    provider: process.env.EMAIL_PROVIDER ?? 'console',
+    from: process.env.EMAIL_FROM ?? 'Pavitra Seva <noreply@pavitraseva.in>',
+    webBaseUrl: process.env.PUBLIC_WEB_BASE_URL ?? 'https://pavitraseva.in',
+    smtp: {
+      host: process.env.SMTP_HOST ?? '',
+      port: parseInt(process.env.SMTP_PORT ?? '587', 10),
+      user: process.env.SMTP_USER ?? '',
+      pass: process.env.SMTP_PASS ?? '',
+      secure: process.env.SMTP_SECURE === 'true',
+    },
+  },
   orders: {
     autoAdvance: process.env.ORDER_AUTO_ADVANCE === 'true',
   },

@@ -14,6 +14,7 @@ export default function ProfileDetailsPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState(user?.fullName ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [phoneDraft, setPhoneDraft] = useState("");
   const [language, setLanguage] = useState<Locale>(user?.preferredLanguage === "te" ? "te" : locale);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export default function ProfileDetailsPage() {
       await updateProfile({
         fullName: fullName.trim(),
         email: email.trim() || undefined,
+        phone: phoneDraft.trim() || undefined,
         preferredLanguage: language,
       });
       writeLocale(language);
@@ -87,6 +89,22 @@ export default function ProfileDetailsPage() {
           <p className="mt-1 font-semibold text-maroon">{user.phoneE164}</p>
           <p className="mt-1 text-xs text-muted">{ac(locale, "phoneHint")}</p>
         </div>
+        {!/^\+91[6-9]\d{9}$/.test(user.phoneE164) ? (
+          <label className="block text-sm font-medium text-maroon">
+            Mobile number
+            <input
+              className="input-ps mt-1"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="10-digit mobile"
+              value={phoneDraft}
+              onChange={(e) => setPhoneDraft(e.target.value)}
+            />
+            <span className="mt-1 block text-xs text-muted">
+              Google / Apple sign-in does not share your number — add it for delivery.
+            </span>
+          </label>
+        ) : null}
         {error ? <p className="text-sm text-orange">{error}</p> : null}
         {message ? <p className="text-sm text-maroon">{message}</p> : null}
         <button type="submit" disabled={busy} className="w-full btn-orange disabled:opacity-50">

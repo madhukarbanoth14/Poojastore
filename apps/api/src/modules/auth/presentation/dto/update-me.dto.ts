@@ -20,6 +20,15 @@ export class UpdateMeDto {
   @MaxLength(255)
   email?: string;
 
+  @ApiProperty({
+    required: false,
+    description: 'Mobile number (required for Google/Apple users with placeholder phones)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  phone?: string;
+
   @ApiProperty({ enum: ['en', 'te'], required: false })
   @IsOptional()
   @IsString()

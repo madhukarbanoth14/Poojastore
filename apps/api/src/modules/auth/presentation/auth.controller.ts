@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Controller,
@@ -39,6 +40,7 @@ import {
 import { LoginDto, RegisterDto, ChangePasswordDto } from './dto/password-auth.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { SocialProvider } from '@prisma/client';
+import { parseMobileInput } from '../domain/phone';
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -210,12 +212,49 @@ export class AuthController {
         throw new ConflictException('Email is already in use');
       }
     }
+
+    let phoneUpdate: {
+      phoneE164: string;
+      countryCode: string;
+      phoneNational: string;
+    } | null = null;
+    if (dto.phone?.trim()) {
+      let normalized;
+      try {
+        normalized = parseMobileInput(dto.phone.trim());
+      } catch (err) {
+        throw new BadRequestException(
+          err instanceof Error
+            ? err.message
+            : 'Enter a valid Indian mobile number',
+        );
+      }
+      const taken = await this.prisma.user.findFirst({
+        where: {
+          phoneE164: normalized.phoneE164,
+          NOT: { id: authUser.id },
+        },
+        select: { id: true },
+      });
+      if (taken) {
+        throw new ConflictException('This mobile number is already in use');
+      }
+      phoneUpdate = normalized;
+    }
+
     await this.prisma.user.update({
       where: { id: authUser.id },
       data: {
         ...(dto.fullName !== undefined ? { fullName: dto.fullName } : {}),
         ...(dto.email !== undefined
           ? { email: dto.email.trim().toLowerCase() }
+          : {}),
+        ...(phoneUpdate
+          ? {
+              phoneE164: phoneUpdate.phoneE164,
+              countryCode: phoneUpdate.countryCode,
+              phoneNational: phoneUpdate.phoneNational,
+            }
           : {}),
         ...(dto.preferredLanguage
           ? { preferredLanguage: dto.preferredLanguage }
