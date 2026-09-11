@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/catalog_l10n.dart';
 import '../../../core/catalog/design_catalog.dart';
 import '../../../core/catalog/kit_item_taxonomy.dart';
-import '../../../core/network/fallback_dns.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -77,22 +75,8 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
       (item['slug'] as String?) ??
       (item['name'] as String? ?? '');
 
-  int _priceOf(Map<String, dynamic> item) {
-    final live = item['priceMinor'];
-    final qty = item['quantity'] as int? ?? 1;
-    if (live is int) return live * qty;
-    return 0;
-  }
-
   int get _totalMinor {
-    if (_items.isEmpty) {
-      return ((_kit?['priceMinor'] as int?) ?? 0) * _qty;
-    }
-    final sum = _items.fold<int>(0, (total, item) {
-      if (!_selected.contains(_keyOf(item))) return total;
-      return total + _priceOf(item);
-    });
-    return sum * _qty;
+    return ((_kit?['priceMinor'] as int?) ?? 0) * _qty;
   }
 
   bool get _hasOptional => _items.any(
@@ -105,9 +89,13 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
   void _appendOptionalExtras() {
     final kit = _kit;
     if (kit == null) return;
-    final current = _items;
-    final keys = current.map(_keyOf).toSet();
-    final names = current
+    final packed = _items
+        .where(
+          (item) => !_isOptional(item) && _keyOf(item) != 'samagri-copper-pot',
+        )
+        .toList();
+    final keys = packed.map(_keyOf).toSet();
+    final names = packed
         .map((item) => (item['name'] as String? ?? '').toLowerCase())
         .toSet();
     final extras = <Map<String, dynamic>>[];
@@ -126,10 +114,7 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
         'priceMinor': extra.priceMinor,
       });
     }
-    if (extras.isEmpty) return;
-    final selectable = (kit['selectableItems'] as List?)
-        ?.cast<Map<String, dynamic>>();
-    kit['selectableItems'] = [...(selectable ?? current), ...extras];
+    kit['selectableItems'] = [...packed, ...extras];
   }
 
   void _selectDefaults(List<Map<String, dynamic>> items) {
@@ -149,36 +134,9 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
   Future<void> _add() async {
     final kit = _kit;
     if (kit == null) return;
-    final loggedIn = await ensureLoggedIn(
-      context,
-      ref,
-      message: 'Sign in to add samagri to your cart',
+    context.push(
+      '/kits/${widget.slug}/extras?intent=buy&qty=$_qty',
     );
-    if (!loggedIn || !mounted) return;
-    final keys = _selected.toList();
-    if (_items.isNotEmpty && keys.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.selectAtLeastOneItem)),
-      );
-      return;
-    }
-    setState(() => _adding = true);
-    try {
-      await ref.read(marketplaceApiProvider).addToCart(
-            kit['id'] as String,
-            qty: _qty,
-            selectedItemKeys: _items.isEmpty ? null : keys,
-          );
-      if (mounted) context.push('/cart');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(friendlyNetworkError(e))),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _adding = false);
-    }
   }
 
   @override
@@ -268,32 +226,15 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                     ),
                     if (_hasOptional) ...[
                       const SizedBox(height: 18),
-                      PpTitle(l10n.chooseOptionalItems, size: 14),
-                      const SizedBox(height: 4),
                       Text(
-                        l10n.optionalItemsHint,
+                        context.isTelugu
+                            ? 'ఐచ్ఛిక వస్తువులు కొనుగోలు తర్వాత ఎంచుకోవచ్చు.'
+                            : 'Optional extras are offered after you tap Continue to Buy.',
                         style: const TextStyle(
                           fontSize: 12,
                           height: 1.45,
                           color: AppColors.textMuted,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      _KitPhotoGrid(
-                        items: items.where(_isOptional).toList(),
-                        selected: _selected,
-                        optional: true,
-                        keyOf: _keyOf,
-                        onToggle: (item) {
-                          final key = _keyOf(item);
-                          setState(() {
-                            if (_selected.contains(key)) {
-                              _selected.remove(key);
-                            } else {
-                              _selected.add(key);
-                            }
-                          });
-                        },
                       ),
                     ],
                   ],
@@ -375,7 +316,7 @@ class _KitDetailScreenState extends ConsumerState<KitDetailScreen> {
                           child: Text(
                             _adding
                                 ? l10n.processing
-                                : l10n.addItemsToCart(_selected.length),
+                                : (context.isTelugu ? 'కొనుగోలుకు కొనసాగించండి' : 'Continue to Buy'),
                           ),
                         ),
                       ),

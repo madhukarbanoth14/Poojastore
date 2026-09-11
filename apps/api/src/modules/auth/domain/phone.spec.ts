@@ -1,4 +1,10 @@
-import { generateNumericOtp, normalizePhone, parseMobileInput } from './phone';
+import {
+  displayableMobile,
+  generateNumericOtp,
+  isPlaceholderMobile,
+  normalizePhone,
+  parseMobileInput,
+} from './phone';
 
 describe('normalizePhone', () => {
   it('normalizes Indian mobiles', () => {
@@ -39,5 +45,22 @@ describe('parseMobileInput', () => {
   it('accepts 10-digit Indian and E.164', () => {
     expect(parseMobileInput('9876543210').phoneE164).toBe('+919876543210');
     expect(parseMobileInput('+919876543210').phoneE164).toBe('+919876543210');
+  });
+});
+
+describe('isPlaceholderMobile', () => {
+  it('treats Google/Apple +915… numbers as placeholders', () => {
+    expect(isPlaceholderMobile('+915377329555')).toBe(true);
+    expect(isPlaceholderMobile('+917674847680')).toBe(false);
+    expect(isPlaceholderMobile(null)).toBe(true);
+  });
+});
+
+describe('displayableMobile', () => {
+  it('prefers a real number over a social placeholder', () => {
+    expect(
+      displayableMobile('+915377329555', '+917674847680'),
+    ).toBe('+917674847680');
+    expect(displayableMobile('+915377329555')).toBeNull();
   });
 });

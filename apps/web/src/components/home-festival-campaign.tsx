@@ -118,7 +118,7 @@ export function HomeFestivalCampaign({
               {campaignText(locale, campaign.findPriestCta)}
             </p>
             <p className="mt-1 text-sm text-muted">
-              {locale === "te" ? "ఇంటి లేదా ఆన్‌లైన్ సేవ" : "Home or online seva"}
+              {locale === "te" ? "త్వరలో" : "Coming soon"}
             </p>
           </Link>
           <Link href={campaign.vidhiHref} className="card-temple px-5 py-6 text-center">

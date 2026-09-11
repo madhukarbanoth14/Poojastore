@@ -18,6 +18,7 @@ Future<bool> completeOrCollectUpi({
   required Map<String, dynamic> payment,
 }) async {
   final kind = await completePayment(api: api, payment: payment);
+  if (kind == PaymentCompletion.redirect) return true;
   if (kind != PaymentCompletion.upi) return true;
   if (!context.mounted) return false;
   return showUpiPaySheet(context: context, api: api, payment: payment);

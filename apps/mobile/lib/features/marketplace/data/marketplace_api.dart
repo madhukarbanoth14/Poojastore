@@ -87,12 +87,15 @@ class MarketplaceApi {
   Future<Map<String, dynamic>> checkout(
     String shippingAddressId, {
     String? deliverySlot,
+    String? contactPhone,
   }) async {
     final res = await _api.dio.post(
       '/orders/checkout',
       data: {
         'shippingAddressId': shippingAddressId,
         if (deliverySlot != null) 'deliverySlot': deliverySlot,
+        if (contactPhone != null && contactPhone.isNotEmpty)
+          'contactPhone': contactPhone,
       },
     );
     return res.data['data'] as Map<String, dynamic>;

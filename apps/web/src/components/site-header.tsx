@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { ToranBar } from "@/components/ornaments";
 import { BrandMark, BrandWordmark } from "@/components/ui";
@@ -27,6 +27,10 @@ export function SiteHeader({ locale, brand }: { locale: Locale; brand: string })
   const { user, cart, ready } = useAuth();
   const [open, setOpen] = useState(false);
   const count = cart?.itemCount ?? 0;
+
+  useEffect(() => {
+    setOpen(false);
+  }, [path]);
 
   function setLocale(next: Locale) {
     writeLocale(next);

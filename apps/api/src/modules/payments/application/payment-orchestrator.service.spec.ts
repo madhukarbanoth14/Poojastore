@@ -4,6 +4,7 @@ import { MockPaymentGateway } from '../infrastructure/mock.gateway';
 import { RazorpayGateway } from '../infrastructure/razorpay.gateway';
 import { StripeGateway } from '../infrastructure/stripe.gateway';
 import { UpiQrGateway } from '../infrastructure/upi-qr.gateway';
+import { PayuGateway } from '../infrastructure/payu.gateway';
 
 function unusedUpi() {
   return {
@@ -18,7 +19,52 @@ function unusedUpi() {
   } as unknown as UpiQrGateway;
 }
 
-function makeService(mode: string, razorpaySupports = true, stripeSupports = false) {
+function unusedPayu() {
+  return {
+    provider: PaymentProvider.PAYU,
+    supports: () => false,
+    createSession: async () => ({ provider: PaymentProvider.PAYU }),
+    refund: async () => ({
+      providerRefundId: 'payu_rfnd',
+      amountMinor: 100,
+      status: 'succeeded' as const,
+    }),
+  } as unknown as PayuGateway;
+}
+
+function supportingPayu() {
+  return {
+    provider: PaymentProvider.PAYU,
+    supports: () => true,
+    createSession: async () => ({ provider: PaymentProvider.PAYU }),
+    refund: async () => ({
+      providerRefundId: 'payu_rfnd',
+      amountMinor: 100,
+      status: 'succeeded' as const,
+    }),
+  } as unknown as PayuGateway;
+}
+
+function supportingUpi() {
+  return {
+    provider: PaymentProvider.UPI_QR,
+    supports: () => true,
+    createSession: async () => ({ provider: PaymentProvider.UPI_QR }),
+    refund: async () => ({
+      providerRefundId: 'upi_rfnd',
+      amountMinor: 100,
+      status: 'succeeded' as const,
+    }),
+  } as unknown as UpiQrGateway;
+}
+
+function makeService(
+  mode: string,
+  razorpaySupports = true,
+  stripeSupports = false,
+  payu: PayuGateway = unusedPayu(),
+  upi: UpiQrGateway = unusedUpi(),
+) {
   const config = {
     get: (key: string) => (key === 'payments.mode' ? mode : undefined),
   } as never;
@@ -46,7 +92,8 @@ function makeService(mode: string, razorpaySupports = true, stripeSupports = fal
         status: 'succeeded' as const,
       }),
     } as unknown as StripeGateway,
-    unusedUpi(),
+    upi,
+    payu,
   );
 }
 
@@ -62,6 +109,32 @@ describe('PaymentOrchestratorService', () => {
     const service = makeService('mock', true, false);
     expect(service.resolveGateway(Market.IN).provider).toBe(
       PaymentProvider.RAZORPAY,
+    );
+  });
+
+  it('uses PayU over company QR when PayU is enabled locally', () => {
+    const service = makeService(
+      'mock',
+      true,
+      false,
+      supportingPayu(),
+      supportingUpi(),
+    );
+    expect(service.resolveGateway(Market.IN).provider).toBe(
+      PaymentProvider.PAYU,
+    );
+  });
+
+  it('keeps company QR when PayU is not enabled', () => {
+    const service = makeService(
+      'live',
+      false,
+      false,
+      unusedPayu(),
+      supportingUpi(),
+    );
+    expect(service.resolveGateway(Market.IN).provider).toBe(
+      PaymentProvider.UPI_QR,
     );
   });
 
@@ -109,6 +182,7 @@ describe('PaymentOrchestratorService', () => {
         }),
       } as unknown as StripeGateway,
       unusedUpi(),
+      unusedPayu(),
     );
 
     await expect(

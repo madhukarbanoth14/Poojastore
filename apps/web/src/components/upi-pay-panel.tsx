@@ -76,10 +76,11 @@ function clientUtrError(utr: string): string | null {
 
 export function UpiPayPanel({
   payment,
-  onPaid,
+  onSubmitted,
 }: {
   payment: Payment;
-  onPaid: () => void;
+  /** Called after a format-valid UTR is queued for bank/admin confirmation — not after paid. */
+  onSubmitted?: () => void;
 }) {
   const [utr, setUtr] = useState("");
   const [amountPaid, setAmountPaid] = useState("");
@@ -89,6 +90,13 @@ export function UpiPayPanel({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [brokenDynamic, setBrokenDynamic] = useState(false);
+  const [submittedUtr, setSubmittedUtr] = useState<string | null>(
+    typeof payment.metadata?.utr === "string"
+      ? payment.metadata.utr
+      : payment.providerPaymentId && /^[0-9]{12}$/.test(payment.providerPaymentId)
+        ? payment.providerPaymentId
+        : null,
+  );
   const src = useMemo(
     () => qrSrc(payment, brokenDynamic),
     [payment, brokenDynamic],
@@ -97,7 +105,7 @@ export function UpiPayPanel({
   const amount = formatMoney(payment.amountMinor, payment.currency ?? "INR");
   const normalizedUtr = normalizeUtr(utr);
   const amountPaidMinor = parseAmountToMinor(amountPaid);
-  const canSubmit = Boolean(normalizedUtr || amountPaid.trim()) && !busy;
+  const canSubmit = Boolean(normalizedUtr && amountPaid.trim()) && !busy;
 
   async function copyVpa() {
     if (!vpa) return;
@@ -141,17 +149,58 @@ export function UpiPayPanel({
           `Amount does not match this order (expected ${amount}). Use the UTR from the payment of this exact amount — other UTRs are not accepted.`,
         );
       }
+      if (!screenshot) {
+        throw new Error("Upload the payment success screenshot from PhonePe / GPay / Paytm.");
+      }
       await submitUpiUtr(payment.id, {
         utr: normalizedUtr,
         amountPaidMinor,
-        screenshotBase64: screenshot ?? undefined,
+        screenshotBase64: screenshot,
       });
-      onPaid();
+      setSubmittedUtr(normalizedUtr);
+      onSubmitted?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not confirm the payment");
+      setError(err instanceof Error ? err.message : "Could not submit the payment proof");
     } finally {
       setBusy(false);
     }
+  }
+
+  if (submittedUtr) {
+    return (
+      <section className="space-y-4">
+        <h2 className="font-semibold">Payment proof received</h2>
+        <div className="rounded-2xl border border-gold bg-blush/40 px-4 py-4">
+          <p className="text-sm font-semibold text-maroon">
+            UTR {submittedUtr} is waiting for verification
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-body">
+            Your order is <span className="font-semibold">not paid yet</span>. With company
+            UPI, we match the bank credit by hand. Paid status usually appears within a few
+            hours during the business day (sometimes next morning). You will stay on this
+            checkout until then — we do not mark the order paid from UTR alone.
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            Entered a wrong UTR? Tap below to submit the correct 12-digit reference from the
+            payment of {amount}.
+          </p>
+          <button
+            type="button"
+            className="btn-outline-gold mt-3"
+            onClick={() => {
+              setSubmittedUtr(null);
+              setUtr("");
+              setAmountPaid("");
+              setScreenshot(null);
+              setScreenshotName(null);
+              setError(null);
+            }}
+          >
+            Submit a different UTR
+          </button>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -193,7 +242,7 @@ export function UpiPayPanel({
       <ol className="list-decimal space-y-1 pl-5 text-sm text-body">
         <li>Open PhonePe / GPay / Paytm → Scan this QR</li>
         <li>Confirm amount is {amount}</li>
-        <li>Enter that same amount and the 12-digit UTR below</li>
+        <li>Enter that same amount, the 12-digit UTR, and a success screenshot</li>
       </ol>
       <label className="block text-sm font-semibold">
         Amount paid (₹)
@@ -225,7 +274,7 @@ export function UpiPayPanel({
         />
       </label>
       <div>
-        <p className="text-sm font-semibold">Payment screenshot (optional)</p>
+        <p className="text-sm font-semibold">Payment screenshot (required)</p>
         <label className="btn-orange relative mt-2 w-full cursor-pointer overflow-hidden">
           <input
             className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
@@ -247,11 +296,12 @@ export function UpiPayPanel({
         disabled={!canSubmit}
         onClick={() => void submit()}
       >
-        {busy ? "Checking…" : "I have paid"}
+        {busy ? "Checking…" : "Submit payment proof"}
       </button>
       <p className="text-xs text-muted">
-        Wrong UTRs or UTRs from a different amount are rejected immediately. After a
-        valid UTR, we confirm the bank credit for this exact order amount, then pack.
+        Invalid format, fake-looking UTRs, and wrong amounts are rejected immediately and you
+        stay on this page. We cannot auto-verify a real bank UTR from company QR — Paid
+        appears after we confirm the credit (usually within a few hours).
       </p>
     </section>
   );

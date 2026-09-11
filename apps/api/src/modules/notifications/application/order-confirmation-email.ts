@@ -79,7 +79,7 @@ export function formatOrderConfirmationEmail(
     '',
     `Total paid: ${money}`,
     `Delivery address: ${address}`,
-    input.deliverySlot ? `Delivery slot: ${input.deliverySlot}` : null,
+    input.deliverySlot ? `Delivery: ${input.deliverySlot}` : null,
     '',
     `View your order: ${link}`,
     '',
@@ -113,7 +113,7 @@ export function formatOrderConfirmationEmail(
       <p style="margin:0 0 8px;"><strong>Delivery address:</strong> ${escapeHtml(address)}</p>
       ${
         input.deliverySlot
-          ? `<p style="margin:0 0 16px;"><strong>Delivery slot:</strong> ${escapeHtml(input.deliverySlot)}</p>`
+          ? `<p style="margin:0 0 16px;"><strong>Delivery:</strong> ${escapeHtml(input.deliverySlot)}</p>`
           : ''
       }
       <p style="margin:24px 0 0;">

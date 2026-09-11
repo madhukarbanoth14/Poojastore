@@ -1870,14 +1870,39 @@ async function seedTeluguContent() {
 
   await prisma.promoCode.upsert({
     where: { code: 'PAVITRA10' },
-    update: {},
-    create: {
-      code: 'PAVITRA10',
-      description: '10% off kits and samagri',
+    update: {
+      description: '10% off Pavitra Seva kits and samagri',
       discountType: PromoDiscountType.PERCENT,
       percentOff: 10,
-      maxDiscountMinor: 20000,
-      minSubtotalMinor: 49900,
+      amountMinor: null,
+      minSubtotalMinor: 0,
+      maxDiscountMinor: null,
+      isActive: true,
+    },
+    create: {
+      code: 'PAVITRA10',
+      description: '10% off Pavitra Seva kits and samagri',
+      discountType: PromoDiscountType.PERCENT,
+      percentOff: 10,
+      isActive: true,
+    },
+  });
+  await prisma.promoCode.upsert({
+    where: { code: 'GANESH10' },
+    update: {
+      description: '10% off Ganesh Chaturthi kits',
+      discountType: PromoDiscountType.PERCENT,
+      percentOff: 10,
+      amountMinor: null,
+      minSubtotalMinor: 0,
+      maxDiscountMinor: null,
+      isActive: true,
+    },
+    create: {
+      code: 'GANESH10',
+      description: '10% off Ganesh Chaturthi kits',
+      discountType: PromoDiscountType.PERCENT,
+      percentOff: 10,
       isActive: true,
     },
   });

@@ -142,6 +142,9 @@ class CatalogImages {
     'samagri-durva': 'samagri-isthari-leaves',
     'samagri-sandal-paste': 'samagri-gandham',
     'samagri-prasadam-leaf-cups': 'samagri-leaf-cups',
+    'samagri-small-diyas': 'samagri-akhanda-deepam',
+    'samagri-copper-pot': 'samagri-asanam',
+    'samagri-dhoti': 'samagri-puja-vastras',
   };
 
   static String? samagriAsset(String? slug) {

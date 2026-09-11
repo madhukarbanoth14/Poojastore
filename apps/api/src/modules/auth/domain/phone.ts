@@ -49,6 +49,22 @@ export function normalizePhone(
   };
 }
 
+/** Google/Apple accounts get a synthetic +91 5xxxxxxxx number — not a real mobile. */
+export function isPlaceholderMobile(phoneE164?: string | null): boolean {
+  if (!phoneE164) return true;
+  const digits = phoneE164.replace(/\D/g, '');
+  return digits.length === 12 && digits.startsWith('915');
+}
+
+export function displayableMobile(
+  ...candidates: Array<string | null | undefined>
+): string | null {
+  for (const candidate of candidates) {
+    if (candidate && !isPlaceholderMobile(candidate)) return candidate;
+  }
+  return null;
+}
+
 /** Accepts +91…, 91…, or a 10-digit Indian mobile; also +1 US/Canada. */
 export function parseMobileInput(raw: string): NormalizedPhone {
   const trimmed = raw.trim();

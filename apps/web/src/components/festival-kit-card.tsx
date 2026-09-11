@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { AddToCartButton } from "@/components/add-to-cart-button";
 import { kitImage } from "@/lib/catalog-images";
 import { t } from "@/lib/copy";
 import { formatMoney } from "@/lib/format";
@@ -45,11 +44,9 @@ export function FestivalKitCard({
         </div>
       </Link>
       <div className="mt-auto px-4 pb-4 pt-3">
-        <AddToCartButton
-          productId={product.id}
-          className="btn-orange-sm w-full justify-center"
-          label={t(locale, "addToCart")}
-        />
+        <Link href={href} className="btn-orange btn-orange-sm w-full justify-center">
+          {t(locale, "addToCart")}
+        </Link>
       </div>
     </article>
   );

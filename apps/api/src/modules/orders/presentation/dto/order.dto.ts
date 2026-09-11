@@ -44,7 +44,17 @@ export class CheckoutDto {
   @IsOptional()
   @IsString()
   @MaxLength(40)
+  familyRelationship?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
   promoCode?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  contactPhone?: string;
 }
 
 export class OrderActionDto {

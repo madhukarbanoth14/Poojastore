@@ -5,8 +5,20 @@ import {
 } from '@nestjs/common';
 import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/database/prisma.service';
+import {
+  InvalidPhoneError,
+  isPlaceholderMobile,
+  parseMobileInput,
+  type NormalizedPhone,
+} from '../../auth/domain/phone';
 import { PaymentOrchestratorService } from '../../payments/application/payment-orchestrator.service';
 import { PromoService } from '../../promos/application/promo.service';
+
+/** India: ₹49 under ₹1,000, free at ₹1,000+. Other markets: $4.99. */
+export function checkoutDeliveryFeeMinor(baseSubtotal: number, market: string) {
+  if (market === 'IN') return baseSubtotal >= 100_000 ? 0 : 4900;
+  return 499;
+}
 
 @Injectable()
 export class CheckoutService {
@@ -26,7 +38,9 @@ export class CheckoutService {
       familyAddressId?: string;
       recipientName?: string;
       recipientPhone?: string;
+      familyRelationship?: string;
       promoCode?: string;
+      contactPhone?: string;
     },
   ) {
     const address = await this.prisma.address.findFirst({
@@ -87,22 +101,31 @@ export class CheckoutService {
       ...(shipFamily ? (['family'] as const) : []),
     ];
     const copies = destinations.length;
-    const perShip =
-      baseSubtotal >= 100000 && market === 'IN' ? 0 : market === 'IN' ? 4900 : 499;
+    const perShip = checkoutDeliveryFeeMinor(baseSubtotal, market);
     const perTax = Math.round(baseSubtotal * (market === 'IN' ? 0 : 0.08));
     const subtotalMinor = baseSubtotal * copies;
     const shippingMinor = perShip * copies;
     const taxMinor = perTax * copies;
     let discountMinor = 0;
     let promoId: string | undefined;
+    /** Family Seva: automatic 10% off the full order (both kits) when a family kit is included. */
+    const familySevaDiscountMinor = shipFamily
+      ? Math.round((subtotalMinor * 10) / 100)
+      : 0;
+    if (familySevaDiscountMinor > 0) {
+      discountMinor = familySevaDiscountMinor;
+    }
     if (extra?.promoCode?.trim()) {
       const quoted = await this.promos.quote(
         extra.promoCode,
         subtotalMinor,
         currency,
       );
-      discountMinor = quoted.discountMinor;
-      promoId = quoted.promoId;
+      // Prefer the better single discount — do not stack Family Seva with promo.
+      if (quoted.discountMinor > discountMinor) {
+        discountMinor = quoted.discountMinor;
+        promoId = quoted.promoId;
+      }
     }
     const totalMinor = Math.max(
       0,
@@ -118,6 +141,8 @@ export class CheckoutService {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
     });
+    const contact = this.resolveContactPhone(user.phoneE164, extra?.contactPhone);
+    await this.maybeReplacePlaceholderPhone(userId, user.phoneE164, contact);
 
     const order = await this.prisma.order.create({
       data: {
@@ -133,6 +158,7 @@ export class CheckoutService {
         totalMinor,
         promoCodeId: promoId,
         shippingAddressId: address.id,
+        contactPhoneE164: contact.phoneE164,
         deliverySlot: deliverySlot?.trim() || null,
         items: {
           create: destinations.flatMap((fulfillment) =>
@@ -152,6 +178,10 @@ export class CheckoutService {
                     fulfillment === 'family' ? extra?.recipientName : undefined,
                   recipientPhone:
                     fulfillment === 'family' ? extra?.recipientPhone : undefined,
+                  familyRelationship:
+                    fulfillment === 'family'
+                      ? extra?.familyRelationship
+                      : undefined,
                   shippingAddressId:
                     fulfillment === 'family'
                       ? (familyAddress?.id ?? address.id)
@@ -176,7 +206,7 @@ export class CheckoutService {
         customer: {
           id: user.id,
           email: user.email,
-          phoneE164: user.phoneE164,
+          phoneE164: contact.phoneE164,
           fullName: user.fullName,
         },
         lineItems: order.items.map((item) => ({
@@ -204,7 +234,14 @@ export class CheckoutService {
         providerPaymentId: session.providerPaymentId,
         clientSecret: session.clientSecret,
         checkoutUrl: session.checkoutUrl,
-        metadata: (session.metadata ?? {}) as Prisma.InputJsonValue,
+        metadata: {
+          ...((session.metadata as Record<string, unknown> | null) ?? {}),
+          familySeva: familySevaDiscountMinor > 0 && !promoId,
+          familySevaDiscountMinor:
+            familySevaDiscountMinor > 0 && !promoId
+              ? familySevaDiscountMinor
+              : undefined,
+        } as Prisma.InputJsonValue,
       },
     });
 
@@ -221,7 +258,10 @@ export class CheckoutService {
           familyAddressId: familyAddress?.id,
           recipientName: extra?.recipientName,
           recipientPhone: extra?.recipientPhone,
+          familyRelationship: extra?.familyRelationship,
+          familySevaDiscountMinor,
           promoCode: extra?.promoCode,
+          contactPhone: contact.phoneE164,
           discountMinor,
         },
       },
@@ -328,6 +368,62 @@ export class CheckoutService {
     }
 
     return this.toCheckoutResult(order, payment);
+  }
+
+  private resolveContactPhone(
+    accountPhone: string,
+    raw?: string,
+  ): NormalizedPhone {
+    if (raw?.trim()) {
+      try {
+        return parseMobileInput(raw);
+      } catch (error) {
+        if (error instanceof InvalidPhoneError) {
+          throw new BadRequestException(error.message);
+        }
+        throw error;
+      }
+    }
+    if (!isPlaceholderMobile(accountPhone)) {
+      try {
+        return parseMobileInput(accountPhone);
+      } catch (error) {
+        if (error instanceof InvalidPhoneError) {
+          throw new BadRequestException(error.message);
+        }
+        throw error;
+      }
+    }
+    throw new BadRequestException(
+      'Enter a valid mobile number for delivery updates.',
+    );
+  }
+
+  private async maybeReplacePlaceholderPhone(
+    userId: string,
+    accountPhone: string,
+    contact: NormalizedPhone,
+  ) {
+    if (!isPlaceholderMobile(accountPhone)) return;
+    if (accountPhone === contact.phoneE164) return;
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          phoneE164: contact.phoneE164,
+          countryCode: contact.countryCode,
+          phoneNational: contact.phoneNational,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        return;
+      }
+      throw error;
+    }
   }
 
   private toCheckoutResult(

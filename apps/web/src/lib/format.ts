@@ -43,6 +43,42 @@ export function formatWhen(iso?: string | null) {
   });
 }
 
+/** Google/Apple sign-in stores a synthetic +91 5xxxxxxxx number, not a real mobile. */
+export function isPlaceholderMobile(phone?: string | null) {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  return digits.length === 12 && digits.startsWith("915");
+}
+
+export function formatMobile(...candidates: Array<string | null | undefined>) {
+  for (const phone of candidates) {
+    if (!phone || isPlaceholderMobile(phone)) continue;
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length === 12 && digits.startsWith("91")) {
+      const national = digits.slice(2);
+      return `+91 ${national.slice(0, 5)} ${national.slice(5)}`;
+    }
+    if (digits.length === 11 && digits.startsWith("1")) {
+      return `+1 ${digits.slice(1, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
+    }
+    if (phone.startsWith("+")) return phone;
+  }
+  return "Not on file";
+}
+
+export function formatOrderStamp(iso?: string | null) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function formatSlot(iso: string) {
   const d = new Date(iso);
   return d.toLocaleString("en-IN", {

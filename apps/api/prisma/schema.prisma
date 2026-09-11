@@ -71,6 +71,7 @@ enum PaymentProvider {
   STRIPE
   MOCK
   UPI_QR
+  PAYU
 }
 
 enum PaymentStatus {
@@ -542,6 +543,7 @@ model Order {
   totalMinor        Int          @map("total_minor")
   promoCodeId       String?      @map("promo_code_id") @db.Uuid
   shippingAddressId String       @map("shipping_address_id") @db.Uuid
+  contactPhoneE164  String?      @map("contact_phone_e164") @db.VarChar(20)
   deliverySlot      String?      @map("delivery_slot") @db.VarChar(80)
   trackingNumber    String?      @map("tracking_number") @db.VarChar(40)
   courierName       String?      @map("courier_name") @db.VarChar(80)
@@ -575,6 +577,7 @@ model Order {
   @@index([status, createdAt])
   @@index([promoCodeId])
   @@index([vendorId])
+  @@index([contactPhoneE164])
   @@map("orders")
 }
 

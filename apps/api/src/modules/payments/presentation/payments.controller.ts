@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Req,
+  Res,
   StreamableFile,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,7 +17,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'crypto';
 import type { RawBodyRequest } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { PaymentProvider, Role } from '@prisma/client';
 import Stripe from 'stripe';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
@@ -26,6 +27,7 @@ import type { AuthenticatedUser } from '../../auth/domain/authenticated-user';
 import { ConfirmPaymentService } from '../application/confirm-payment.service';
 import { RefundPaymentService } from '../application/refund-payment.service';
 import { VerifyRazorpayService } from '../application/verify-razorpay.service';
+import { VerifyPayuService } from '../application/verify-payu.service';
 import { RefundPaymentDto } from './dto/refund-payment.dto';
 import { VerifyRazorpayDto } from './dto/verify-razorpay.dto';
 import { SubmitUpiDto } from './dto/submit-upi.dto';
@@ -42,6 +44,7 @@ export class PaymentsController {
     private readonly confirm: ConfirmPaymentService,
     private readonly refunds: RefundPaymentService,
     private readonly verifyRazorpay: VerifyRazorpayService,
+    private readonly verifyPayu: VerifyPayuService,
     private readonly config: ConfigService,
   ) {}
 
@@ -51,6 +54,48 @@ export class PaymentsController {
 
   private get isProduction(): boolean {
     return this.config.get<string>('nodeEnv') === 'production';
+  }
+
+  @Public()
+  @Get('payu/hosted/:txnid')
+  @ApiOperation({ summary: 'Auto-submit HTML form for PayU hosted checkout' })
+  async payuHosted(@Param('txnid') txnid: string, @Res() res: Response) {
+    const html = await this.verifyPayu.hostedHtml(txnid);
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'none'; script-src 'unsafe-inline'; form-action https://test.payu.in https://secure.payu.in; style-src 'unsafe-inline'",
+    );
+    res.type('html').send(html);
+  }
+
+  @Public()
+  @Get('payu/callback')
+  @ApiOperation({ summary: 'PayU hosted checkout return (GET)' })
+  async payuCallbackGet(@Req() req: Request, @Res() res: Response) {
+    const result = await this.verifyPayu.handlePosted(
+      (req.query ?? {}) as Record<string, unknown>,
+    );
+    return res.redirect(302, result.redirectUrl);
+  }
+
+  @Public()
+  @Post('payu/callback')
+  @ApiOperation({ summary: 'PayU hosted checkout return (surl/furl)' })
+  async payuCallbackPost(@Req() req: Request, @Res() res: Response) {
+    const result = await this.verifyPayu.handlePosted(
+      (req.body ?? {}) as Record<string, unknown>,
+    );
+    return res.redirect(302, result.redirectUrl);
+  }
+
+  @Public()
+  @Post('payu/webhook')
+  @ApiOperation({ summary: 'PayU server-to-server webhook' })
+  async payuWebhook(@Req() req: Request) {
+    const result = await this.verifyPayu.handlePosted(
+      (req.body ?? {}) as Record<string, unknown>,
+    );
+    return { success: true, data: { ok: result.ok } };
   }
 
   @Public()

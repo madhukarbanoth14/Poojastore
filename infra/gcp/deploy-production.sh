@@ -80,6 +80,7 @@ fi
 # Local .env CORS/localhost must not override the public site origins.
 CORS_ORIGINS="${CORS_ORIGINS_OVERRIDE:-https://pavitraseva.in,https://www.pavitraseva.in,https://pavitra-seva-web-tcjernzh5a-el.a.run.app}"
 PUBLIC_API_BASE_URL="${PUBLIC_API_BASE_URL_OVERRIDE:-https://pooja-api-production-tcjernzh5a-el.a.run.app}"
+PUBLIC_WEB_BASE_URL="${PUBLIC_WEB_BASE_URL_OVERRIDE:-https://pavitraseva.in}"
 
 # Never push Razorpay test keys onto production.
 if [[ "${RAZORPAY_KEY_ID:-}" == rzp_test* ]]; then
@@ -171,6 +172,65 @@ fi
 ENV_EXTRA="${ENV_EXTRA}@UPI_QR_IMAGE_URL=${UPI_QR_IMAGE_URL}"
 PAYMENT_MODE=live
 
+# Live PayU for India checkout. Local .env test keys must never be uploaded.
+if [[ -n "${PAYU_LIVE_MERCHANT_KEY:-}" && -n "${PAYU_LIVE_MERCHANT_SALT:-}" ]]; then
+  PAYU_MERCHANT_KEY="$PAYU_LIVE_MERCHANT_KEY"
+  PAYU_MERCHANT_SALT="$PAYU_LIVE_MERCHANT_SALT"
+  PAYU_CLIENT_ID="${PAYU_LIVE_CLIENT_ID:-${PAYU_CLIENT_ID:-}}"
+  PAYU_CLIENT_SECRET="${PAYU_LIVE_CLIENT_SECRET:-${PAYU_CLIENT_SECRET:-}}"
+  PAYU_MODE=live
+  echo "Using PAYU_LIVE_* credentials for production PayU."
+fi
+
+payu_is_test=0
+if [[ "${PAYU_MODE:-}" != "live" ]]; then
+  payu_is_test=1
+fi
+case "${PAYU_MERCHANT_KEY:-}" in
+  gtKFFx|Obq8JK) payu_is_test=1 ;;
+esac
+
+if [[ "$payu_is_test" -eq 1 ]]; then
+  echo "Skipping PayU from local .env (not live keys)."
+  unset PAYU_MERCHANT_KEY PAYU_MERCHANT_SALT PAYU_CLIENT_ID PAYU_CLIENT_SECRET
+fi
+
+if [[ -n "${PAYU_MERCHANT_KEY:-}" && -n "${PAYU_MERCHANT_SALT:-}" ]]; then
+  upsert_secret pooja-production-payu-merchant-key "$PAYU_MERCHANT_KEY"
+  upsert_secret pooja-production-payu-merchant-salt "$PAYU_MERCHANT_SALT"
+  for secret_name in pooja-production-payu-merchant-key pooja-production-payu-merchant-salt; do
+    gcloud secrets add-iam-policy-binding "$secret_name" \
+      --account="$ACCOUNT" --project="$PROJECT" \
+      --member="serviceAccount:${SA}" \
+      --role="roles/secretmanager.secretAccessor" --quiet >/dev/null
+  done
+  SECRETS="${SECRETS},PAYU_MERCHANT_KEY=pooja-production-payu-merchant-key:latest,PAYU_MERCHANT_SALT=pooja-production-payu-merchant-salt:latest"
+  if [[ -n "${PAYU_CLIENT_ID:-}" && -n "${PAYU_CLIENT_SECRET:-}" ]]; then
+    upsert_secret pooja-production-payu-client-id "$PAYU_CLIENT_ID"
+    upsert_secret pooja-production-payu-client-secret "$PAYU_CLIENT_SECRET"
+    for secret_name in pooja-production-payu-client-id pooja-production-payu-client-secret; do
+      gcloud secrets add-iam-policy-binding "$secret_name" \
+        --account="$ACCOUNT" --project="$PROJECT" \
+        --member="serviceAccount:${SA}" \
+        --role="roles/secretmanager.secretAccessor" --quiet >/dev/null
+    done
+    SECRETS="${SECRETS},PAYU_CLIENT_ID=pooja-production-payu-client-id:latest,PAYU_CLIENT_SECRET=pooja-production-payu-client-secret:latest"
+  fi
+  ENV_EXTRA="${ENV_EXTRA}@PAYU_MODE=live"
+  PAYMENT_MODE=live
+  echo "PayU live keys will be mounted (India checkout uses PayU)."
+elif gcloud secrets describe pooja-production-payu-merchant-key \
+    --account="$ACCOUNT" --project="$PROJECT" >/dev/null 2>&1; then
+  SECRETS="${SECRETS},PAYU_MERCHANT_KEY=pooja-production-payu-merchant-key:latest,PAYU_MERCHANT_SALT=pooja-production-payu-merchant-salt:latest"
+  if gcloud secrets describe pooja-production-payu-client-id \
+      --account="$ACCOUNT" --project="$PROJECT" >/dev/null 2>&1; then
+    SECRETS="${SECRETS},PAYU_CLIENT_ID=pooja-production-payu-client-id:latest,PAYU_CLIENT_SECRET=pooja-production-payu-client-secret:latest"
+  fi
+  ENV_EXTRA="${ENV_EXTRA}@PAYU_MODE=live"
+  PAYMENT_MODE=live
+  echo "Keeping existing production PayU secrets (not overwritten)."
+fi
+
 # Gmail SMTP for order confirmation emails (EMAIL_FROM / SMTP_USER / SMTP_PASS
 # contain @ so they must be secrets, not --set-env-vars entries).
 EMAIL_PROVIDER="${EMAIL_PROVIDER:-smtp}"
@@ -205,7 +265,7 @@ else
 fi
 
 if [[ "$PAYMENT_MODE" != "live" ]]; then
-  echo "WARNING: Razorpay and company UPI are unset — checkout will use MOCK."
+  echo "WARNING: PayU, Razorpay, and company UPI are unset — checkout will use MOCK."
 fi
 
 gcloud run deploy "$SERVICE" \

@@ -51,6 +51,8 @@ const _categoryBySlug = <String, KitItemCategoryId>{
   'samagri-puvvu-wicks': KitItemCategoryId.materials,
   'samagri-jileda-wicks': KitItemCategoryId.materials,
   'samagri-akhanda-deepam': KitItemCategoryId.materials,
+  'samagri-small-diyas': KitItemCategoryId.materials,
+  'samagri-copper-pot': KitItemCategoryId.materials,
   'samagri-oil': KitItemCategoryId.materials,
   'samagri-puja-vastras': KitItemCategoryId.materials,
   'samagri-pooja-book': KitItemCategoryId.materials,
@@ -130,6 +132,7 @@ const _essentialSlugs = {
   'samagri-blouse-pieces',
   'samagri-puja-vastras',
   'samagri-akhanda-deepam',
+  'samagri-copper-pot',
   'samagri-homa-stand',
   'samagri-dhoti',
 };
@@ -254,8 +257,8 @@ int? mrpIfHigher(int? mrpMinor, int priceMinor) {
 const kitOptionalOfferings = [
   SamagriOffering('samagri-21-patri', '21 patri pack', '21 రకాల పత్రి', 8000),
   SamagriOffering('samagri-isthari-leaves', 'Durva / isthari leaves', 'దూర్వా గడ్డి', 4000),
-  SamagriOffering('samagri-undrallu', 'Undrallu', 'ఉండ్రాళ్లు / మోదకం', 8000),
-  SamagriOffering('samagri-laddu', 'Laddu', 'లడ్డూ', 8000),
+  SamagriOffering('samagri-copper-pot', 'Ragi Chembu (Copper pot)', 'రాగి చెంబు', 24900),
+  SamagriOffering('samagri-dhoti', 'Dhoti 9×5', 'ధోతి 9×5', 39900),
   SamagriOffering('samagri-panchamritam', 'Panchamritam pack', 'పంచామృతం ప్యాక్', 19900),
   SamagriOffering('samagri-flowers', 'Loose flowers', 'విడిపూలు / పువ్వులు', 8000),
 ];

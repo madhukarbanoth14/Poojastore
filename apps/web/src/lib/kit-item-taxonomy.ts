@@ -40,6 +40,8 @@ const CATEGORY_BY_SLUG: Record<string, KitItemCategoryId> = {
   "samagri-puvvu-wicks": "materials",
   "samagri-jileda-wicks": "materials",
   "samagri-akhanda-deepam": "materials",
+  "samagri-small-diyas": "materials",
+  "samagri-copper-pot": "materials",
   "samagri-oil": "materials",
   "samagri-puja-vastras": "materials",
   "samagri-pooja-book": "materials",
@@ -119,6 +121,7 @@ const ESSENTIAL_SLUGS = new Set([
   "samagri-blouse-pieces",
   "samagri-puja-vastras",
   "samagri-akhanda-deepam",
+  "samagri-copper-pot",
   "samagri-homa-stand",
   "samagri-dhoti",
 ]);
@@ -238,15 +241,15 @@ function trimNumber(n: number) {
   return Number.isInteger(n) ? String(n) : String(n);
 }
 
-type KitShopOffering = { key: string; nameEn: string; nameTe: string };
+type KitShopOffering = { key: string; nameEn: string; nameTe: string; priceMinor: number };
 
 export const KIT_OPTIONAL_OFFERINGS: KitShopOffering[] = [
-  { key: "samagri-21-patri", nameEn: "21 patri pack", nameTe: "21 రకాల పత్రి" },
-  { key: "samagri-isthari-leaves", nameEn: "Durva / isthari leaves", nameTe: "దూర్వా గడ్డి" },
-  { key: "samagri-undrallu", nameEn: "Undrallu", nameTe: "ఉండ్రాళ్లు / మోదకం" },
-  { key: "samagri-laddu", nameEn: "Laddu", nameTe: "లడ్డూ" },
-  { key: "samagri-panchamritam", nameEn: "Panchamritam pack", nameTe: "పంచామృతం ప్యాక్" },
-  { key: "samagri-flowers", nameEn: "Loose flowers", nameTe: "విడిపూలు / పువ్వులు" },
+  { key: "samagri-21-patri", nameEn: "21 patri pack", nameTe: "21 రకాల పత్రి", priceMinor: 8000 },
+  { key: "samagri-isthari-leaves", nameEn: "Durva / isthari leaves", nameTe: "దూర్వా గడ్డి", priceMinor: 4000 },
+  { key: "samagri-copper-pot", nameEn: "Ragi Chembu (Copper pot)", nameTe: "రాగి చెంబు", priceMinor: 24900 },
+  { key: "samagri-dhoti", nameEn: "Dhoti 9×5", nameTe: "ధోతి 9×5", priceMinor: 39900 },
+  { key: "samagri-panchamritam", nameEn: "Panchamritam pack", nameTe: "పంచామృతం ప్యాక్", priceMinor: 19900 },
+  { key: "samagri-flowers", nameEn: "Loose flowers", nameTe: "విడిపూలు / పువ్వులు", priceMinor: 8000 },
 ];
 
 export function mergeKitOptionalOfferings<T extends { key: string; name?: string; optional?: boolean }>(

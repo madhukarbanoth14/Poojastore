@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { clientFetch, clientFetchBlob } from "@/lib/client";
-import { formatMoney, formatWhen } from "@/lib/format";
+import { formatMobile, formatMoney, formatWhen } from "@/lib/format";
 import { itemName, orderStatusLabel, statusTone } from "@/lib/order-display";
 import type { Order } from "@/lib/types";
 
@@ -172,7 +172,7 @@ export default function AdminOrderDetailPage() {
         <p className="font-semibold">Customer</p>
         <p className="mt-2 text-sm text-muted">
           {customer?.fullName || "Customer"}
-          {customer?.phoneE164 ? ` · ${customer.phoneE164}` : ""}
+          {` · ${formatMobile(order.contactPhoneE164, customer?.phoneE164)}`}
           {customer?.email ? ` · ${customer.email}` : ""}
         </p>
         {address ? (
@@ -182,7 +182,7 @@ export default function AdminOrderDetailPage() {
           </p>
         ) : null}
         {order.deliverySlot ? (
-          <p className="mt-2 text-sm text-muted">Slot: {order.deliverySlot}</p>
+          <p className="mt-2 text-sm text-muted">Delivery: {order.deliverySlot}</p>
         ) : null}
         <p className="mt-3 font-display text-2xl">{formatMoney(order.totalMinor, order.currency)}</p>
         <p className="text-xs text-muted">{formatWhen(order.createdAt)}</p>

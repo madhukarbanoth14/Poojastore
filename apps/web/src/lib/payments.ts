@@ -15,6 +15,7 @@ export type Payment = {
   amountMinor: number;
   currency?: string;
   providerOrderId?: string;
+  providerPaymentId?: string;
   checkoutUrl?: string;
   metadata?: {
     keyId?: string;
@@ -35,10 +36,12 @@ export type Payment = {
     orderNumber?: string;
     utr?: string;
     hasScreenshot?: boolean;
+    payuAction?: string;
+    payuFields?: Record<string, string>;
   };
 };
 
-export type PaymentCompletion = "completed" | "upi";
+export type PaymentCompletion = "completed" | "upi" | "redirect";
 
 export function loadRazorpay() {
   return new Promise<void>((resolve, reject) => {
@@ -71,6 +74,20 @@ export function loadRazorpay() {
 export async function completePayment(payment: Payment): Promise<PaymentCompletion> {
   if (payment.provider === "UPI_QR") {
     return "upi";
+  }
+
+  if (payment.provider === "PAYU") {
+    const fields = payment.metadata?.payuFields;
+    const action = payment.metadata?.payuAction;
+    if (fields && action) {
+      postPayuForm(action, fields);
+      return "redirect";
+    }
+    if (payment.checkoutUrl) {
+      window.location.assign(payment.checkoutUrl);
+      return "redirect";
+    }
+    throw new Error("PayU session is missing checkout fields");
   }
 
   if (payment.provider === "MOCK") {
@@ -149,3 +166,19 @@ export async function listAddresses() {
 }
 
 export { getApiBase };
+
+function postPayuForm(action: string, fields: Record<string, string>) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = action;
+  form.acceptCharset = "UTF-8";
+  for (const [name, value] of Object.entries(fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
+}

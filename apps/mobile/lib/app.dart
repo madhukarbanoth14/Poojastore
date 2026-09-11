@@ -17,6 +17,7 @@ import 'features/marketplace/presentation/cart_screen.dart';
 import 'features/marketplace/presentation/checkout_screen.dart';
 import 'features/marketplace/presentation/festival_screen.dart';
 import 'features/marketplace/presentation/kit_detail_screen.dart';
+import 'features/marketplace/presentation/kit_extras_screen.dart';
 import 'features/marketplace/presentation/samagri_scan_screen.dart';
 import 'features/marketplace/presentation/poojari_samagri_screens.dart';
 import 'features/marketplace/presentation/pooja_guides_screen.dart';
@@ -36,12 +37,9 @@ import 'features/kids/presentation/kids_quiz_screen.dart';
 import 'features/kids/presentation/kids_story_screen.dart';
 import 'features/priests/presentation/booking_confirm_screen.dart';
 import 'features/priests/presentation/bookings_screen.dart';
-import 'features/priests/presentation/booking_screen.dart';
-import 'features/priests/presentation/priest_detail_screen.dart';
 import 'features/priests/presentation/priests_list_screen.dart';
 import 'features/priests/presentation/poojari_apply_screen.dart';
 import 'features/priests/presentation/poojari_home_screen.dart';
-import 'features/priests/presentation/video_call_screen.dart';
 import 'features/guides/presentation/guides_hub_screen.dart';
 import 'features/guides/presentation/prasad_detail_screen.dart';
 import 'features/guides/presentation/vrat_detail_screen.dart';
@@ -158,6 +156,14 @@ final _routerProvider = Provider<GoRouter>((ref) {
         redirect: (context, state) => '/shop',
       ),
       GoRoute(
+        path: '/kits/:slug/extras',
+        builder: (_, state) => KitExtrasScreen(
+          slug: state.pathParameters['slug']!,
+          buyNow: state.uri.queryParameters['intent'] != 'cart',
+          qty: int.tryParse(state.uri.queryParameters['qty'] ?? '') ?? 1,
+        ),
+      ),
+      GoRoute(
         path: '/kits/:slug',
         builder: (_, state) =>
             KitDetailScreen(slug: state.pathParameters['slug']!),
@@ -191,7 +197,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => OrderConfirmScreen(
           orderId: state.uri.queryParameters['id'] ?? '',
           amount: state.uri.queryParameters['amount'] ?? '₹0',
-          slot: state.uri.queryParameters['slot'] ?? 'Today, 6–8 PM',
+          slot: state.uri.queryParameters['slot'] ?? 'Within 24 hours',
           pendingUpi: state.uri.queryParameters['pending'] == '1',
         ),
       ),
@@ -247,25 +253,9 @@ final _routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) =>
             KidsQuizScreen(slug: state.pathParameters['slug']!),
       ),
-      GoRoute(
-        path: '/priests/:slug',
-        builder: (_, state) =>
-            PriestDetailScreen(slug: state.pathParameters['slug']!),
-      ),
-      GoRoute(
-        path: '/priests/:slug/book',
-        builder: (_, state) => BookingScreen(
-          slug: state.pathParameters['slug']!,
-          mode: state.uri.queryParameters['mode'] ?? 'home',
-        ),
-      ),
-      GoRoute(
-        path: '/priests/:slug/video',
-        builder: (_, state) => VideoCallScreen(
-          slug: state.pathParameters['slug']!,
-          name: state.uri.queryParameters['name'] ?? 'Panditji',
-        ),
-      ),
+      GoRoute(path: '/priests/:slug', redirect: (_, __) => '/priests'),
+      GoRoute(path: '/priests/:slug/book', redirect: (_, __) => '/priests'),
+      GoRoute(path: '/priests/:slug/video', redirect: (_, __) => '/priests'),
       GoRoute(path: '/poojari', builder: (_, __) => const PoojariHomeScreen()),
       GoRoute(
         path: '/poojari/apply',

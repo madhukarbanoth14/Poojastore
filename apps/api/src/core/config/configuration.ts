@@ -86,6 +86,18 @@ export default () => ({
       payeeName: process.env.UPI_PAYEE_NAME ?? 'Pavitra Seva',
       qrImageUrl: process.env.UPI_QR_IMAGE_URL ?? '',
     },
+    payu: {
+      merchantKey: process.env.PAYU_MERCHANT_KEY ?? '',
+      merchantSalt: process.env.PAYU_MERCHANT_SALT ?? '',
+      clientId: process.env.PAYU_CLIENT_ID ?? '',
+      clientSecret: process.env.PAYU_CLIENT_SECRET ?? '',
+      mode: process.env.PAYU_MODE ?? 'test',
+    },
+    webBaseUrl:
+      process.env.PUBLIC_WEB_BASE_URL ??
+      (process.env.NODE_ENV === 'production'
+        ? 'https://pavitraseva.in'
+        : 'http://localhost:3001'),
   },
   social: {
     requireIdToken: process.env.SOCIAL_AUTH_REQUIRE_ID_TOKEN === 'true',

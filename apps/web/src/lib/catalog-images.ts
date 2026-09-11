@@ -154,6 +154,12 @@ const SAMAGRI_FILES = new Set([
 ]);
 
 const SAMAGRI_ALIASES: Record<string, string> = {
+  "samagri-small-diyas": "samagri-akhanda-deepam",
+  "samagri-copper-pot": "samagri-asanam",
+  "samagri-dhoti": "samagri-puja-vastras",
+  "ragi chembu (copper pot)": "samagri-asanam",
+  "dhoti 9×5": "samagri-puja-vastras",
+  "dhoti 9x5": "samagri-puja-vastras",
   "samagri-sandal-paste": "samagri-gandham",
   "samagri-prasadam-leaf-cups": "samagri-leaf-cups",
   "samagri-durva": "samagri-isthari-leaves",

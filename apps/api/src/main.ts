@@ -63,13 +63,19 @@ async function bootstrap() {
     config.get<string>('payments.razorpay.keyId') ||
     process.env.RAZORPAY_KEY_ID ||
     '';
+  const payuKey =
+    config.get<string>('payments.payu.merchantKey') ||
+    process.env.PAYU_MERCHANT_KEY ||
+    '';
   const upiVpa =
     config.get<string>('payments.upi.vpa') || process.env.UPI_VPA || '';
   const upiQr =
     config.get<string>('payments.upi.qrImageUrl') ||
     process.env.UPI_QR_IMAGE_URL ||
     '';
-  if (upiVpa || upiQr) {
+  if (payuKey) {
+    logger.log('Payments: PayU ready for India checkout');
+  } else if (upiVpa || upiQr) {
     logger.log('Payments: company UPI QR ready (India checkout skips Razorpay)');
   } else if (razorpayKey) {
     logger.log(

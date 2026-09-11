@@ -214,6 +214,7 @@ export type Order = {
   subtotalMinor?: number;
   shippingMinor?: number;
   taxMinor?: number;
+  discountMinor?: number;
   currency: string;
   createdAt: string;
   deliverySlot?: string | null;
@@ -226,6 +227,10 @@ export type Order = {
     quantity: number;
     unitPriceMinor?: number;
     totalMinor?: number;
+    metadata?: {
+      selectedItems?: string[];
+      fulfillment?: string;
+    };
   }[];
   shippingAddress?: Address;
   payments?: {
@@ -242,6 +247,7 @@ export type Order = {
     };
   }[];
   tracking?: OrderTracking;
+  contactPhoneE164?: string | null;
   user?: {
     id?: string;
     fullName?: string | null;

@@ -1,14 +1,6 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsInt,
-  IsOptional,
-  IsString,
-  Matches,
-  Max,
-  Min,
-  ValidateIf,
-} from 'class-validator';
+import { IsInt, IsString, Matches, Max, Min } from 'class-validator';
 
 export class SubmitUpiDto {
   @ApiProperty({
@@ -32,9 +24,9 @@ export class SubmitUpiDto {
   @Max(50_000_000)
   amountPaidMinor!: number;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @ValidateIf((_, value) => value != null && String(value).trim() !== '')
+  @ApiProperty({
+    description: 'Payment success screenshot as a data URL or base64 (required)',
+  })
   @IsString()
-  screenshotBase64?: string;
+  screenshotBase64!: string;
 }

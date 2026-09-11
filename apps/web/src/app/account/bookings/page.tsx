@@ -95,7 +95,7 @@ export default function BookingsPage() {
             </div>
             <div className="mt-3 flex gap-3 text-sm font-semibold">
               {b.priest?.slug ? (
-                <Link href={`/priests/${b.priest.slug}`} className="text-maroon">
+                <Link href="/priests" className="text-maroon">
                   {ac(locale, "priests")}
                 </Link>
               ) : null}

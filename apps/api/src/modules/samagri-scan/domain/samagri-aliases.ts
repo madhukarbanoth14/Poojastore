@@ -30,6 +30,8 @@ export const SAMAGRI_ALIASES: Record<string, string[]> = {
   'samagri-blouse-pieces': ['blouse piece', 'blouse pieces', 'jacket piece', 'జాకెట్'],
   'samagri-purnahuti': ['purnahuti', 'purnahutti', 'పూర్ణాహుతి'],
   'samagri-isthari-leaves': ['isthari', 'durva leaves', 'ఇస్తరి ఆకులు'],
+  'samagri-copper-pot': ['ragi chembu', 'chembu', 'copper pot', 'రాగి చెంబు'],
+  'samagri-small-diyas': ['matti depalu', 'matti deepalu', 'clay lamps', 'మట్టి దీపాలు'],
 };
 
 export const ENGLISH_CANONICAL_ALIASES: Record<string, string> = {

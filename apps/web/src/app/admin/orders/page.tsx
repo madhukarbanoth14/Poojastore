@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { clientFetch } from "@/lib/client";
-import { formatMoney, formatWhen } from "@/lib/format";
+import { formatMobile, formatMoney, formatWhen } from "@/lib/format";
 import { itemName, orderStatusLabel, statusTone } from "@/lib/order-display";
 
 type AdminOrder = {
@@ -15,6 +15,7 @@ type AdminOrder = {
   currency: string;
   createdAt: string;
   returnStatus?: string;
+  contactPhoneE164?: string | null;
   user?: { fullName?: string | null; phoneE164?: string; email?: string | null };
   items?: { productName?: string; name?: string; quantity: number }[];
   shippingAddress?: { city: string; state: string };
@@ -120,7 +121,9 @@ function OrdersBoard() {
                   {firstProductName(order)}
                 </td>
                 <td className="px-4 py-3 font-semibold text-maroon">{order.user?.fullName || "—"}</td>
-                <td className="px-4 py-3 whitespace-nowrap">{order.user?.phoneE164 || "—"}</td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {formatMobile(order.contactPhoneE164, order.user?.phoneE164)}
+                </td>
                 <td className="px-4 py-3 text-right font-semibold whitespace-nowrap">
                   {formatMoney(order.totalMinor, order.currency)}
                 </td>

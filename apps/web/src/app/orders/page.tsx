@@ -8,9 +8,11 @@ import { clientFetch } from "@/lib/client";
 import { formatMoney, formatWhen } from "@/lib/format";
 import {
   currentTrackingStep,
-  orderStatusLabel,
-  statusTone,
   summarizeOrder,
+  summaryStatusLabel,
+  summaryStatusTone,
+  trackingDisplayLabel,
+  visibleTrackingSteps,
 } from "@/lib/order-display";
 import type { Order } from "@/lib/types";
 
@@ -86,7 +88,7 @@ export default function OrdersPage() {
       <div className="mt-6 space-y-3">
         {visible.map((order) => {
           const summary = summarizeOrder(order);
-          const step = currentTrackingStep(order.tracking?.steps);
+          const step = currentTrackingStep(visibleTrackingSteps(order));
           return (
             <Link
               key={order.id}
@@ -94,15 +96,15 @@ export default function OrdersPage() {
               className="card-temple block p-4 transition hover:border-gold"
             >
               <div className="flex items-start justify-between gap-3">
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide uppercase ${statusTone(order.status)}`}>
-                  {orderStatusLabel(order.status)}
+                <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide uppercase ${summaryStatusTone(order)}`}>
+                  {summaryStatusLabel(order)}
                 </span>
                 <span className="price text-lg">{formatMoney(order.totalMinor, order.currency)}</span>
               </div>
               <p className="mt-3 truncate font-display text-xl text-maroon">{summary.title}</p>
               <p className="mt-1 text-sm text-muted">
                 {summary.subtitle}
-                {step ? ` · ${step.label}` : ""}
+                {step ? ` · ${trackingDisplayLabel(step)}` : ""}
               </p>
               <div className="mt-3 flex items-center justify-between text-xs text-muted">
                 <span>

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/catalog/catalog_l10n.dart';
 import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/kit_item_taxonomy.dart';
 import '../../../core/catalog/samagri_catalog.dart';
-import '../../../core/network/fallback_dns.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
@@ -155,42 +153,8 @@ class _KitShopViewState extends ConsumerState<KitShopView> {
   }
 
   Future<void> _addKit() async {
-    final ok = await ensureLoggedIn(
-      context,
-      ref,
-      message: context.l10n.signInToAddCart,
-    );
-    if (!ok || !mounted) return;
-    setState(() => _adding = true);
-    try {
-      var match = _product;
-      if (match == null || match['id'] == null) {
-        try {
-          match = await ref.read(marketplaceApiProvider).kitDetail(_list.kitSlug);
-          if (match.isNotEmpty) _products[_list.kitSlug] = match;
-        } catch (_) {}
-      }
-      final id = match?['id'] as String?;
-      if (id == null) {
-        if (mounted) context.push('/kits/${_list.kitSlug}');
-        return;
-      }
-      await ref.read(marketplaceApiProvider).addToCart(
-            id,
-            selectedItemKeys:
-                _chosenOptional.isEmpty ? null : _selectedKeys,
-            replace: true,
-          );
-      if (mounted) context.push('/checkout');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(friendlyNetworkError(e))),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _adding = false);
-    }
+    if (!mounted) return;
+    context.push('/kits/${_list.kitSlug}/extras?intent=buy');
   }
 
   @override
@@ -229,7 +193,7 @@ class _KitShopViewState extends ConsumerState<KitShopView> {
                       priceMinor: _priceMinor,
                       mrpMinor: _mrpMinor,
                       adding: _adding,
-                      addLabel: te ? 'ఇప్పుడే కొనండి' : 'Buy Now',
+                      addLabel: te ? 'కొనుగోలుకు కొనసాగించండి' : 'Continue to Buy',
                       viewLabel: te ? 'అన్ని వస్తువులు' : 'View All Items',
                       onAdd: _adding ? null : _addKit,
                       onViewItems: _scrollToItems,
@@ -240,7 +204,7 @@ class _KitShopViewState extends ConsumerState<KitShopView> {
                       child: _ItemsSection(
                         te: te,
                         items: _visibleItems,
-                        optionalItems: _optionalItems,
+                        optionalItems: const [],
                         includedCount: _includedCount,
                         categories: _availableCategories,
                         category: _category,
@@ -1184,7 +1148,7 @@ class _StickyBar extends StatelessWidget {
                 child: Text(
                   adding
                       ? context.l10n.processing
-                      : (te ? 'ఇప్పుడే కొనండి' : 'Buy Now'),
+                      : (te ? 'కొనుగోలుకు కొనసాగించండి' : 'Continue to Buy'),
                 ),
               ),
             ],

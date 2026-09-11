@@ -110,15 +110,24 @@ export class AdminOpsService {
     const page = params.page ?? 1;
     const pageSize = params.pageSize ?? 20;
     const q = params.q?.trim();
+    const phoneDigits = q?.replace(/\D/g, '') ?? '';
+    const phoneSearch = phoneDigits.length >= 6 ? phoneDigits : null;
     const where: Prisma.OrderWhereInput = {
       ...orderStatusWhere(params.status),
       ...(q
         ? {
             OR: [
               { orderNumber: { contains: q, mode: 'insensitive' } },
+              { contactPhoneE164: { contains: q } },
               { user: { fullName: { contains: q, mode: 'insensitive' } } },
               { user: { phoneE164: { contains: q } } },
               { user: { email: { contains: q, mode: 'insensitive' } } },
+              ...(phoneSearch
+                ? [
+                    { contactPhoneE164: { contains: phoneSearch } },
+                    { user: { phoneE164: { contains: phoneSearch } } },
+                  ]
+                : []),
             ],
           }
         : {}),

@@ -1,8 +1,11 @@
+import { displayableMobile } from '../../auth/domain/phone';
+
 export function formatVendorDispatchSms(order: {
   orderNumber: string;
   deliverySlot?: string | null;
   totalMinor: number;
   currency: string;
+  contactPhoneE164?: string | null;
   user?: { fullName?: string | null; phoneE164?: string } | null;
   shippingAddress?: {
     line1: string;
@@ -15,10 +18,11 @@ export function formatVendorDispatchSms(order: {
 }) {
   const rupees = (order.totalMinor / 100).toFixed(order.currency === 'INR' ? 0 : 2);
   const money = order.currency === 'INR' ? `Rs ${rupees}` : `${order.currency} ${rupees}`;
-  const customer =
-    order.user?.fullName?.trim() ||
-    order.user?.phoneE164 ||
-    'Customer';
+  const phone = displayableMobile(
+    order.contactPhoneE164,
+    order.user?.phoneE164,
+  );
+  const customer = order.user?.fullName?.trim() || phone || 'Customer';
   const address = order.shippingAddress
     ? [
         order.shippingAddress.line1,
@@ -35,9 +39,9 @@ export function formatVendorDispatchSms(order: {
 
   return [
     `Pavitra Seva order ${order.orderNumber}`,
-    `Deliver to: ${customer}${order.user?.phoneE164 ? ` ${order.user.phoneE164}` : ''}`,
+    `Deliver to: ${customer}${phone ? ` ${phone}` : ''}`,
     `Address: ${address}`,
-    order.deliverySlot ? `Slot: ${order.deliverySlot}` : null,
+    order.deliverySlot ? `Delivery: ${order.deliverySlot}` : null,
     'Items:',
     ...lines,
     `Paid: ${money}`,

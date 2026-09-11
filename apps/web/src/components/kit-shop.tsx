@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
-import { ganeshKitItemsBySlug, ganeshSelectedKeys } from "@/lib/ganesh-samagri";
+import { ganeshKitItemsBySlug } from "@/lib/ganesh-samagri";
 import { samagriImage } from "@/lib/catalog-images";
 import { formatMoney } from "@/lib/format";
 import {
@@ -16,14 +16,13 @@ import {
   kitCategoryLabel,
   kitItemCategory,
   kitItemRole,
-  mergeKitOptionalOfferings,
   parseGaneshKitSlug,
   KIT_CATEGORY_ORDER,
-  KIT_OPTIONAL_OFFERINGS,
   type GaneshKitPlace,
   type GaneshKitSize,
   type KitItemCategoryId,
 } from "@/lib/kit-item-taxonomy";
+import { kitExtrasHref } from "@/lib/kit-optional-extras";
 import type { Locale, Product } from "@/lib/types";
 
 export type KitShopLine = {
@@ -94,7 +93,6 @@ export function KitShop({
 }) {
   const start = tabs.find((item) => item.id === initialTabId)?.id ?? tabs[0]?.id ?? "";
   const [tabId, setTabId] = useState(start);
-  const [chosenOptional, setChosenOptional] = useState<Set<string>>(new Set());
   const [category, setCategory] = useState<"all" | KitItemCategoryId>("all");
   const [preview, setPreview] = useState<KitShopLine | null>(null);
   const [ctaInView, setCtaInView] = useState(true);
@@ -110,20 +108,14 @@ export function KitShop({
     if (!tab) return [];
     const fromProduct = linesFromProduct(tab.product, locale, tab.id);
     const base = fromProduct.length ? fromProduct : (tab.fallbackItems ?? []);
-    return mergeKitOptionalOfferings(
-      base,
-      KIT_OPTIONAL_OFFERINGS.map((extra) => ({
-        key: extra.key,
-        name: locale === "te" ? extra.nameTe : extra.nameEn,
-        quantity: 1,
-        optional: true,
-      })),
+    return base.filter(
+      (item) => !item.optional && item.key !== "samagri-copper-pot",
     );
   }, [tab, locale]);
 
-  const required = items.filter((item) => !item.optional);
-  const optionalItems = items.filter((item) => item.optional);
+  const required = items;
   const includedCount = required.length;
+  const extrasHref = tab?.product ? kitExtrasHref(tab.product.slug, "buy") : null;
   const availableCategories = useMemo(() => {
     const present = new Set(required.map((item) => kitItemCategory(item.key)));
     return KIT_CATEGORY_ORDER.filter((id) => present.has(id));
@@ -133,18 +125,6 @@ export function KitShop({
     if (category === "all") return required;
     return required.filter((item) => kitItemCategory(item.key) === category);
   }, [required, category]);
-
-  const selectedKeys = useMemo(() => {
-    if (!tab) return [];
-    const slug = tab.product?.slug ?? tab.id;
-    const ganeshItems = ganeshKitItemsBySlug[slug];
-    if (ganeshItems) {
-      return ganeshSelectedKeys(ganeshItems, chosenOptional);
-    }
-    return items
-      .filter((item) => !item.optional || chosenOptional.has(item.key))
-      .map((item) => item.key);
-  }, [tab, items, chosenOptional]);
 
   const isEcoKit = Boolean(ganeshKitItemsBySlug[tab?.id ?? ""] && tab?.id !== "ganesh-puja-homam-samagri");
   const price = tab?.product ? formatMoney(tab.product.priceMinor, tab.product.currency) : null;
@@ -161,19 +141,9 @@ export function KitShop({
 
   function switchTab(id: string) {
     setTabId(id);
-    setChosenOptional(new Set());
     setCategory("all");
     setPreview(null);
     setGridReady(false);
-  }
-
-  function toggleOptional(key: string) {
-    setChosenOptional((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
   }
 
   function scrollToItems() {
@@ -329,14 +299,17 @@ export function KitShop({
           ) : null}
 
           <div ref={ctaRef} className="mt-5 max-w-md space-y-3">
-            {tab.product ? (
+            {tab.product && extrasHref ? (
+              <Link href={extrasHref} className="btn-orange w-full justify-center">
+                {locale === "te" ? "కొనుగోలుకు కొనసాగించండి" : "Continue to Buy"}
+              </Link>
+            ) : tab.product ? (
               <AddToCartButton
                 productId={tab.product.id}
-                selectedItemKeys={chosenOptional.size ? selectedKeys : undefined}
                 buyNow
                 redirectTo="/checkout"
                 className="w-full justify-center"
-                label={locale === "te" ? "ఇప్పుడే కొనండి" : "Buy Now"}
+                label={locale === "te" ? "కొనుగోలుకు కొనసాగించండి" : "Continue to Buy"}
               />
             ) : (
               <p className="text-sm text-muted">
@@ -401,31 +374,6 @@ export function KitShop({
             ))}
           </ul>
       </section>
-
-      {optionalItems.length ? (
-        <section id="kit-optional-items" className="mt-12 scroll-mt-28">
-          <h2 className="font-display text-2xl text-maroon md:text-[1.85rem]">
-            {locale === "te" ? "ఐచ్ఛిక వస్తువులు" : "Optional extras"}
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            {locale === "te"
-              ? "ఇవి కిట్‌లో ఉండవు — కావాలంటే టిక్ చేయండి."
-              : "Not packed unless you select them."}
-          </p>
-          <ul className={`kit-item-grid mt-5 ${gridReady ? "kit-item-grid-ready" : ""}`}>
-            {optionalItems.map((item) => (
-              <KitItemCard
-                key={`${tab.id}-opt-${item.key}`}
-                item={item}
-                locale={locale}
-                selected={chosenOptional.has(item.key)}
-                onToggleOptional={() => toggleOptional(item.key)}
-                onOpen={() => setPreview(item)}
-              />
-            ))}
-          </ul>
-        </section>
-      ) : null}
 
       {tab.about || tab.speciality || tab.steps.length || tab.processDetail?.length ? (
         <section className="mt-12 space-y-8">
@@ -505,15 +453,20 @@ export function KitShop({
               {mrp ? <span className="ml-2 text-xs font-normal text-muted line-through">{mrp}</span> : null}
             </p>
           </div>
-          <AddToCartButton
-            productId={tab.product.id}
-            selectedItemKeys={chosenOptional.size ? selectedKeys : undefined}
-            buyNow
-            redirectTo="/checkout"
-            compact
-            className="btn-orange-sm"
-            label={locale === "te" ? "ఇప్పుడే కొనండి" : "Buy Now"}
-          />
+          {extrasHref ? (
+            <Link href={extrasHref} className="btn-orange-sm">
+              {locale === "te" ? "కొనుగోలుకు కొనసాగించండి" : "Continue to Buy"}
+            </Link>
+          ) : (
+            <AddToCartButton
+              productId={tab.product.id}
+              buyNow
+              redirectTo="/checkout"
+              compact
+              className="btn-orange-sm"
+              label={locale === "te" ? "కొనుగోలుకు కొనసాగించండి" : "Continue to Buy"}
+            />
+          )}
         </div>
       ) : null}
 

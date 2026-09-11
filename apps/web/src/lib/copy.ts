@@ -21,6 +21,15 @@ const dict = {
   cart: { en: "Cart", te: "కార్ట్" },
   shopKits: { en: "Shop Pooja kits", te: "పూజా కిట్‌లు చూడండి" },
   bookPriest: { en: "Book a priest", te: "పూజారిని బుక్ చేయండి" },
+  comingSoon: { en: "Coming soon", te: "త్వరలో" },
+  priestComingSoonTitle: {
+    en: "Poojari booking is on its way",
+    te: "పూజారి బుకింగ్ త్వరలో",
+  },
+  priestComingSoonBody: {
+    en: "We are preparing verified poojaris for home visits and online consultations. Shop a kit today — booking opens shortly.",
+    te: "ధృవీకరించిన పూజారులను ఇంటి సేవ మరియు ఆన్‌లైన్ సంప్రదింపుల కోసం సిద్ధం చేస్తున్నాం. ఇప్పుడు కిట్‌లు కొనండి — బుకింగ్ త్వరలో ప్రారంభమవుతుంది.",
+  },
   todayPanchang: { en: "Today's Panchangam", te: "నేటి పంచాంగం" },
   rasiPhalalu: { en: "Today's Rasi Phalalu", te: "నేటి రాశి ఫలాలు" },
   spiritualGuidance: { en: "Today's spiritual guidance", te: "నేటి ఆధ్యాత్మిక మార్గదర్శకం" },

@@ -3,9 +3,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../features/marketplace/data/marketplace_api.dart';
 import 'razorpay_checkout.dart';
 
-enum PaymentCompletion { completed, upi }
+enum PaymentCompletion { completed, upi, redirect }
 
-/// Completes MOCK / Razorpay / Stripe / company UPI QR payment from checkout APIs.
+/// Completes MOCK / Razorpay / Stripe / PayU / company UPI QR payment from checkout APIs.
 Future<PaymentCompletion> completePayment({
   required MarketplaceApi api,
   required Map<String, dynamic> payment,
@@ -14,6 +14,15 @@ Future<PaymentCompletion> completePayment({
 
   if (provider == 'UPI_QR') {
     return PaymentCompletion.upi;
+  }
+
+  if (provider == 'PAYU') {
+    final url = payment['checkoutUrl'] as String?;
+    if (url == null || url.isEmpty) {
+      throw StateError('PayU checkout URL is missing');
+    }
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    return PaymentCompletion.redirect;
   }
 
   if (provider == 'MOCK') {

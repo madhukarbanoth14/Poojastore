@@ -375,6 +375,12 @@ export class ConfirmPaymentService {
 
     assertPaidAmountMatches(input.amountPaidMinor, payment.amountMinor);
 
+    if (!screenshot) {
+      throw new BadRequestException(
+        'Upload the payment success screenshot from PhonePe / Google Pay / Paytm.',
+      );
+    }
+
     const duplicate = await this.prisma.payment.findFirst({
       where: {
         providerPaymentId: utr,

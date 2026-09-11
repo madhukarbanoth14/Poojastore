@@ -7,15 +7,13 @@ class OrderConfirmScreen extends StatelessWidget {
     super.key,
     this.orderId = '',
     this.amount = '₹0',
-    this.slot = 'Today, 6–8 PM',
-    this.eta = 'today, 7:00 PM',
+    this.slot = 'Within 24 hours',
     this.pendingUpi = false,
   });
 
   final String orderId;
   final String amount;
   final String slot;
-  final String eta;
   final bool pendingUpi;
 
   @override
@@ -24,11 +22,11 @@ class OrderConfirmScreen extends StatelessWidget {
       title: pendingUpi ? 'Order placed' : 'Order Confirmed!',
       subtitle: pendingUpi
           ? 'We recorded your UPI reference. Packing starts after we confirm the credit on our bank statement.'
-          : 'Payment received. Your order will be packed and delivered by $eta.',
+          : 'Payment received. Your order will be packed and delivered within 24 hours.',
       rows: [
         ('Order ID', orderId),
         (pendingUpi ? 'Amount' : 'Amount Paid', amount),
-        ('Delivery Slot', slot),
+        ('Delivery', slot),
       ],
       primaryLabel: 'Track delivery',
       onPrimary: orderId.isEmpty

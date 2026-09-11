@@ -301,6 +301,7 @@ export class OrderLifecycleService {
       deliverySlot: order.deliverySlot,
       totalMinor: order.totalMinor,
       currency: order.currency,
+      contactPhoneE164: order.contactPhoneE164,
       user: order.user,
       shippingAddress: order.shippingAddress,
       items: order.items,

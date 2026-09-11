@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { clientFetch } from "@/lib/client";
-import { formatWhen } from "@/lib/format";
+import { formatMobile, formatWhen } from "@/lib/format";
 
 type Customer = {
   id: string;
@@ -138,12 +138,16 @@ export default function AdminCustomersPage() {
               <tr key={row.id} className="border-b border-divider/70 last:border-0">
                 <td className="px-4 py-3 font-semibold text-maroon">{row.fullName || "—"}</td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <Link
-                    href={`/admin/orders?q=${encodeURIComponent(row.phoneE164)}`}
-                    className="text-maroon underline decoration-gold/60 underline-offset-2"
-                  >
-                    {row.phoneE164}
-                  </Link>
+                  {formatMobile(row.phoneE164) === "Not on file" ? (
+                    <span className="text-muted">Not on file</span>
+                  ) : (
+                    <Link
+                      href={`/admin/orders?q=${encodeURIComponent(row.phoneE164)}`}
+                      className="text-maroon underline decoration-gold/60 underline-offset-2"
+                    >
+                      {formatMobile(row.phoneE164)}
+                    </Link>
+                  )}
                 </td>
                 <td className="max-w-[180px] truncate px-4 py-3 text-muted">{row.email || "—"}</td>
                 <td className="px-4 py-3 text-muted">

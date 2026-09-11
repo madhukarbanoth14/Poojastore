@@ -10,11 +10,7 @@ import '../../../l10n/l10n.dart';
 import '../../auth/presentation/auth_controller.dart';
 import 'kits_screen.dart';
 
-const _slots = [
-  'Today, 6–8 PM',
-  'Tomorrow, 9–11 AM',
-  'Tomorrow, 4–6 PM',
-];
+const _deliverySlot = 'Within 24 hours';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -27,7 +23,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   bool _loading = false;
   String? _error;
   String? _selectedAddressId;
-  int _slotIdx = 0;
   List<Map<String, dynamic>> _addresses = [];
   Map<String, dynamic>? _cart;
 
@@ -92,7 +87,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           context.go(
             '/order-confirm?id=${Uri.encodeComponent(id)}'
             '&amount=${Uri.encodeComponent(formatInr(total))}'
-            '&slot=${Uri.encodeComponent(_slots[_slotIdx])}'
+            '&slot=${Uri.encodeComponent(_deliverySlot)}'
             '&pending=1',
           );
           return;
@@ -128,6 +123,37 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Future<void> _pay() async {
+    final items = _cart?['subtotalMinor'] as int? ?? 0;
+    final shipping = items >= 100000 ? 0 : 4900;
+    if (shipping > 0) {
+      final go = await showDialog<bool>(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Delivery fee of ₹49'),
+            content: Text(
+              'This order is under ₹1,000, so a delivery fee of ₹49 applies.\n\n'
+              'Kit: ${formatInr(items)}\n'
+              'Delivery fee: ${formatInr(shipping)}\n'
+              'Total to pay: ${formatInr(items + shipping)}\n\n'
+              'Free delivery starts at ₹1,000.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Go back'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Continue to pay'),
+              ),
+            ],
+          );
+        },
+      );
+      if (go != true) return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -137,12 +163,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (phone.isEmpty) {
         throw StateError('Enter your mobile number for delivery updates.');
       }
-      await ref.read(authControllerProvider.notifier).updateProfile(phone: phone);
       await _ensureAddress();
       final api = ref.read(marketplaceApiProvider);
       final result = await api.checkout(
         _selectedAddressId!,
-        deliverySlot: _slots[_slotIdx],
+        deliverySlot: _deliverySlot,
+        contactPhone: phone,
       );
       final payment = result['payment'] as Map<String, dynamic>;
       if (!mounted) return;
@@ -156,11 +182,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final id = order?['id'] as String? ?? '';
       final total = order?['totalMinor'] as int? ??
           (_cart?['subtotalMinor'] as int? ?? 0);
-      final pending = payment['provider'] == 'UPI_QR';
+      final pending =
+          payment['provider'] == 'UPI_QR' || payment['provider'] == 'PAYU';
       context.go(
         '/order-confirm?id=${Uri.encodeComponent(id)}'
         '&amount=${Uri.encodeComponent(formatInr(total))}'
-        '&slot=${Uri.encodeComponent(_slots[_slotIdx])}'
+        '&slot=${Uri.encodeComponent(_deliverySlot)}'
         '${pending ? '&pending=1' : ''}',
       );
     } catch (e) {
@@ -235,7 +262,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
           const SizedBox(height: 16),
           const Text(
-            'Delivery Slot',
+            'Delivery',
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 14,
@@ -243,15 +270,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: List.generate(
-              _slots.length,
-              (i) => SelectChip(
-                label: _slots[i],
-                selected: _slotIdx == i,
-                onTap: () => setState(() => _slotIdx = i),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              color: AppColors.maroonDeep,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              _deliverySlot,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
           ),

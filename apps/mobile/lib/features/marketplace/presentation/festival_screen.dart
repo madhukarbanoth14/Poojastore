@@ -3,14 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/catalog/catalog_l10n.dart';
 import '../../../l10n/l10n.dart';
-import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/design_catalog.dart';
-import '../../../core/network/fallback_dns.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import 'kit_shop.dart';
-import 'kits_screen.dart';
 
 class FestivalScreen extends ConsumerStatefulWidget {
   const FestivalScreen({super.key, required this.festivalId});
@@ -203,66 +200,12 @@ class _FestivalScreenState extends ConsumerState<FestivalScreen> {
   }
 
   Future<void> _addKit(String? slug) async {
-    final ok = await ensureLoggedIn(
-      context,
-      ref,
-      message: context.l10n.signInToAddCart,
-    );
-    if (!ok || !mounted) return;
-    try {
-      final guide = festivalById(widget.festivalId);
-      Map<String, dynamic>? match;
-      if (slug != null) {
-        try {
-          match = await ref.read(marketplaceApiProvider).kitDetail(slug);
-        } catch (_) {}
-      }
-      if (match == null) {
-        final catalog = [
-          ...await ref.read(marketplaceApiProvider).listFestivalKits(),
-          ...await ref.read(marketplaceApiProvider).listKits(),
-        ];
-        if (slug != null) {
-          for (final raw in catalog) {
-            final k = Map<String, dynamic>.from(raw as Map);
-            if (k['slug'] == slug) {
-              match = k;
-              break;
-            }
-          }
-        } else {
-          for (final raw in catalog) {
-            final k = Map<String, dynamic>.from(raw as Map);
-            final n = (k['name'] as String? ?? '').toLowerCase();
-            if (n.contains(widget.festivalId) ||
-                n.contains(guide.name.split(' ').first.toLowerCase())) {
-              match = k;
-              break;
-            }
-          }
-          if (match == null && catalog.isNotEmpty) {
-            match = Map<String, dynamic>.from(catalog.first as Map);
-          }
-        }
-      }
-      if (match == null) {
-        if (!mounted) return;
-        if (slug != null) {
-          context.push('/kits/$slug');
-        } else {
-          context.go('/shop');
-        }
-        return;
-      }
-      await ref.read(marketplaceApiProvider).addToCart(match['id'] as String);
-      if (mounted) context.push('/cart');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(friendlyNetworkError(e))),
-        );
-      }
+    if (!mounted) return;
+    if (slug != null) {
+      context.push('/kits/$slug');
+      return;
     }
+    context.go('/shop');
   }
 }
 

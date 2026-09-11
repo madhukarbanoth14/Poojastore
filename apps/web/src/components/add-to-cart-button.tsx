@@ -31,9 +31,9 @@ export function AddToCartButton({
 
   async function add() {
     if (!user) {
-      router.push(
-        `/login?next=${encodeURIComponent(window.location.pathname)}`,
-      );
+        router.push(
+          `/login?next=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`,
+        );
       return;
     }
     setBusy(true);

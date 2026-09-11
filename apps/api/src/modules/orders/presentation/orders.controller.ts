@@ -42,7 +42,9 @@ export class OrdersController {
         familyAddressId: dto.familyAddressId,
         recipientName: dto.recipientName,
         recipientPhone: dto.recipientPhone,
+        familyRelationship: dto.familyRelationship,
         promoCode: dto.promoCode,
+        contactPhone: dto.contactPhone,
       },
     );
     return { success: true, data };

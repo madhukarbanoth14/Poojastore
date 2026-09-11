@@ -4,16 +4,32 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import {
+  CheckoutDeliveryStep,
+  checkoutOrderMath,
+  familyFormComplete,
+  type FamilyFormState,
+} from "@/components/checkout-delivery-step";
 import { clientFetch } from "@/lib/client";
 import { formatMoney } from "@/lib/format";
 import { completePayment, listAddresses, loadRazorpay, type Payment } from "@/lib/payments";
 import { UpiPayPanel } from "@/components/upi-pay-panel";
 import type { Address, Cart } from "@/lib/types";
 
-const SLOTS = ["Today, 6–8 PM", "Tomorrow, 9–11 AM", "Tomorrow, 4–6 PM"];
+const DELIVERY_SLOT = "Within 24 hours";
 
 type Intent = "self" | "family" | "refer";
-type Step = 1 | 2 | 3 | 4;
+type Step = 2 | 3 | 4;
+
+const EMPTY_FAMILY: FamilyFormState = {
+  name: "",
+  phone: "",
+  line1: "",
+  city: "",
+  state: "",
+  postal: "",
+  relationship: "",
+};
 
 function toE164(raw: string) {
   const digits = raw.replace(/\D/g, "");
@@ -23,29 +39,32 @@ function toE164(raw: string) {
   return "";
 }
 
-/** Real IN mobiles start 6–9. Google/Apple social accounts use a +915… placeholder. */
 function isRealInMobile(phoneE164: string | null | undefined) {
   return Boolean(phoneE164 && /^\+91[6-9]\d{9}$/.test(phoneE164));
 }
 
 function StepDots({ step, lastLabel }: { step: Step; lastLabel: string }) {
-  const labels = ["Kits", "Who", "Details", lastLabel];
+  const labels = ["Kit", "Delivery", "Details", lastLabel];
+  const map: Step[] = [2, 2, 3, 4];
   return (
     <ol className="mt-6 flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
       {labels.map((label, i) => {
-        const n = (i + 1) as Step;
-        const active = step === n;
-        const done = step > n;
+        const n = map[i]!;
+        const active = step === n && (i !== 0 || step === 2);
+        const done = i === 0 || step > n || (i === 1 && step > 2);
+        const highlight = i === 0 ? true : active || done;
         return (
           <li key={label} className="flex min-w-0 flex-1 items-center gap-2">
             <span
               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                active || done ? "bg-orange text-cream" : "border border-gold text-muted"
+                highlight ? "bg-orange text-cream" : "border border-gold text-muted"
               }`}
             >
-              {n}
+              {i + 1}
             </span>
-            <span className={`truncate ${active ? "text-maroon" : "text-muted"}`}>{label}</span>
+            <span className={`truncate ${active || i === 0 ? "text-maroon" : "text-muted"}`}>
+              {label}
+            </span>
             {i < labels.length - 1 ? <span className="hidden h-px flex-1 bg-divider sm:block" /> : null}
           </li>
         );
@@ -55,26 +74,26 @@ function StepDots({ step, lastLabel }: { step: Step; lastLabel: string }) {
 }
 
 function CheckoutPageInner() {
-  const { user, cart, ready, refreshCart, updateProfile } = useAuth();
+  const { user, cart, ready, refreshCart } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const resumePay = searchParams.get("resume") === "1";
-  const [step, setStep] = useState<Step>(1);
+  const payuFailed = searchParams.get("payu") === "failed";
+  const [step, setStep] = useState<Step>(2);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressId, setAddressId] = useState<string>("");
-  const [slot, setSlot] = useState(SLOTS[0]!);
-  const [intents, setIntents] = useState<Intent[]>(["self"]);
   const [line1, setLine1] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [postal, setPostal] = useState("");
   const [deliveryPhone, setDeliveryPhone] = useState("");
-  const [recipientName, setRecipientName] = useState("");
-  const [recipientPhone, setRecipientPhone] = useState("");
-  const [familyLine1, setFamilyLine1] = useState("");
-  const [familyCity, setFamilyCity] = useState("");
-  const [familyState, setFamilyState] = useState("");
-  const [familyPostal, setFamilyPostal] = useState("");
+  const [editingAddress, setEditingAddress] = useState(false);
+  const [familyFormOpen, setFamilyFormOpen] = useState(false);
+  const [familyAdded, setFamilyAdded] = useState(false);
+  const [family, setFamily] = useState<FamilyFormState>(EMPTY_FAMILY);
+  const [referOpen, setReferOpen] = useState(false);
+  const [referName, setReferName] = useState("");
+  const [referPhone, setReferPhone] = useState("");
   const [inviteSent, setInviteSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,10 +101,20 @@ function CheckoutPageInner() {
   const [promoOff, setPromoOff] = useState<number | null>(null);
   const [upiPayment, setUpiPayment] = useState<Payment | null>(null);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [confirmDeliveryFee, setConfirmDeliveryFee] = useState(false);
 
   const snapshot: Cart | null = cart;
-  const total = snapshot?.subtotalMinor ?? 0;
-  const kitName = snapshot?.items.map((item) => item.product.name).join(", ") || "this Pooja kit";
+  const includeFamily = familyAdded && familyFormComplete(family);
+  const intents: Intent[] = includeFamily ? ["self", "family"] : ["self"];
+  const math = checkoutOrderMath(snapshot, includeFamily);
+  const kitName =
+    snapshot?.items.map((item) => item.product.name).join(", ") || "this Pooja kit";
+
+  useEffect(() => {
+    if (payuFailed) {
+      setError("PayU payment did not complete. Your cart is still here — tap Pay now to try again.");
+    }
+  }, [payuFailed]);
 
   useEffect(() => {
     if (!user) return;
@@ -96,6 +125,7 @@ function CheckoutPageInner() {
       .then((items) => {
         setAddresses(items);
         if (items[0]) setAddressId(items[0].id);
+        if (!items.length) setEditingAddress(true);
       })
       .catch(() => undefined);
   }, [user]);
@@ -139,74 +169,73 @@ function CheckoutPageInner() {
     void loadRazorpay().catch(() => undefined);
   }, []);
 
-  const wantsSelf = intents.includes("self");
-  const wantsFamily = intents.includes("family");
-  const wantsRefer = intents.includes("refer");
-  const wantsPay = wantsSelf || wantsFamily;
-
   const hasSelfAddress = Boolean(
     (addressId || (line1.trim() && city.trim() && state.trim() && postal.trim())) &&
       toE164(deliveryPhone),
   );
-  const hasFamily = Boolean(
-    recipientName.trim() &&
-      toE164(recipientPhone) &&
-      familyLine1.trim() &&
-      familyCity.trim() &&
-      familyState.trim() &&
-      familyPostal.trim(),
-  );
-  const hasRefer = Boolean(recipientName.trim() && toE164(recipientPhone));
 
   const canAdvance = useMemo(() => {
-    if (step === 1) return Boolean(snapshot?.items.length);
-    if (step === 2) return intents.length > 0;
-    if (step === 3) {
-      if (wantsFamily && !hasFamily) return false;
-      if (wantsRefer && !wantsFamily && !hasRefer) return false;
-      if (wantsSelf && !hasSelfAddress) return false;
-      return true;
-    }
-    if (wantsRefer && !wantsPay) return hasRefer && !inviteSent;
-    if (wantsFamily && !hasFamily) return false;
-    if (wantsSelf && !hasSelfAddress) return false;
-    return wantsPay;
-  }, [
-    step,
-    snapshot?.items.length,
-    intents.length,
-    wantsFamily,
-    wantsRefer,
-    wantsSelf,
-    wantsPay,
-    hasFamily,
-    hasRefer,
-    hasSelfAddress,
-    inviteSent,
-  ]);
+    if (step === 2) return Boolean(snapshot?.items.length);
+    if (step === 3) return hasSelfAddress;
+    return hasSelfAddress;
+  }, [step, snapshot?.items.length, hasSelfAddress]);
 
-  function toggleIntent(value: Intent) {
-    setIntents((prev) => {
-      const next = prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value];
-      return next;
-    });
-    setInviteSent(false);
+  const deliveryCtaLabel =
+    familyFormOpen && !familyAdded
+      ? familyFormComplete(family)
+        ? "Add family kit & continue"
+        : "Continue to details"
+      : "Continue to details";
+
+  function patchFamily(patch: Partial<FamilyFormState>) {
+    setFamily((prev) => ({ ...prev, ...patch }));
+    setFamilyAdded(false);
     setError(null);
   }
 
-  function next() {
+  function removeFamily() {
+    setFamily(EMPTY_FAMILY);
+    setFamilyAdded(false);
+    setFamilyFormOpen(false);
     setError(null);
-    if (!canAdvance) {
-      setError("Please complete this step before continuing.");
+  }
+
+  function confirmFamily() {
+    if (!familyFormComplete(family)) {
+      setError("Enter family name, mobile, and full delivery address.");
       return;
     }
-    setStep((s) => (s < 4 ? ((s + 1) as Step) : s));
+    if (!toE164(family.phone)) {
+      setError("Enter a valid family mobile number.");
+      return;
+    }
+    setFamilyAdded(true);
+    setFamilyFormOpen(true);
+    setError(null);
+  }
+
+  function goFromDelivery() {
+    setError(null);
+    if (!snapshot?.items.length) {
+      setError("Your cart is empty.");
+      return;
+    }
+    if (familyFormOpen && familyFormComplete(family) && !familyAdded) {
+      confirmFamily();
+      setStep(3);
+      return;
+    }
+    if (familyFormOpen && !familyFormComplete(family) && !familyAdded) {
+      // Allow skipping incomplete family form
+      setFamilyFormOpen(false);
+    }
+    setStep(3);
   }
 
   async function sendInvite() {
-    const phone = toE164(recipientPhone);
-    if (!recipientName.trim() || !phone) {
-      setError("Enter your family member’s name and mobile number.");
+    const phone = toE164(referPhone);
+    if (!referName.trim() || !phone) {
+      setError("Enter your friend’s name and mobile number.");
       return;
     }
     setBusy(true);
@@ -215,7 +244,7 @@ function CheckoutPageInner() {
       await clientFetch("/orders/refer", {
         method: "POST",
         body: JSON.stringify({
-          recipientName: recipientName.trim(),
+          recipientName: referName.trim(),
           recipientPhone: phone,
           kitName,
           shopUrl: `${window.location.origin}/kits`,
@@ -229,63 +258,69 @@ function CheckoutPageInner() {
     }
   }
 
+  async function sharePavitra() {
+    const url = `${window.location.origin}/kits`;
+    const text = `Discover Pavitra Seva — thoughtful Pooja kits for your family. ${url}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Pavitra Seva",
+          text: "Share the blessings of Pavitra Seva",
+          url,
+        });
+        return;
+      }
+    } catch {
+      // fall through to clipboard / refer form
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setError(null);
+      setReferOpen(true);
+      setInviteSent(false);
+    } catch {
+      setReferOpen(true);
+    }
+  }
+
+  function requestPay() {
+    if (math.shippingMinor > 0) {
+      setConfirmDeliveryFee(true);
+      return;
+    }
+    void pay();
+  }
+
   async function pay() {
+    setConfirmDeliveryFee(false);
     setBusy(true);
     setError(null);
     try {
-      if (wantsRefer && !inviteSent) {
-        const phone = toE164(recipientPhone);
-        if (!recipientName.trim() || !phone) {
-          throw new Error("Enter your family member’s name and mobile number.");
-        }
-        await clientFetch("/orders/refer", {
-          method: "POST",
-          body: JSON.stringify({
-            recipientName: recipientName.trim(),
-            recipientPhone: phone,
-            kitName,
-            shopUrl: `${window.location.origin}/kits`,
-          }),
-        });
-        setInviteSent(true);
-      }
-
-      if (!wantsPay) return;
-
       const selfPhone = toE164(deliveryPhone);
-      if (wantsSelf) {
-        if (!selfPhone) {
-          throw new Error("Enter your mobile number for delivery updates.");
-        }
-        if (!isRealInMobile(user?.phoneE164) || user?.phoneE164 !== selfPhone) {
-          await updateProfile({ phone: selfPhone });
-        }
+      if (!selfPhone) {
+        throw new Error("Enter your mobile number for delivery updates.");
       }
 
       let shippingAddressId = addressId;
       let familyAddressId: string | undefined;
 
-      if (wantsFamily) {
+      if (includeFamily) {
         const familyAddr = await clientFetch<Address>("/addresses", {
           method: "POST",
           body: JSON.stringify({
-            label: recipientName.trim().slice(0, 40) || "Family",
-            line1: familyLine1,
-            city: familyCity,
-            state: familyState,
-            postalCode: familyPostal,
+            label: family.name.trim().slice(0, 40) || "Family",
+            line1: family.line1,
+            city: family.city,
+            state: family.state,
+            postalCode: family.postal,
             country: "IN",
             isDefault: false,
           }),
         });
-        if (wantsSelf) {
-          familyAddressId = familyAddr.id;
-        } else {
-          shippingAddressId = familyAddr.id;
-        }
+        familyAddressId = familyAddr.id;
       }
 
-      if (wantsSelf && !shippingAddressId) {
+      if (!shippingAddressId) {
         const created = await clientFetch<Address>("/addresses", {
           method: "POST",
           body: JSON.stringify({
@@ -313,10 +348,14 @@ function CheckoutPageInner() {
         body: JSON.stringify({
           shippingAddressId,
           familyAddressId,
-          deliverySlot: slot,
+          deliverySlot: DELIVERY_SLOT,
           intents,
-          recipientName: recipientName.trim() || undefined,
-          recipientPhone: toE164(recipientPhone) || undefined,
+          contactPhone: selfPhone,
+          recipientName: includeFamily ? family.name.trim() : undefined,
+          recipientPhone: includeFamily ? toE164(family.phone) : undefined,
+          familyRelationship: includeFamily
+            ? family.relationship.trim() || undefined
+            : undefined,
           promoCode: promoCode.trim() || undefined,
         }),
       });
@@ -326,6 +365,7 @@ function CheckoutPageInner() {
         setPendingOrderId(result.order.id);
         return;
       }
+      if (kind === "redirect") return;
       await refreshCart();
       router.push(`/orders/${result.order.id}`);
     } catch (err) {
@@ -344,223 +384,181 @@ function CheckoutPageInner() {
   if (!ready) return <p className="px-5 py-16 text-center text-muted">Loading…</p>;
   if (!user) return null;
 
-  const lastLabel = wantsPay ? "Pay" : "Send";
-
   return (
-    <div className="mx-auto max-w-xl px-5 py-12">
-      <p className="text-[11px] font-semibold tracking-[0.22em] text-maroon uppercase">Checkout</p>
-      <h1 className="font-display mt-2 text-4xl text-maroon">Complete your order</h1>
-      <p className="mt-2 text-lg">
-        Total <span className="price">{formatMoney(total, snapshot?.currency ?? "INR")}</span>
+    <div className={`mx-auto px-5 py-12 ${step === 2 ? "max-w-5xl" : "max-w-xl"}`}>
+      <p className="text-[11px] font-semibold tracking-[0.22em] text-maroon uppercase">
+        Checkout
       </p>
-      <StepDots step={step} lastLabel={lastLabel} />
+      {step !== 2 ? (
+        <>
+          <h1 className="font-display mt-2 text-4xl text-maroon">Complete your order</h1>
+          <p className="mt-2 text-lg">
+            Total{" "}
+            <span className="price">
+              {formatMoney(
+                step === 4 && promoOff != null
+                  ? Math.max(0, math.totalMinor - (promoOff > math.familyDiscountMinor ? promoOff - math.familyDiscountMinor : 0))
+                  : math.totalMinor,
+                math.currency,
+              )}
+            </span>
+            {includeFamily ? (
+              <span className="ml-2 text-sm font-medium text-orange">
+                · Family Seva 10% applied
+              </span>
+            ) : null}
+          </p>
+        </>
+      ) : null}
+      <StepDots step={step} lastLabel="Pay" />
 
-      <div className="card-temple mt-8 space-y-6 p-6">
-        {step === 1 ? (
-          <section>
-            <h2 className="font-semibold">Review your kits</h2>
-            {snapshot?.items.length ? (
-              <ul className="mt-3 space-y-2 text-sm">
-                {snapshot.items.map((item) => (
-                  <li key={item.productId} className="flex justify-between gap-3">
-                    <span>
-                      {item.product.name} × {item.quantity}
-                    </span>
-                    <span className="text-muted">
-                      {formatMoney(item.lineTotalMinor, snapshot.currency ?? "INR")}
-                    </span>
+      {step === 2 ? (
+        <div className="mt-8">
+          <CheckoutDeliveryStep
+            cart={snapshot}
+            userName={user.fullName}
+            addresses={addresses}
+            addressId={addressId}
+            editingAddress={editingAddress || !addresses.length}
+            onToggleEditAddress={() => setEditingAddress((v) => !v)}
+            addressFields={
+              <AddressFields
+                addresses={addresses}
+                addressId={addressId}
+                onSelect={(id) => {
+                  setAddressId(id);
+                  setEditingAddress(false);
+                }}
+                line1={line1}
+                city={city}
+                state={state}
+                postal={postal}
+                phone={deliveryPhone}
+                onLine1={setLine1}
+                onCity={setCity}
+                onState={setState}
+                onPostal={setPostal}
+                onPhone={setDeliveryPhone}
+              />
+            }
+            familyFormOpen={familyFormOpen}
+            familyAdded={familyAdded}
+            family={family}
+            onFamilyChange={patchFamily}
+            onOpenFamilyForm={() => {
+              setFamilyFormOpen(true);
+              setError(null);
+            }}
+            onRemoveFamily={removeFamily}
+            onConfirmFamily={confirmFamily}
+            referOpen={referOpen}
+            referName={referName}
+            referPhone={referPhone}
+            inviteSent={inviteSent}
+            onToggleRefer={() => {
+              setReferOpen((v) => !v);
+              setError(null);
+            }}
+            onReferName={setReferName}
+            onReferPhone={setReferPhone}
+            onShare={() => void sharePavitra()}
+            onSendRefer={() => void sendInvite()}
+            referBusy={busy}
+            ctaLabel={deliveryCtaLabel}
+            onContinue={goFromDelivery}
+          />
+          {error ? <p className="mt-4 text-sm text-orange">{error}</p> : null}
+          <div className="mt-6">
+            <Link href="/cart" className="btn-outline-gold">
+              Back to cart
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="card-temple mt-8 space-y-6 p-6">
+          {step === 3 ? (
+            <section>
+              <h2 className="font-semibold">Your delivery details</h2>
+              <p className="mt-1 text-sm text-muted">
+                Confirm your address. We will deliver within 24 hours. Your kit is already
+                reserved for you
+                {includeFamily ? `, with Family Seva for ${family.name.trim()}` : ""}.
+              </p>
+              <AddressFields
+                addresses={addresses}
+                addressId={addressId}
+                onSelect={setAddressId}
+                line1={line1}
+                city={city}
+                state={state}
+                postal={postal}
+                phone={deliveryPhone}
+                onLine1={setLine1}
+                onCity={setCity}
+                onState={setState}
+                onPostal={setPostal}
+                onPhone={setDeliveryPhone}
+              />
+              <DeliveryPromise />
+              {includeFamily ? (
+                <div className="mt-4 rounded-xl border border-gold bg-blush/50 px-4 py-3 text-sm">
+                  <p className="font-semibold text-maroon">Family Seva included</p>
+                  <p className="mt-1 text-muted">
+                    Second kit → {family.name.trim()} · {family.line1}, {family.city}
+                  </p>
+                  <p className="mt-1 font-medium text-orange">
+                    10% off · you save {formatMoney(math.saveMinor, math.currency)}
+                  </p>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+
+          {step === 4 && upiPayment ? (
+            <UpiPayPanel
+              payment={upiPayment}
+              onSubmitted={() => {
+                void refreshCart();
+              }}
+            />
+          ) : null}
+
+          {step === 4 && !upiPayment ? (
+            <section className="space-y-3">
+              <h2 className="font-semibold">Review & pay</h2>
+              <ul className="space-y-1 text-sm text-muted">
+                {snapshot?.items.map((item) => (
+                  <li key={item.productId}>
+                    Your kit: {item.product.name} × {item.quantity}
                   </li>
                 ))}
-              </ul>
-            ) : (
-              <p className="mt-2 text-sm text-muted">Your cart is empty.</p>
-            )}
-            <Link href="/cart" className="mt-3 inline-block text-sm underline decoration-gold underline-offset-2">
-              Change quantity
-            </Link>
-          </section>
-        ) : null}
-
-        {step === 2 ? (
-          <section>
-            <h2 className="font-semibold">Who is this kit for?</h2>
-            <p className="mt-1 text-sm text-muted">Select every option that applies.</p>
-            <div className="mt-3 grid gap-2">
-              {(
-                [
-                  ["self", "Deliver to me", "Ship this order to your address."],
-                  [
-                    "family",
-                    "Buy the same kit for a family member",
-                    "You pay. We deliver a second kit to their name, mobile, and address.",
-                  ],
-                  [
-                    "refer",
-                    "Refer this kit to a family member",
-                    "We text them a link to shop. You can still pay for a kit here.",
-                  ],
-                ] as const
-              ).map(([value, label, hint]) => {
-                const selected = intents.includes(value);
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => toggleIntent(value)}
-                    className={`rounded-2xl border px-4 py-3 text-left ${
-                      selected ? "border-gold bg-blush" : "border-border bg-paper"
-                    }`}
-                  >
-                    <p className="text-sm font-semibold">
-                      {selected ? "✓ " : ""}
-                      {label}
-                    </p>
-                    <p className="mt-1 text-sm text-muted">{hint}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        ) : null}
-
-        {step === 3 && wantsSelf ? (
-          <section>
-            <h2 className="font-semibold">Your delivery address</h2>
-            <p className="mt-1 text-sm text-muted">
-              Include your mobile number so the delivery partner can reach you
-              (required for Google / Apple sign-in).
-            </p>
-            <AddressFields
-              addresses={addresses}
-              addressId={addressId}
-              onSelect={setAddressId}
-              line1={line1}
-              city={city}
-              state={state}
-              postal={postal}
-              phone={deliveryPhone}
-              onLine1={setLine1}
-              onCity={setCity}
-              onState={setState}
-              onPostal={setPostal}
-              onPhone={setDeliveryPhone}
-            />
-          </section>
-        ) : null}
-
-        {step === 3 && wantsFamily ? (
-          <section className="grid gap-2">
-            <h2 className="font-semibold">Family member details</h2>
-            <input
-              className="input-ps"
-              placeholder="Full name"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-            />
-            <input
-              className="input-ps"
-              placeholder="Mobile number"
-              inputMode="tel"
-              value={recipientPhone}
-              onChange={(e) => setRecipientPhone(e.target.value)}
-            />
-            <input
-              className="input-ps"
-              placeholder="Address"
-              value={familyLine1}
-              onChange={(e) => setFamilyLine1(e.target.value)}
-            />
-            <input
-              className="input-ps"
-              placeholder="City"
-              value={familyCity}
-              onChange={(e) => setFamilyCity(e.target.value)}
-            />
-            <input
-              className="input-ps"
-              placeholder="State"
-              value={familyState}
-              onChange={(e) => setFamilyState(e.target.value)}
-            />
-            <input
-              className="input-ps"
-              placeholder="PIN"
-              value={familyPostal}
-              onChange={(e) => setFamilyPostal(e.target.value)}
-            />
-            {wantsRefer ? (
-              <p className="text-sm text-muted">We will also text this number a shop link.</p>
-            ) : null}
-          </section>
-        ) : null}
-
-        {step === 3 && wantsRefer && !wantsFamily ? (
-          <section className="grid gap-2">
-            <h2 className="font-semibold">Who should we message?</h2>
-            <p className="text-sm text-muted">
-              We will send an SMS to their number with a link to this kit.
-            </p>
-            <input
-              className="input-ps"
-              placeholder="Family member’s name"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-            />
-            <input
-              className="input-ps"
-              placeholder="Their mobile number"
-              inputMode="tel"
-              value={recipientPhone}
-              onChange={(e) => setRecipientPhone(e.target.value)}
-            />
-          </section>
-        ) : null}
-
-        {step === 3 && wantsPay ? <SlotPicker slot={slot} onChange={setSlot} /> : null}
-
-        {step === 4 && upiPayment ? (
-          <UpiPayPanel
-            payment={upiPayment}
-            onPaid={() => {
-              void refreshCart();
-              router.push(`/orders/${pendingOrderId ?? ""}`);
-            }}
-          />
-        ) : null}
-
-        {step === 4 && !upiPayment ? (
-          <section className="space-y-3">
-            <h2 className="font-semibold">Review</h2>
-            <ul className="space-y-1 text-sm text-muted">
-              {snapshot?.items.map((item) => (
-                <li key={item.productId}>
-                  {item.product.name} × {item.quantity}
+                {includeFamily ? (
+                  <li>
+                    Family kit: same items → {family.name.trim()}
+                    {family.relationship ? ` (${family.relationship})` : ""}
+                  </li>
+                ) : null}
+                <li>Delivery: {DELIVERY_SLOT}</li>
+                <li>
+                  Subtotal {formatMoney(math.subtotalMinor, math.currency)}
+                  {includeFamily
+                    ? ` · Family Seva −${formatMoney(math.familyDiscountMinor, math.currency)}`
+                    : ""}
                 </li>
-              ))}
-              <li>
-                For:{" "}
-                {[
-                  wantsSelf ? "You" : null,
-                  wantsFamily
-                    ? `${recipientName.trim() || "family member"} (delivered)`
-                    : null,
-                  wantsRefer
-                    ? `${recipientName.trim() || "family member"} (referral SMS)`
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </li>
-              {wantsSelf && wantsFamily ? (
-                <li>Two kits will be packed — one for you and one for family.</li>
-              ) : null}
-              {wantsPay ? <li>Slot: {slot}</li> : null}
-            </ul>
-            {wantsPay ? (
+                <li>
+                  Delivery fee{" "}
+                  {math.shippingMinor > 0
+                    ? formatMoney(math.shippingMinor, math.currency)
+                    : "Free"}
+                </li>
+                <li className="font-semibold text-maroon">
+                  Pay {formatMoney(math.totalMinor, math.currency)}
+                </li>
+              </ul>
               <div className="flex gap-2">
                 <input
                   className="input-ps flex-1"
-                  placeholder="Promo code"
+                  placeholder="Promo code (optional)"
                   value={promoCode}
                   onChange={(e) => {
                     setPromoCode(e.target.value.toUpperCase());
@@ -586,104 +584,139 @@ function CheckoutPageInner() {
                   Apply
                 </button>
               </div>
-            ) : null}
-            {promoOff ? (
-              <p className="text-sm text-maroon">
-                {promoCode} saves {formatMoney(promoOff, snapshot?.currency ?? "INR")}
-              </p>
-            ) : null}
-            {wantsRefer && inviteSent ? (
-              <p className="text-sm text-maroon">
-                Message sent. Your kits are still in the cart if you want to pay for yourself.
-              </p>
-            ) : null}
-          </section>
-        ) : null}
+              {promoOff ? (
+                <p className="text-sm text-maroon">
+                  {promoCode} quotes {formatMoney(promoOff, math.currency)} — checkout uses the
+                  better of Family Seva or this promo.
+                </p>
+              ) : null}
+            </section>
+          ) : null}
 
-        {error ? <p className="text-sm text-orange">{error}</p> : null}
+          {error ? <p className="text-sm text-orange">{error}</p> : null}
 
-        <div className="flex flex-wrap gap-2">
-          {step > 1 ? (
+          <div className="flex flex-wrap gap-2 pb-16 lg:pb-0">
             <button
               type="button"
               className="btn-outline-gold"
               onClick={() => {
                 setError(null);
-                setStep((s) => (s > 1 ? ((s - 1) as Step) : s));
+                setStep((s) => (s === 4 ? 3 : 2));
               }}
             >
               Back
             </button>
-          ) : (
-            <Link href="/cart" className="btn-outline-gold">
-              Back to cart
-            </Link>
-          )}
 
-          {step < 4 ? (
-            <button
-              type="button"
-              disabled={!canAdvance}
-              onClick={next}
-              className="btn-orange disabled:opacity-50"
-            >
-              Continue
-            </button>
-          ) : !wantsPay && wantsRefer ? (
-            inviteSent ? (
+            {step < 4 ? (
               <button
                 type="button"
-                className="btn-orange"
+                disabled={!canAdvance}
                 onClick={() => {
-                  setIntents((prev) => (prev.includes("self") ? prev : [...prev, "self"]));
-                  setInviteSent(false);
-                  setStep(3);
+                  setError(null);
+                  if (!canAdvance) {
+                    setError("Please complete this step before continuing.");
+                    return;
+                  }
+                  setStep(4);
                 }}
-              >
-                Pay for my kits
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled={busy || !hasRefer}
-                onClick={() => void sendInvite()}
                 className="btn-orange disabled:opacity-50"
               >
-                {busy ? "Sending…" : "Send message"}
+                Continue to pay
               </button>
-            )
-          ) : upiPayment ? null : (
-            <button
-              type="button"
-              disabled={busy || !canAdvance}
-              onClick={() => void pay()}
-              className="btn-orange disabled:opacity-50"
-            >
-              {busy ? "Processing…" : "Pay now"}
-            </button>
-          )}
+            ) : upiPayment ? null : (
+              <button
+                type="button"
+                disabled={busy || !canAdvance}
+                onClick={requestPay}
+                className="btn-orange disabled:opacity-50"
+              >
+                {busy ? "Processing…" : "Pay now"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {confirmDeliveryFee ? (
+        <DeliveryFeeDialog
+          shipping={formatMoney(math.shippingMinor, math.currency)}
+          subtotal={formatMoney(math.subtotalMinor, math.currency)}
+          total={formatMoney(math.totalMinor, math.currency)}
+          busy={busy}
+          onBack={() => setConfirmDeliveryFee(false)}
+          onContinue={() => void pay()}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function DeliveryFeeDialog({
+  shipping,
+  subtotal,
+  total,
+  busy,
+  onBack,
+  onContinue,
+}: {
+  shipping: string;
+  subtotal: string;
+  total: string;
+  busy: boolean;
+  onBack: () => void;
+  onContinue: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-maroon/40 p-4 sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delivery-fee-title"
+    >
+      <div className="card-order w-full max-w-md p-5">
+        <h2 id="delivery-fee-title" className="font-display text-2xl text-maroon">
+          Delivery fee of {shipping}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          This order is under ₹1,000, so a delivery fee of {shipping} applies. Free delivery starts
+          at ₹1,000.
+        </p>
+        <dl className="mt-4 space-y-1.5 text-sm">
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted">Kit</dt>
+            <dd className="font-medium text-maroon">{subtotal}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted">Delivery fee</dt>
+            <dd className="font-medium text-maroon">{shipping}</dd>
+          </div>
+          <div className="flex justify-between gap-3 border-t border-divider pt-2">
+            <dt className="font-semibold text-maroon">Total to pay</dt>
+            <dd className="price text-lg">{total}</dd>
+          </div>
+        </dl>
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
+          <button type="button" className="btn-outline-gold btn-order" disabled={busy} onClick={onBack}>
+            Go back
+          </button>
+          <button type="button" className="btn-orange btn-order" disabled={busy} onClick={onContinue}>
+            {busy ? "Processing…" : "Continue to pay"}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function SlotPicker({ slot, onChange }: { slot: string; onChange: (value: string) => void }) {
+function DeliveryPromise() {
   return (
     <div className="mt-4">
-      <h3 className="font-semibold">Delivery slot</h3>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {SLOTS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => onChange(s)}
-            className={`rounded-full px-3 py-1.5 text-sm ${slot === s ? "bg-orange text-cream" : "border border-gold text-maroon"}`}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+      <h3 className="font-semibold">Delivery</h3>
+      <p className="mt-2">
+        <span className="inline-block rounded-full bg-orange px-3 py-1.5 text-sm text-cream">
+          {DELIVERY_SLOT}
+        </span>
+      </p>
     </div>
   );
 }
@@ -726,7 +759,9 @@ function AddressFields({
               key={a.id}
               type="button"
               onClick={() => onSelect(a.id)}
-              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-left text-sm ${addressId === a.id ? "border-gold bg-blush" : "border-border bg-paper"}`}
+              className={`mt-2 w-full rounded-2xl border px-4 py-3 text-left text-sm ${
+                addressId === a.id ? "border-gold bg-blush" : "border-border bg-paper"
+              }`}
             >
               <p className="font-semibold">{a.label}</p>
               <p className="text-muted">
@@ -737,10 +772,30 @@ function AddressFields({
         </div>
       ) : (
         <>
-          <input className="input-ps" placeholder="Address" value={line1} onChange={(e) => onLine1(e.target.value)} />
-          <input className="input-ps" placeholder="City" value={city} onChange={(e) => onCity(e.target.value)} />
-          <input className="input-ps" placeholder="State" value={state} onChange={(e) => onState(e.target.value)} />
-          <input className="input-ps" placeholder="PIN" value={postal} onChange={(e) => onPostal(e.target.value)} />
+          <input
+            className="input-ps"
+            placeholder="Address"
+            value={line1}
+            onChange={(e) => onLine1(e.target.value)}
+          />
+          <input
+            className="input-ps"
+            placeholder="City"
+            value={city}
+            onChange={(e) => onCity(e.target.value)}
+          />
+          <input
+            className="input-ps"
+            placeholder="State"
+            value={state}
+            onChange={(e) => onState(e.target.value)}
+          />
+          <input
+            className="input-ps"
+            placeholder="PIN"
+            value={postal}
+            onChange={(e) => onPostal(e.target.value)}
+          />
         </>
       )}
       <input
@@ -754,7 +809,6 @@ function AddressFields({
     </div>
   );
 }
-
 
 export default function CheckoutPage() {
   return (

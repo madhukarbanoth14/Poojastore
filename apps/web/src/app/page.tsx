@@ -7,7 +7,8 @@ import { HomeHero } from "@/components/home-hero";
 import { HomeRasiCard } from "@/components/home-rasi";
 import { ProductCard } from "@/components/product-card";
 import { SectionTitle } from "@/components/ui";
-import { listFestivalKits, listKits, listPackages, listPriests, getTodayPanchang } from "@/lib/api";
+import { PriestComingSoon } from "@/components/priest-coming-soon";
+import { listFestivalKits, listKits, listPackages, getTodayPanchang } from "@/lib/api";
 import { festivalImage } from "@/lib/catalog-images";
 import { t } from "@/lib/copy";
 import {
@@ -16,7 +17,7 @@ import {
   getActiveFestivalCampaign,
 } from "@/lib/festival-campaign";
 import { upcomingFromToday } from "@/lib/festivals";
-import { formatMoney, initials, daysUntil } from "@/lib/format";
+import { daysUntil } from "@/lib/format";
 import { getCity, getLocale } from "@/lib/locale";
 import { marketForCity } from "@/lib/location";
 
@@ -47,10 +48,9 @@ export default async function HomePage() {
   const city = await getCity();
   const market = marketForCity(city);
   const campaign = getActiveFestivalCampaign();
-  const [kits, festivalKits, priests, packages, panchang] = await Promise.all([
+  const [kits, festivalKits, packages, panchang] = await Promise.all([
     listKits(locale, market),
     listFestivalKits(locale, market),
-    listPriests(locale, market),
     listPackages(locale, market),
     getTodayPanchang(locale, city),
   ]);
@@ -58,7 +58,6 @@ export default async function HomePage() {
     (product, index, list) => list.findIndex((item) => item.id === product.id) === index,
   );
   const campaignKits = campaign ? filterCampaignKits(featured, campaign) : [];
-  const featuredPriests = priests.slice(0, 3);
   const festivalIds = new Set(festivalKits.map((kit) => kit.id));
   const festivals = upcomingFromToday(3);
 
@@ -204,36 +203,8 @@ export default async function HomePage() {
             <SectionTitle
               kicker={t(locale, "navPriests")}
               title={locale === "te" ? "పూజారిని బుక్ చేయండి" : "Book a poojari"}
-              action={
-                <Link href="/priests" className="text-sm link-brand">
-                  {t(locale, "viewAll")}
-                </Link>
-              }
             />
-            <div className="space-y-3">
-              {featuredPriests.length ? (
-                featuredPriests.map((p) => (
-                  <Link key={p.id} href={`/priests/${p.slug}`} className="card-temple flex items-center gap-4 p-4">
-                    <div className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-gold-bright to-orange font-semibold text-maroon">
-                      {initials(p.fullName)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-display text-lg">{p.fullName}</p>
-                      <p className="truncate text-sm text-muted">
-                        {p.city} · {p.yearsExperience} yrs · {p.specializations.slice(0, 2).join(", ")}
-                      </p>
-                    </div>
-                    <p className="text-sm price">{formatMoney(p.basePriceMinor, p.currency)}</p>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-sm text-muted">
-                  {locale === "te"
-                    ? "ఈ ప్రాంతంలో పూజారులు ఇంకా జాబితా కాలేదు."
-                    : "No poojaris listed for this region yet."}
-                </p>
-              )}
-            </div>
+            <PriestComingSoon locale={locale} compact />
           </div>
           <div>
             <SectionTitle

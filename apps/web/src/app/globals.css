@@ -50,7 +50,7 @@ html[data-theme="festival"] {
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 body {
@@ -338,10 +338,18 @@ html[lang="te"] .hero-almanac dd {
 }
 
 .btn-orange-sm,
-.btn-gold-sm {
-  padding: 0.42rem 0.95rem;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
+.btn-gold-sm,
+.btn-order {
+  padding: 0.48rem 1.05rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+}
+
+.card-order {
+  background: var(--paper);
+  border: 1px solid var(--divider);
+  border-radius: 1rem;
+  box-shadow: 0 8px 22px rgba(74, 15, 29, 0.045);
 }
 
 .btn-outline-gold {
@@ -501,8 +509,18 @@ a.card-temple:hover {
   transform: scaleX(1);
 }
 
-.diya-pulse {
-  animation: diya 1.6s ease-in-out infinite;
+.track-pulse {
+  animation: track-pulse 2.2s ease-out infinite;
+}
+
+@keyframes track-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(242, 140, 0, 0.42);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(242, 140, 0, 0);
+  }
 }
 
 @keyframes diya {
@@ -921,6 +939,7 @@ html[data-theme="festival"] .paper-grain {
   }
 
   .diya-pulse,
+  .track-pulse,
   .yantra-spin,
   .kit-item-grid,
   .kit-item-card {

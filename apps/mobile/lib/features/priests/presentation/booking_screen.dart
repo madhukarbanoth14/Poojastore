@@ -117,7 +117,8 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               : 'Day $_dateIdx';
       final timeLabel = _times[_timeIdx ?? 0];
       final ritual = _rituals[_ritualIdx ?? 0];
-      final pending = payment?['provider'] == 'UPI_QR';
+      final pending =
+          payment?['provider'] == 'UPI_QR' || payment?['provider'] == 'PAYU';
       context.go(
         '/booking-confirm?name=${Uri.encodeComponent(priest['fullName'] as String)}'
         '&mode=${widget.mode}'

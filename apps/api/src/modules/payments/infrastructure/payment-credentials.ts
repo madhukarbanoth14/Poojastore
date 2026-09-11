@@ -81,3 +81,49 @@ export function upiQrImageUrl(config: ConfigService): string {
 export function upiConfigured(config: ConfigService): boolean {
   return Boolean(upiVpa(config) || upiQrImageUrl(config));
 }
+
+export function payuMerchantKey(config: ConfigService): string {
+  return firstNonEmpty([
+    config.get<string>('payments.payu.merchantKey'),
+    config.get<string>('PAYU_MERCHANT_KEY'),
+    process.env.PAYU_MERCHANT_KEY,
+  ]);
+}
+
+export function payuMerchantSalt(config: ConfigService): string {
+  return firstNonEmpty([
+    config.get<string>('payments.payu.merchantSalt'),
+    config.get<string>('PAYU_MERCHANT_SALT'),
+    process.env.PAYU_MERCHANT_SALT,
+  ]);
+}
+
+export function payuMode(config: ConfigService): 'test' | 'live' {
+  const raw = firstNonEmpty([
+    config.get<string>('payments.payu.mode'),
+    config.get<string>('PAYU_MODE'),
+    process.env.PAYU_MODE,
+  ]).toLowerCase();
+  return raw === 'live' ? 'live' : 'test';
+}
+
+export function payuConfigured(config: ConfigService): boolean {
+  return Boolean(payuMerchantKey(config) && payuMerchantSalt(config));
+}
+
+/** India checkout uses PayU whenever merchant key + salt are set. */
+export function payuEnabled(config: ConfigService): boolean {
+  return payuConfigured(config);
+}
+
+export function payuPaymentUrl(config: ConfigService): string {
+  return payuMode(config) === 'live'
+    ? 'https://secure.payu.in/_payment'
+    : 'https://test.payu.in/_payment';
+}
+
+export function payuPostserviceUrl(config: ConfigService): string {
+  return payuMode(config) === 'live'
+    ? 'https://info.payu.in/merchant/postservice.php?form=2'
+    : 'https://test.payu.in/merchant/postservice.php?form=2';
+}

@@ -106,6 +106,17 @@ describe('validateEnv production gates', () => {
     ).not.toThrow();
   });
 
+  it('accepts live PayU without Razorpay', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        PAYMENT_MODE: 'live',
+        PAYU_MERCHANT_KEY: 'merchant',
+        PAYU_MERCHANT_SALT: 'salt',
+      }),
+    ).not.toThrow();
+  });
+
   it('rejects live payments without gateway secrets', () => {
     expect(() =>
       validateEnv({
