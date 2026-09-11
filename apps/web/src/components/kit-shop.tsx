@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ganeshKitItemsBySlug } from "@/lib/ganesh-samagri";
 import { samagriImage } from "@/lib/catalog-images";
+import { deliveryTagline } from "@/lib/delivery-slot";
 import { formatMoney } from "@/lib/format";
 import {
   formatKitQty,
@@ -297,6 +298,10 @@ export function KitShop({
               ) : null}
             </div>
           ) : null}
+
+          <p className="mt-3 inline-flex rounded-full bg-orange/15 px-3 py-1.5 text-sm font-semibold text-orange">
+            {deliveryTagline(tab?.product?.slug ?? tab?.id, locale)}
+          </p>
 
           <div ref={ctaRef} className="mt-5 max-w-md space-y-3">
             {tab.product && extrasHref ? (

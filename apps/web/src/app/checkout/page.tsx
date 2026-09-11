@@ -11,12 +11,14 @@ import {
   type FamilyFormState,
 } from "@/components/checkout-delivery-step";
 import { clientFetch } from "@/lib/client";
+import {
+  deliveryConfirmCopy,
+  deliverySlotForSlugs,
+} from "@/lib/delivery-slot";
 import { formatMoney } from "@/lib/format";
 import { completePayment, listAddresses, loadRazorpay, type Payment } from "@/lib/payments";
 import { UpiPayPanel } from "@/components/upi-pay-panel";
 import type { Address, Cart } from "@/lib/types";
-
-const DELIVERY_SLOT = "Within 24 hours";
 
 type Intent = "self" | "family" | "refer";
 type Step = 2 | 3 | 4;
@@ -109,6 +111,10 @@ function CheckoutPageInner() {
   const math = checkoutOrderMath(snapshot, includeFamily);
   const kitName =
     snapshot?.items.map((item) => item.product.name).join(", ") || "this Pooja kit";
+  const deliverySlot = useMemo(
+    () => deliverySlotForSlugs(snapshot?.items.map((item) => item.product.slug) ?? []),
+    [snapshot?.items],
+  );
 
   useEffect(() => {
     if (payuFailed) {
@@ -348,7 +354,7 @@ function CheckoutPageInner() {
         body: JSON.stringify({
           shippingAddressId,
           familyAddressId,
-          deliverySlot: DELIVERY_SLOT,
+          deliverySlot,
           intents,
           contactPhone: selfPhone,
           recipientName: includeFamily ? family.name.trim() : undefined,
@@ -480,8 +486,8 @@ function CheckoutPageInner() {
             <section>
               <h2 className="font-semibold">Your delivery details</h2>
               <p className="mt-1 text-sm text-muted">
-                Confirm your address. We will deliver within 24 hours. Your kit is already
-                reserved for you
+                {deliveryConfirmCopy(snapshot?.items.map((item) => item.product.slug) ?? [])}{" "}
+                Your kit is already reserved for you
                 {includeFamily ? `, with Family Seva for ${family.name.trim()}` : ""}.
               </p>
               <AddressFields
@@ -499,7 +505,7 @@ function CheckoutPageInner() {
                 onPostal={setPostal}
                 onPhone={setDeliveryPhone}
               />
-              <DeliveryPromise />
+              <DeliveryPromise slot={deliverySlot} />
               {includeFamily ? (
                 <div className="mt-4 rounded-xl border border-gold bg-blush/50 px-4 py-3 text-sm">
                   <p className="font-semibold text-maroon">Family Seva included</p>
@@ -538,7 +544,7 @@ function CheckoutPageInner() {
                     {family.relationship ? ` (${family.relationship})` : ""}
                   </li>
                 ) : null}
-                <li>Delivery: {DELIVERY_SLOT}</li>
+                <li>Delivery: {deliverySlot}</li>
                 <li>
                   Subtotal {formatMoney(math.subtotalMinor, math.currency)}
                   {includeFamily
@@ -708,13 +714,13 @@ function DeliveryFeeDialog({
   );
 }
 
-function DeliveryPromise() {
+function DeliveryPromise({ slot }: { slot: string }) {
   return (
     <div className="mt-4">
       <h3 className="font-semibold">Delivery</h3>
       <p className="mt-2">
         <span className="inline-block rounded-full bg-orange px-3 py-1.5 text-sm text-cream">
-          {DELIVERY_SLOT}
+          {slot}
         </span>
       </p>
     </div>

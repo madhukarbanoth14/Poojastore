@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { samagriImage } from "@/lib/catalog-images";
+import { deliveryTagline } from "@/lib/delivery-slot";
 import { formatMoney } from "@/lib/format";
 import { formatKitQty } from "@/lib/kit-item-taxonomy";
 import type { KitOptionalExtra } from "@/lib/kit-optional-extras";
@@ -66,6 +67,9 @@ export function KitExtrasChooser({
         <p className="mt-1 text-sm text-muted">
           {locale === "te" ? "కిట్ ధర" : "Kit price"}{" "}
           <span className="price font-semibold">{formatMoney(kitPrice, product.currency)}</span>
+        </p>
+        <p className="mt-2 inline-flex rounded-full bg-orange/15 px-3 py-1 text-xs font-semibold text-orange">
+          {deliveryTagline(product.slug, locale)}
         </p>
       </div>
 

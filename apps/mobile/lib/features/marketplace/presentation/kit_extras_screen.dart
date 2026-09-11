@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/catalog_l10n.dart';
+import '../../../core/catalog/delivery_slot.dart';
 import '../../../core/catalog/kit_item_taxonomy.dart';
 import '../../../core/catalog/samagri_catalog.dart';
 import '../../../core/network/fallback_dns.dart';
@@ -234,6 +235,25 @@ class _KitExtrasScreenState extends ConsumerState<KitExtrasScreen> {
                                   style: const TextStyle(
                                     fontSize: 13,
                                     color: AppColors.textMuted,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.orange.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Text(
+                                    deliveryTagline(widget.slug, te: te),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.orange,
+                                    ),
                                   ),
                                 ),
                               ],

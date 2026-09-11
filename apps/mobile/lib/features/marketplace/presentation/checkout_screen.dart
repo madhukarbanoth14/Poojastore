@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/delivery_slot.dart';
 import '../../../core/payments/upi_pay_sheet.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
@@ -9,8 +10,6 @@ import '../../../core/widgets/ps_widgets.dart';
 import '../../../l10n/l10n.dart';
 import '../../auth/presentation/auth_controller.dart';
 import 'kits_screen.dart';
-
-const _deliverySlot = 'Within 24 hours';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -31,6 +30,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _state = TextEditingController(text: 'Karnataka');
   final _postal = TextEditingController(text: '560003');
   final _phone = TextEditingController();
+
+  String get _deliverySlot {
+    final items = (_cart?['items'] as List?) ?? const [];
+    final slugs = items.map((item) {
+      final product = item is Map ? item['product'] : null;
+      if (product is Map) return product['slug'] as String?;
+      return null;
+    });
+    return deliverySlotForSlugs(slugs);
+  }
 
   @override
   void initState() {
@@ -276,9 +285,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               color: AppColors.maroonDeep,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
+            child: Text(
               _deliverySlot,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
