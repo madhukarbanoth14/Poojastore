@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/catalog/catalog_l10n.dart';
 import '../../../core/catalog/catalog_images.dart';
+import '../../../core/catalog/delivery_slot.dart';
 import '../../../core/catalog/kit_item_taxonomy.dart';
 import '../../../core/catalog/samagri_catalog.dart';
 import '../../../core/theme/app_theme.dart';
@@ -609,6 +610,22 @@ class _Hero extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         _PriceLine(priceMinor: priceMinor, mrpMinor: mrpMinor, large: true),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.orange.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            deliveryTagline(slug, te: te),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.orange,
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,

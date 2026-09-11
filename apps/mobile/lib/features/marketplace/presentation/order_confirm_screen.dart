@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/catalog/delivery_slot.dart';
 import '../../../core/widgets/pp_ui.dart';
 
 class OrderConfirmScreen extends StatelessWidget {
@@ -18,11 +19,14 @@ class OrderConfirmScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sunday = slot.toLowerCase().contains('sunday');
     return ConfirmSuccessScreen(
       title: pendingUpi ? 'Order placed' : 'Order Confirmed!',
       subtitle: pendingUpi
           ? 'We recorded your UPI reference. Packing starts after we confirm the credit on our bank statement.'
-          : 'Payment received. Your order will be packed and delivered within 24 hours.',
+          : sunday
+              ? 'Payment received. Your Ganesh kit will be packed and delivered on Sunday.'
+              : 'Payment received. Your order will be packed and delivered within 24 hours.',
       rows: [
         ('Order ID', orderId),
         (pendingUpi ? 'Amount' : 'Amount Paid', amount),
