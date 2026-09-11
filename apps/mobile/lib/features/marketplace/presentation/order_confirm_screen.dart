@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/catalog/delivery_slot.dart';
 import '../../../core/widgets/pp_ui.dart';
 
 class OrderConfirmScreen extends StatelessWidget {

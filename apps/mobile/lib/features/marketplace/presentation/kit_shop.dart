@@ -106,15 +106,7 @@ class _KitShopViewState extends ConsumerState<KitShopView> {
         _priceMinor,
       );
 
-  List<String> get _selectedKeys => _items
-      .where((item) => !item.optional || _chosenOptional.contains(item.slug))
-      .map((item) => item.slug)
-      .toList();
-
   int get _includedCount => _items.where((item) => !item.optional).length;
-
-  List<SamagriLine> get _optionalItems =>
-      _items.where((item) => item.optional).toList();
 
   List<SamagriLine> get _visibleItems {
     final included = _items.where((item) => !item.optional).toList();

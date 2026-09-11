@@ -1,4 +1,4 @@
-/// Standard kits ship quickly; Ganesh Chaturthi kits are scheduled for Sunday.
+// Standard kits ship quickly; Ganesh Chaturthi kits are scheduled for Sunday.
 
 const standardDeliverySlot = 'Within 24 hours';
 const ganeshDeliverySlot = 'Delivering on Sunday';

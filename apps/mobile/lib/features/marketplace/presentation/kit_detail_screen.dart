@@ -335,14 +335,12 @@ class _KitPhotoGrid extends StatelessWidget {
     required this.selected,
     required this.optional,
     required this.keyOf,
-    this.onToggle,
   });
 
   final List<Map<String, dynamic>> items;
   final Set<String> selected;
   final bool optional;
   final String Function(Map<String, dynamic>) keyOf;
-  final ValueChanged<Map<String, dynamic>>? onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -416,24 +414,21 @@ class _KitPhotoGrid extends StatelessWidget {
                     Positioned(
                       top: 6,
                       left: 6,
-                      child: GestureDetector(
-                        onTap: onToggle == null ? null : () => onToggle!(item),
-                        child: Container(
-                          width: 22,
-                          height: 22,
-                          decoration: BoxDecoration(
-                            color: checked ? AppColors.maroon : Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppColors.maroon),
-                          ),
-                          child: checked
-                              ? const Icon(
-                                  Icons.check,
-                                  size: 14,
-                                  color: AppColors.cream,
-                                )
-                              : null,
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: checked ? AppColors.maroon : Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppColors.maroon),
                         ),
+                        child: checked
+                            ? const Icon(
+                                Icons.check,
+                                size: 14,
+                                color: AppColors.cream,
+                              )
+                            : null,
                       ),
                     ),
                 ],
