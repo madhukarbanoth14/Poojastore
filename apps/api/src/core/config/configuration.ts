@@ -130,4 +130,14 @@ export default () => ({
     name: process.env.VENDOR_NAME ?? 'Packing vendor',
     phoneE164: process.env.VENDOR_PHONE_E164 ?? '',
   },
+  guide: {
+    openaiApiKey: process.env.OPENAI_API_KEY ?? '',
+    openaiModel: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+    openaiEndpoint:
+      process.env.OPENAI_ENDPOINT ?? 'https://api.openai.com/v1/chat/completions',
+    whatsappE164:
+      process.env.SUPPORT_WHATSAPP_E164 ??
+      process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ??
+      '',
+  },
 });
