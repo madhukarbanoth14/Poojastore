@@ -63,7 +63,7 @@ class EnvironmentVariables {
   @IsOptional()
   OTP_RETURN_IN_RESPONSE?: string;
 
-  @IsIn(['console', 'twilio'])
+  @IsIn(['console', 'twilio', 'apitxt'])
   SMS_PROVIDER!: string;
 
   @IsIn(['console', 'smtp'])
@@ -114,6 +114,46 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   TWILIO_MESSAGING_SERVICE_SID?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_ENDPOINT?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_AUTH_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_SENDER?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_ROUTE?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_UNICODE?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_PE_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_TEMPLATE_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_OTP_TEMPLATE_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_OTP_MESSAGE?: string;
+
+  @IsString()
+  @IsOptional()
+  APITXT_COUNTRY?: string;
 
   @IsString()
   @IsOptional()
@@ -203,6 +243,20 @@ function assertTwilioConfigured(env: EnvironmentVariables) {
   }
 }
 
+function assertApiTxtConfigured(env: EnvironmentVariables) {
+  if (env.SMS_PROVIDER !== 'apitxt') return;
+  const failures: string[] = [];
+  if (!env.APITXT_AUTH_KEY) failures.push('APITXT_AUTH_KEY is required');
+  if (!env.APITXT_SENDER) failures.push('APITXT_SENDER is required');
+  if (!env.APITXT_PE_ID) failures.push('APITXT_PE_ID is required');
+  if (!env.APITXT_TEMPLATE_ID && !env.APITXT_OTP_TEMPLATE_ID) {
+    failures.push('APITXT_TEMPLATE_ID or APITXT_OTP_TEMPLATE_ID is required');
+  }
+  if (failures.length) {
+    throw new Error(`ApiTxt config rejected:\n- ${failures.join('\n- ')}`);
+  }
+}
+
 function assertSmtpConfigured(env: EnvironmentVariables) {
   if ((env.EMAIL_PROVIDER ?? 'console') !== 'smtp') return;
   const failures: string[] = [];
@@ -279,6 +333,7 @@ export function validateEnv(config: Record<string, unknown>) {
   }
   assertProductionSafety(validated);
   assertTwilioConfigured(validated);
+  assertApiTxtConfigured(validated);
   assertSmtpConfigured(validated);
   assertLivePaymentsConfigured(validated);
   // Return the original env map so Razorpay/Stripe keys stay available to

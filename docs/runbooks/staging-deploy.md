@@ -64,7 +64,7 @@ Never use `prisma migrate reset` outside disposable local DBs.
 | Variable | Required value |
 |----------|----------------|
 | `PAYMENT_MODE` | `live` |
-| `SMS_PROVIDER` | `twilio` (with `TWILIO_*`) |
+| `SMS_PROVIDER` | `twilio` (with `TWILIO_*`) or `apitxt` (with `APITXT_*`) |
 | `OTP_RETURN_IN_RESPONSE` | `false` / unset |
 | `SWAGGER_ENABLED` | `false` |
 | JWT secrets | no `change-me` substring |
@@ -81,11 +81,18 @@ Never use `prisma migrate reset` outside disposable local DBs.
    Events: `checkout.session.completed`, `checkout.session.expired`, `charge.refunded`, `refund.updated`
 4. Copy webhook signing secrets into `RAZORPAY_WEBHOOK_SECRET` / `STRIPE_WEBHOOK_SECRET`
 
-## SMS (Twilio)
+## SMS (Twilio or ApiTxt)
 
+### Twilio
 1. Create Messaging Service or purchase a from-number
 2. Set `SMS_PROVIDER=twilio` + `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and either `TWILIO_FROM_NUMBER` or `TWILIO_MESSAGING_SERVICE_SID`
 3. Request OTP on staging and confirm SMS delivery (OTP must **not** appear in API JSON)
+
+### ApiTxt (apitxt.com, India DLT)
+1. Approve DLT Principal Entity Id, 6-letter sender header, and OTP content template
+2. Set `SMS_PROVIDER=apitxt` + `APITXT_AUTH_KEY`, `APITXT_SENDER`, `APITXT_PE_ID`, and `APITXT_TEMPLATE_ID` (or `APITXT_OTP_TEMPLATE_ID`)
+3. Set `APITXT_OTP_MESSAGE` to match the approved DLT template text, using `{otp}` where the variable goes
+4. Request OTP on staging and confirm SMS delivery (OTP must **not** appear in API JSON)
 
 ## Admin refunds
 

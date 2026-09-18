@@ -9,6 +9,7 @@ import { RegisterAccountUseCase } from './application/use-cases/register-account
 import { RequestOtpUseCase } from './application/use-cases/request-otp.use-case';
 import { SocialLoginUseCase } from './application/use-cases/social-login.use-case';
 import { VerifyOtpUseCase } from './application/use-cases/verify-otp.use-case';
+import { ApiTxtSmsSender } from './infrastructure/apitxt-sms.sender';
 import { ConsoleSmsSender } from './infrastructure/console-sms.sender';
 import { JwtStrategy } from './infrastructure/jwt.strategy';
 import { TokenService } from './infrastructure/token.service';
@@ -39,16 +40,19 @@ import { AuthController } from './presentation/auth.controller';
     JwtStrategy,
     ConsoleSmsSender,
     TwilioSmsSender,
+    ApiTxtSmsSender,
     {
       provide: SMS_SENDER,
-      inject: [ConfigService, ConsoleSmsSender, TwilioSmsSender],
+      inject: [ConfigService, ConsoleSmsSender, TwilioSmsSender, ApiTxtSmsSender],
       useFactory: (
         config: ConfigService,
         consoleSender: ConsoleSmsSender,
         twilioSender: TwilioSmsSender,
+        apitxtSender: ApiTxtSmsSender,
       ) => {
         const provider = config.get<string>('smsProvider') ?? 'console';
         if (provider === 'twilio') return twilioSender;
+        if (provider === 'apitxt') return apitxtSender;
         return consoleSender;
       },
     },

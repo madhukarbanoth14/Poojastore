@@ -12,7 +12,7 @@
 8. `GET /me` returns the authenticated principal.
 9. Admin can list users (paginated) and suspend/activate users.
 10. All auth events write audit logs.
-11. Production uses Twilio SMS (`SMS_PROVIDER=twilio`); console sender is dev/test only.
+11. Production uses a real SMS provider (`SMS_PROVIDER=twilio` or `SMS_PROVIDER=apitxt`); console sender is dev/test only.
 12. Continue with Google / Apple via `POST /auth/social` (verified ID token required in production).
 
 ## 2. Database schema

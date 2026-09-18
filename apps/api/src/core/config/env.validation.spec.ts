@@ -64,6 +64,48 @@ describe('validateEnv production gates', () => {
     ).toThrow(/Twilio/);
   });
 
+  it('rejects apitxt without credentials', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        SMS_PROVIDER: 'apitxt',
+      }),
+    ).toThrow(/ApiTxt/);
+  });
+
+  it('accepts apitxt with required DLT fields', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        SMS_PROVIDER: 'apitxt',
+        APITXT_AUTH_KEY: 'key',
+        APITXT_SENDER: 'PAVITR',
+        APITXT_PE_ID: 'pe-1',
+        APITXT_TEMPLATE_ID: 'tpl-1',
+      }),
+    ).not.toThrow();
+  });
+
+  it('accepts safe production config with apitxt', () => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        NODE_ENV: 'production',
+        PAYMENT_MODE: 'live',
+        SMS_PROVIDER: 'apitxt',
+        APITXT_AUTH_KEY: 'key',
+        APITXT_SENDER: 'PAVITR',
+        APITXT_PE_ID: 'pe-1',
+        APITXT_OTP_TEMPLATE_ID: 'otp-tpl',
+        OTP_RETURN_IN_RESPONSE: 'false',
+        SWAGGER_ENABLED: 'false',
+        RAZORPAY_KEY_ID: 'rzp_live',
+        RAZORPAY_KEY_SECRET: 'secret',
+        RAZORPAY_WEBHOOK_SECRET: 'whsec',
+      }),
+    ).not.toThrow();
+  });
+
   it('rejects smtp without host', () => {
     expect(() =>
       validateEnv({

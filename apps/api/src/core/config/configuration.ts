@@ -31,6 +31,21 @@ export default () => ({
     fromNumber: process.env.TWILIO_FROM_NUMBER ?? '',
     messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID ?? '',
   },
+  apitxt: {
+    endpoint:
+      process.env.APITXT_ENDPOINT ?? 'https://www.apitxt.com/api/sendMsg',
+    authKey: process.env.APITXT_AUTH_KEY ?? '',
+    sender: process.env.APITXT_SENDER ?? '',
+    route: process.env.APITXT_ROUTE ?? '4',
+    unicode: process.env.APITXT_UNICODE ?? '0',
+    peId: process.env.APITXT_PE_ID ?? '',
+    templateId: process.env.APITXT_TEMPLATE_ID ?? '',
+    otpTemplateId: process.env.APITXT_OTP_TEMPLATE_ID ?? '',
+    otpMessageTemplate:
+      process.env.APITXT_OTP_MESSAGE ??
+      'Pavitra Seva OTP: {otp}. Valid for a few minutes. Do not share.',
+    country: process.env.APITXT_COUNTRY ?? '91',
+  },
   corsOrigins: (process.env.CORS_ORIGINS ?? '')
     .split(',')
     .map((v) => v.trim())
