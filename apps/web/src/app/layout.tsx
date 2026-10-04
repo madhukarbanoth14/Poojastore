@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, Noto_Sans_Telugu } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
 import { AppShell } from "@/components/app-shell";
+import { PavitraGuideLazy } from "@/components/guide/pavitra-guide-lazy";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getLocale } from "@/lib/locale";
@@ -79,6 +80,7 @@ export default async function RootLayout({
           >
             {children}
           </AppShell>
+          <PavitraGuideLazy initialLocale={locale} />
         </AuthProvider>
       </body>
     </html>

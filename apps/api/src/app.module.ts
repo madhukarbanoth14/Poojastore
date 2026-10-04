@@ -27,6 +27,7 @@ import { AdminOpsModule } from './modules/admin-ops/admin-ops.module';
 import { PromosModule } from './modules/promos/promos.module';
 import { SamagriScanModule } from './modules/samagri-scan/samagri-scan.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { GuideModule } from './modules/guide/guide.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     AdminOpsModule,
     NotificationsModule,
     SamagriScanModule,
+    GuideModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

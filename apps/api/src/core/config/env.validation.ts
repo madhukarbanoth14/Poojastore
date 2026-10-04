@@ -186,6 +186,22 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   VENDOR_PHONE_E164?: string;
+
+  @IsString()
+  @IsOptional()
+  OPENAI_API_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  OPENAI_MODEL?: string;
+
+  @IsString()
+  @IsOptional()
+  OPENAI_ENDPOINT?: string;
+
+  @IsString()
+  @IsOptional()
+  SUPPORT_WHATSAPP_E164?: string;
 }
 
 function assertTwilioConfigured(env: EnvironmentVariables) {
