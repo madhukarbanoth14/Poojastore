@@ -112,7 +112,7 @@ Each feature ships with: FR doc, schema, API, Flutter UI, admin/ops hooks, valid
 | `REDIS_URL` | Redis |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Token signing (min 32 chars; no `change-me` in prod) |
 | `OTP_*` | OTP TTL, length, max attempts |
-| `SMS_PROVIDER` | `console` (dev) \| `twilio` (required in prod) |
+| `SMS_PROVIDER` | `console` (dev) \| `twilio` \| `apitxt` (required non-console in prod) |
 | `PAYMENT_MODE` | `mock` (dev) \| `live` (required in prod) |
 | `OTP_RETURN_IN_RESPONSE` | Must be `false` in production |
 | `SWAGGER_ENABLED` | Must be `false` in production |

@@ -40,7 +40,7 @@ When those keys exist, redeploy with:
 
 - `NODE_ENV=production`
 - `PAYMENT_MODE=live`
-- `SMS_PROVIDER=twilio`
+- `SMS_PROVIDER=twilio` or `SMS_PROVIDER=apitxt`
 - `OTP_RETURN_IN_RESPONSE=false`
 - `SWAGGER_ENABLED=false`
 

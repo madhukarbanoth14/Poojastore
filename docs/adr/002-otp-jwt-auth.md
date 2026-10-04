@@ -18,4 +18,4 @@ Target markets include India where phone OTP is the dominant mobile auth pattern
 
 ## Consequences
 
-Requires SMS provider in production (`SMS_PROVIDER=twilio`). Dev/test uses `console` provider that logs OTP and can expose it only when `OTP_RETURN_IN_RESPONSE=true`.
+Requires SMS provider in production (`SMS_PROVIDER=twilio` or `SMS_PROVIDER=apitxt`). Dev/test uses `console` provider that logs OTP and can expose it only when `OTP_RETURN_IN_RESPONSE=true`.
