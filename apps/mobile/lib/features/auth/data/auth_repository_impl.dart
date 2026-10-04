@@ -155,4 +155,9 @@ class AuthRepositoryImpl implements AuthRepository {
     await _storage.write(key: 'access_token', value: accessToken);
     await _storage.write(key: 'refresh_token', value: refreshToken);
   }
+
+  @override
+  Future<AuthSession> applyTokenPayload(Map<String, dynamic> data) {
+    return _sessionFromResponse(data);
+  }
 }

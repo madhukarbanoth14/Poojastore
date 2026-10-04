@@ -307,7 +307,7 @@
   "dateOfBirth": "పుట్టిన తేదీ",
   "birthTime": "పుట్టిన సమయం",
   "birthPlaceCity": "పుట్టిన స్థలం (నగరం)",
-  "birthPlaceHint": "హైదరాబాద్, బెంగళూరు, …",
+  "birthPlaceHint": "హైదరాబాద్, …",
   "cityForDailyPanchang": "రోజువారీ పంచాంగానికి నగరం",
   "computingRasi": "రాశి లెక్కిస్తోంది…",
   "fetchRasiPalalu": "రాశి పలాలు తెచ్చండి",

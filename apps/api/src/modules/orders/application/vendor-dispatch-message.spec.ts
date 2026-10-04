@@ -4,7 +4,7 @@ describe('formatVendorDispatchSms', () => {
   it('includes order number, address, and truncated items', () => {
     const body = formatVendorDispatchSms({
       orderNumber: 'PSABC123',
-      deliverySlot: 'Within 24 hours',
+      deliverySlot: 'Within 6 hours',
       totalMinor: 208600,
       currency: 'INR',
       user: { fullName: 'Aarav', phoneE164: '+919876543210' },

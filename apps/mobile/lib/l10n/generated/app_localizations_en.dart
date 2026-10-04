@@ -989,7 +989,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get birthPlaceCity => 'Birth place (city)';
 
   @override
-  String get birthPlaceHint => 'Hyderabad, Bengaluru, …';
+  String get birthPlaceHint => 'Hyderabad, …';
 
   @override
   String get cityForDailyPanchang => 'City for daily panchang';

@@ -1943,7 +1943,7 @@ abstract class AppLocalizations {
   /// No description provided for @birthPlaceHint.
   ///
   /// In en, this message translates to:
-  /// **'Hyderabad, Bengaluru, …'**
+  /// **'Hyderabad, …'**
   String get birthPlaceHint;
 
   /// No description provided for @cityForDailyPanchang.

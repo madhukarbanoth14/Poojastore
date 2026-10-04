@@ -1,9 +1,51 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/theme/app_theme.dart';
 import 'auth_controller.dart';
+
+bool get showAppleSignInButton =>
+    !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
+class AppleSignInButton extends StatelessWidget {
+  const AppleSignInButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.enabled = true,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: enabled ? onPressed : null,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.text,
+        backgroundColor: Colors.white,
+        side: const BorderSide(color: AppColors.inputBorder),
+        minimumSize: const Size.fromHeight(50),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.apple, size: 22),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 bool _googleReady = false;
 

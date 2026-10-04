@@ -133,6 +133,9 @@ export function KitExtrasChooser({
         </div>
         <AddToCartButton
           productId={product.id}
+          itemName={product.name}
+          priceMinor={total}
+          currency={product.currency}
           selectedItemKeys={selectedItemKeys}
           buyNow={checkout}
           redirectTo={checkout ? "/checkout" : "/cart"}

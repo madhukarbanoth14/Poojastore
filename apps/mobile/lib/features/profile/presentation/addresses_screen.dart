@@ -21,19 +21,29 @@ class AddressesScreen extends ConsumerWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (items.isEmpty) {
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-              children: const [
-                _StaticAddress(
-                  label: 'Home',
-                  detail: '4th Cross, Malleshwaram, Bengaluru 560003',
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'No saved addresses yet',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: t.text,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Add one at checkout. We currently deliver in Hyderabad (PIN 500xxx).',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: t.textMuted),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 12),
-                _StaticAddress(
-                  label: 'Office',
-                  detail: 'Tech Park, Whitefield, Bengaluru 560066',
-                ),
-              ],
+              ),
             );
           }
           return ListView.separated(
@@ -66,36 +76,6 @@ class AddressesScreen extends ConsumerWidget {
             },
           );
         },
-      ),
-    );
-  }
-}
-
-class _StaticAddress extends StatelessWidget {
-  const _StaticAddress({required this.label, required this.detail});
-
-  final String label;
-  final String detail;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.ps;
-    return PsCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w700,
-              color: t.text,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(detail, style: TextStyle(fontSize: 12.5, color: t.textMuted)),
-        ],
       ),
     );
   }

@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { isInAppBrowser } from "@/lib/in-app-browser";
+import { goAfterAuth } from "@/lib/pending-cart";
 
 declare global {
   interface Window {
@@ -109,13 +111,18 @@ export function SocialAuthButtons({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<"google" | "apple" | null>(null);
   const [googleReady, setGoogleReady] = useState(false);
+  const [inApp, setInApp] = useState(false);
   const socialLoginRef = useRef(socialLogin);
   const nextRef = useRef(next);
   socialLoginRef.current = socialLogin;
   nextRef.current = next;
 
   useEffect(() => {
-    if (!googleClientId || !googleHost) {
+    setInApp(isInAppBrowser());
+  }, []);
+
+  useEffect(() => {
+    if (inApp || !googleClientId || !googleHost) {
       setGoogleReady(false);
       return;
     }
@@ -136,7 +143,7 @@ export function SocialAuthButtons({
             setError(null);
             void socialLoginRef
               .current({ provider: "GOOGLE", idToken: response.credential })
-              .then(() => router.replace(nextRef.current))
+              .then(() => goAfterAuth(nextRef.current, (url) => router.replace(url)))
               .catch((err: unknown) => {
                 setError(err instanceof Error ? err.message : "Google Sign-In failed");
               })
@@ -172,7 +179,7 @@ export function SocialAuthButtons({
     return () => {
       cancelled = true;
     };
-  }, [googleClientId, googleHost, router]);
+  }, [googleClientId, googleHost, inApp, router]);
 
   function googleUnconfigured() {
     setError("Google Sign-In is not configured yet. Use email and password.");
@@ -185,7 +192,11 @@ export function SocialAuthButtons({
         or continue with
         <span className="h-px flex-1 bg-divider" />
       </div>
-      {googleClientId ? (
+      {inApp ? (
+        <p className="text-center text-xs text-muted">
+          Continue with Google after opening this page in Chrome or Safari.
+        </p>
+      ) : googleClientId ? (
         <div
           ref={setGoogleHost}
           className={`flex min-h-[48px] w-full justify-center ${
@@ -202,7 +213,7 @@ export function SocialAuthButtons({
           Continue with Google
         </button>
       )}
-      {googleClientId && !googleReady && !error ? (
+      {googleClientId && !inApp && !googleReady && !error ? (
         <p className="text-center text-xs text-muted">Loading Google…</p>
       ) : null}
       {error ? <p className="text-center text-sm text-orange">{error}</p> : null}

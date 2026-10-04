@@ -390,7 +390,7 @@
   "dateOfBirth": "Date of birth",
   "birthTime": "Birth time",
   "birthPlaceCity": "Birth place (city)",
-  "birthPlaceHint": "Hyderabad, Bengaluru, …",
+  "birthPlaceHint": "Hyderabad, …",
   "cityForDailyPanchang": "City for daily panchang",
   "computingRasi": "Computing rāśi…",
   "fetchRasiPalalu": "Fetch Rasi Palalu",

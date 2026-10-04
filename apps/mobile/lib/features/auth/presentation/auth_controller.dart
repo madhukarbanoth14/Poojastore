@@ -183,6 +183,15 @@ class AuthController extends StateNotifier<AuthState> {
     );
     state = state.copyWith(user: user);
   }
+
+  Future<void> applySession(AuthSession session) async {
+    state = state.copyWith(
+      user: session.user,
+      loading: false,
+      bootstrapping: false,
+      clearError: true,
+    );
+  }
 }
 
 final authControllerProvider =

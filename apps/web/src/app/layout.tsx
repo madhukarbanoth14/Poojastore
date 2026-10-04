@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, Noto_Sans_Telugu } from "next/font/google";
+import { Analytics } from "@/components/analytics";
 import { AuthProvider } from "@/components/auth-provider";
 import { AppShell } from "@/components/app-shell";
 import { PavitraGuideLazy } from "@/components/guide/pavitra-guide-lazy";
@@ -62,6 +63,9 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const festive = festivalThemeActive() || Boolean(getActiveFestivalCampaign());
+  const gaMeasurementId =
+    process.env.GA_MEASUREMENT_ID || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+  const metaPixelId = process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || "";
   return (
     <html
       lang={locale}
@@ -69,6 +73,18 @@ export default async function RootLayout({
       className={`${inter.variable} ${cormorant.variable} ${telugu.variable}`}
     >
       <body className="min-h-screen bg-bg antialiased">
+        <Analytics gaMeasurementId={gaMeasurementId} metaPixelId={metaPixelId} />
+        {metaPixelId ? (
+          <noscript>
+            <img
+              height={1}
+              width={1}
+              style={{ display: "none" }}
+              src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
+              alt=""
+            />
+          </noscript>
+        ) : null}
         <div className="paper-grain" aria-hidden />
         <a href="#main" className="skip-link">
           Skip to content

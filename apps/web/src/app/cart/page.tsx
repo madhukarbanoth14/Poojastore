@@ -96,9 +96,9 @@ export default function CartPage() {
               Subtotal{" "}
               <span className="price">{formatMoney(cart?.subtotalMinor ?? 0, cart?.currency ?? "INR")}</span>
             </p>
-            <Link href="/checkout" className="btn-orange">
+            <a href="/checkout" className="btn-orange">
               Continue to checkout
-            </Link>
+            </a>
           </div>
         </>
       )}

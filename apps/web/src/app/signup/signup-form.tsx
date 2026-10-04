@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { InAppBrowserNotice } from "@/components/in-app-browser-notice";
 import { SocialAuthButtons } from "@/components/social-auth-buttons";
 import { LotusDivider } from "@/components/ornaments";
 import { Kicker } from "@/components/ui";
+import { goAfterAuth } from "@/lib/pending-cart";
 
 export function SignupForm({
   googleClientId,
@@ -37,7 +39,7 @@ export function SignupForm({
         phone,
         fullName: fullName.trim() || undefined,
       });
-      router.replace(next === "/" ? "/account/birth?welcome=1" : next);
+      goAfterAuth(next === "/" ? "/account/birth?welcome=1" : next, (url) => router.replace(url));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create account");
     } finally {
@@ -53,6 +55,9 @@ export function SignupForm({
           <h1 className="font-display mt-2 text-4xl text-maroon">Create account</h1>
         </div>
         <LotusDivider className="mx-auto mt-4" />
+        <div className="mt-4">
+          <InAppBrowserNotice />
+        </div>
         <p className="mt-3 text-center text-sm text-muted">Email, password, and mobile number</p>
         <form
           className="mt-8 space-y-3"

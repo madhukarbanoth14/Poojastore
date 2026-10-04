@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { clientFetch } from "@/lib/client";
+import { trackAddToCart } from "@/lib/analytics";
+import { goToCartDestination, stashPendingCart } from "@/lib/pending-cart";
 
 export function AddToCartButton({
   productId,
@@ -13,6 +14,9 @@ export function AddToCartButton({
   compact = false,
   redirectTo = "/cart",
   buyNow = false,
+  itemName,
+  priceMinor,
+  currency,
 }: {
   productId: string;
   selectedItemKeys?: string[];
@@ -23,17 +27,26 @@ export function AddToCartButton({
   redirectTo?: string;
   /** Clear other cart lines so checkout total matches this product. */
   buyNow?: boolean;
+  itemName?: string;
+  priceMinor?: number;
+  currency?: string | null;
 }) {
   const { user, refreshCart } = useAuth();
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function add() {
     if (!user) {
-        router.push(
-          `/login?next=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`,
-        );
+      stashPendingCart({
+        productId,
+        selectedItemKeys,
+        buyNow,
+        redirectTo,
+        itemName,
+        priceMinor,
+        currency,
+      });
+      goToCartDestination(redirectTo === "/cart" ? "/checkout" : redirectTo);
       return;
     }
     setBusy(true);
@@ -48,8 +61,14 @@ export function AddToCartButton({
           ...(buyNow ? { replace: true } : {}),
         }),
       });
+      trackAddToCart({
+        id: productId,
+        name: itemName || "Pooja kit",
+        priceMinor: priceMinor ?? 0,
+        currency,
+      });
       await refreshCart();
-      router.push(redirectTo);
+      goToCartDestination(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add to cart");
     } finally {

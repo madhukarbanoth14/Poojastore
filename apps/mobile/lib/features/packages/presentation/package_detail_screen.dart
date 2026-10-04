@@ -54,9 +54,9 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen> {
     final created = await ref.read(packagesApiProvider).createAddress({
       'label': 'Home',
       'line1': '12 Temple Street',
-      'city': 'Bengaluru',
-      'state': 'Karnataka',
-      'postalCode': '560001',
+      'city': 'Hyderabad',
+      'state': 'Telangana',
+      'postalCode': '500033',
       'country': 'IN',
       'isDefault': true,
     });

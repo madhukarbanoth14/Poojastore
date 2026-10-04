@@ -82,7 +82,7 @@ const ganeshMiniHomeList = SamagriFestivalList(
     SamagriLine(slug: "samagri-gandham", nameEn: "Sandal paste (Gandham)", nameTe: "గంధం", priceMinor: 8000, packEn: "25g", packTe: "25 గ్రా"),
     SamagriLine(slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", priceMinor: 4000, packEn: "1 pack", packTe: "1 ప్యాక్"),
     SamagriLine(slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", priceMinor: 5000, packEn: "1 pack", packTe: "1 ప్యాక్"),
-    SamagriLine(slug: "samagri-rice", nameEn: "Rice", nameTe: "బియ్యం", priceMinor: 24900, packEn: "2000g", packTe: "2000 గ్రా"),
+    SamagriLine(slug: "samagri-rice", nameEn: "Rice", nameTe: "బియ్యం", priceMinor: 24900, packEn: "250g", packTe: "250 గ్రా"),
     SamagriLine(slug: "samagri-betel-nuts", nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు", priceMinor: 8000),
     SamagriLine(slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", priceMinor: 6000),
     SamagriLine(slug: "samagri-red-cloth", nameEn: "Red cloth", nameTe: "ఎర్రని బట్ట", priceMinor: 8000),

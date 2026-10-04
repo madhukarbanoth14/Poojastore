@@ -72,11 +72,9 @@ final _routerProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authControllerProvider);
       final loc = state.matchedLocation;
 
-      // Guests may browse the store; only account/checkout flows require login.
+      // Guests may browse and check out with name + mobile. Account pages still need login.
       final isPoojariApply = loc == '/poojari/apply';
       const authRequiredExact = {
-        '/checkout',
-        '/cart',
         '/orders',
         '/order-confirm',
         '/tracking',
@@ -89,7 +87,6 @@ final _routerProvider = Provider<GoRouter>((ref) {
       final needsAuth =
           !isPoojariApply &&
           (authRequiredExact.contains(loc) ||
-              loc.startsWith('/checkout') ||
               loc.startsWith('/orders/') ||
               loc.startsWith('/tracking') ||
               loc.startsWith('/book/') ||
@@ -197,7 +194,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => OrderConfirmScreen(
           orderId: state.uri.queryParameters['id'] ?? '',
           amount: state.uri.queryParameters['amount'] ?? '₹0',
-          slot: state.uri.queryParameters['slot'] ?? 'Within 24 hours',
+          slot: state.uri.queryParameters['slot'] ?? 'Within 6 hours',
           pendingUpi: state.uri.queryParameters['pending'] == '1',
         ),
       ),

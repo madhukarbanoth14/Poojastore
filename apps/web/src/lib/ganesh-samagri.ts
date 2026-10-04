@@ -14,7 +14,7 @@ export const ganeshMiniHomeItems: GaneshSamagriLine[] = [
   { slug: "samagri-gandham", nameEn: "Sandal paste (Gandham)", nameTe: "గంధం", packEn: "25g", packTe: "25 గ్రా" },
   { slug: "samagri-incense", nameEn: "Incense sticks", nameTe: "అగరబత్తులు", packEn: "1 pack", packTe: "1 ప్యాక్" },
   { slug: "samagri-camphor", nameEn: "Camphor", nameTe: "కర్పూరం", packEn: "1 pack", packTe: "1 ప్యాక్" },
-  { slug: "samagri-rice", nameEn: "Rice", nameTe: "బియ్యం", packEn: "2000g", packTe: "2000 గ్రా" },
+  { slug: "samagri-rice", nameEn: "Rice", nameTe: "బియ్యం", packEn: "250g", packTe: "250 గ్రా" },
   { slug: "samagri-betel-nuts", nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు" },
   { slug: "samagri-turmeric-roots", nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు" },
   { slug: "samagri-red-cloth", nameEn: "Red cloth", nameTe: "ఎర్రని బట్ట" },

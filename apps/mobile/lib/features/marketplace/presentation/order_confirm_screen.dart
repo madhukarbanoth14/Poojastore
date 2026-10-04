@@ -7,7 +7,7 @@ class OrderConfirmScreen extends StatelessWidget {
     super.key,
     this.orderId = '',
     this.amount = '₹0',
-    this.slot = 'Within 24 hours',
+    this.slot = 'Within 6 hours',
     this.pendingUpi = false,
   });
 
@@ -22,7 +22,7 @@ class OrderConfirmScreen extends StatelessWidget {
       title: pendingUpi ? 'Order placed' : 'Order Confirmed!',
       subtitle: pendingUpi
           ? 'We recorded your UPI reference. Packing starts after we confirm the credit on our bank statement.'
-          : 'Payment received. Your order will be packed and delivered within 24 hours.',
+          : 'Payment received. Your order will be packed and delivered within 6 hours.',
       rows: [
         ('Order ID', orderId),
         (pendingUpi ? 'Amount' : 'Amount Paid', amount),

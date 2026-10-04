@@ -60,10 +60,10 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     if (_addressId != null) return;
     final created = await ref.read(priestsApiProvider).createAddress({
       'label': 'Home',
-      'line1': '4th Cross, Malleshwaram',
-      'city': 'Bengaluru',
-      'state': 'Karnataka',
-      'postalCode': '560003',
+      'line1': 'Banjara Hills',
+      'city': 'Hyderabad',
+      'state': 'Telangana',
+      'postalCode': '500034',
       'country': 'IN',
       'isDefault': true,
     });

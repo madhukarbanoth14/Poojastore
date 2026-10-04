@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { trackViewItem } from "@/lib/analytics";
 import { ganeshKitItemsBySlug } from "@/lib/ganesh-samagri";
 import { samagriImage } from "@/lib/catalog-images";
 import { formatMoney } from "@/lib/format";
@@ -149,6 +150,16 @@ export function KitShop({
   function scrollToItems() {
     itemsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+
+  useEffect(() => {
+    if (!tab?.product) return;
+    trackViewItem({
+      id: tab.product.id,
+      name: tab.product.name,
+      priceMinor: tab.product.priceMinor,
+      currency: tab.product.currency,
+    });
+  }, [tab?.product?.id, tab?.product?.name, tab?.product?.priceMinor, tab?.product?.currency]);
 
   useEffect(() => {
     if (gridReady) return;
@@ -306,6 +317,9 @@ export function KitShop({
             ) : tab.product ? (
               <AddToCartButton
                 productId={tab.product.id}
+                itemName={tab.product.name}
+                priceMinor={tab.product.priceMinor}
+                currency={tab.product.currency}
                 buyNow
                 redirectTo="/checkout"
                 className="w-full justify-center"
@@ -460,6 +474,9 @@ export function KitShop({
           ) : (
             <AddToCartButton
               productId={tab.product.id}
+              itemName={tab.product.name}
+              priceMinor={tab.product.priceMinor}
+              currency={tab.product.currency}
               buyNow
               redirectTo="/checkout"
               compact

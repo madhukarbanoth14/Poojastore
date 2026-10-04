@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/delivery_zone.dart';
 import '../../../core/payments/upi_pay_sheet.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
@@ -8,9 +9,10 @@ import '../../../core/widgets/ps_format.dart';
 import '../../../core/widgets/ps_widgets.dart';
 import '../../../l10n/l10n.dart';
 import '../../auth/presentation/auth_controller.dart';
+import 'guest_checkout_screen.dart';
 import 'kits_screen.dart';
 
-const _deliverySlot = 'Within 24 hours';
+const _deliverySlot = 'Within 6 hours';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -21,21 +23,23 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   bool _loading = false;
+  late final bool _guestCheckout;
   String? _error;
   String? _selectedAddressId;
   List<Map<String, dynamic>> _addresses = [];
   Map<String, dynamic>? _cart;
 
-  final _line1 = TextEditingController(text: '4th Cross, Malleshwaram');
-  final _city = TextEditingController(text: 'Bengaluru');
-  final _state = TextEditingController(text: 'Karnataka');
-  final _postal = TextEditingController(text: '560003');
+  final _line1 = TextEditingController();
+  final _city = TextEditingController(text: 'Hyderabad');
+  final _state = TextEditingController(text: 'Telangana');
+  final _postal = TextEditingController();
   final _phone = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _guestCheckout = !ref.read(authControllerProvider).isAuthenticated;
+    if (!_guestCheckout) _load();
   }
 
   @override
@@ -163,6 +167,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (phone.isEmpty) {
         throw StateError('Enter your mobile number for delivery updates.');
       }
+      Map<String, dynamic>? selected;
+      for (final address in _addresses) {
+        if (address['id'] == _selectedAddressId) selected = address;
+      }
+      final pin = selected?['postalCode'] as String? ?? _postal.text;
+      if (!isHyderabadDelivery(postalCode: pin)) {
+        throw StateError(hyderabadDeliveryMessage);
+      }
       await _ensureAddress();
       final api = ref.read(marketplaceApiProvider);
       final result = await api.checkout(
@@ -199,6 +211,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_guestCheckout) {
+      return const GuestCheckoutScreen();
+    }
     final l10n = context.l10n;
     final t = context.ps;
     final total = _cart?['subtotalMinor'] as int? ?? 0;
@@ -238,7 +253,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             const SizedBox(height: 10),
             TextField(
               controller: _city,
-              decoration: const InputDecoration(labelText: 'City'),
+              decoration: const InputDecoration(labelText: 'City (Hyderabad)'),
             ),
             const SizedBox(height: 10),
             TextField(
@@ -248,7 +263,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             const SizedBox(height: 10),
             TextField(
               controller: _postal,
-              decoration: const InputDecoration(labelText: 'Postal code'),
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'PIN (500xxx)'),
             ),
           ],
           const SizedBox(height: 10),

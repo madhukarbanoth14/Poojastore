@@ -5,16 +5,22 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Role } from '@prisma/client';
+import type { Request } from 'express';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import { Public } from '../../../common/decorators/public.decorator';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../auth/domain/authenticated-user';
 import { CheckoutService } from '../application/checkout.service';
+import { GuestCheckoutService } from '../application/guest-checkout.service';
 import { OrderLifecycleService } from '../application/order-lifecycle.service';
 import { ReferKitService } from '../application/refer-kit.service';
 import { CheckoutDto, OrderActionDto, ReferKitDto } from './dto/order.dto';
+import { GuestCheckoutDto } from './dto/guest-checkout.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth()
@@ -22,6 +28,7 @@ import { CheckoutDto, OrderActionDto, ReferKitDto } from './dto/order.dto';
 export class OrdersController {
   constructor(
     private readonly checkout: CheckoutService,
+    private readonly guestCheckout: GuestCheckoutService,
     private readonly lifecycle: OrderLifecycleService,
     private readonly referrals: ReferKitService,
   ) {}
@@ -47,6 +54,21 @@ export class OrdersController {
         contactPhone: dto.contactPhone,
       },
     );
+    return { success: true, data };
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 8, ttl: 60_000 } })
+  @Post('guest-checkout')
+  @ApiOperation({
+    summary: 'Place an order with name, mobile, and address (no Google login)',
+  })
+  async createGuestCheckout(@Body() dto: GuestCheckoutDto, @Req() req: Request) {
+    const data = await this.guestCheckout.placeOrder(dto, {
+      deviceId: dto.deviceId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
     return { success: true, data };
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/i18n/locale_controller.dart';
+import '../../../core/pending_cart.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../core/catalog/catalog_images.dart';
@@ -27,10 +28,46 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   void _reload() {
-    _future = ref.read(marketplaceApiProvider).getCart();
+    _future = _loadCart();
+  }
+
+  Future<Map<String, dynamic>> _loadCart() async {
+    if (!ref.read(authControllerProvider).isAuthenticated) {
+      final pending = await peekPendingCart();
+      if (pending == null) {
+        return {
+          'items': <Map<String, dynamic>>[],
+          'subtotalMinor': 0,
+          'itemCount': 0,
+        };
+      }
+      final price = pending.priceMinor ?? 0;
+      return {
+        'items': [
+          {
+            'productId': pending.productId,
+            'quantity': 1,
+            'product': {
+              'name': pending.itemName ?? 'Pooja kit',
+              'slug': null,
+              'priceMinor': price,
+            },
+          },
+        ],
+        'subtotalMinor': price,
+        'itemCount': 1,
+        'guestPending': true,
+      };
+    }
+    return ref.read(marketplaceApiProvider).getCart();
   }
 
   Future<void> _remove(String productId) async {
+    if (!ref.read(authControllerProvider).isAuthenticated) {
+      await takePendingCart();
+      setState(_reload);
+      return;
+    }
     await ref.read(marketplaceApiProvider).removeCartItem(productId);
     setState(_reload);
   }
@@ -38,6 +75,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen(localeControllerProvider, (_, __) => setState(_reload));
+    ref.listen(authControllerProvider, (_, __) => setState(_reload));
     final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -45,6 +83,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       body: FutureBuilder(
         future: _future,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  '${snapshot.error}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textMuted),
+                ),
+              ),
+            );
+          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -82,7 +132,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           }
 
           final subtotal = cart['subtotalMinor'] as int;
-          const delivery = 4000;
+          final delivery = subtotal >= 100000 ? 0 : 4900;
           final total = subtotal + delivery;
 
           return ListView(
@@ -169,18 +219,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               ),
               const SizedBox(height: 14),
               FilledButton(
-                onPressed: () async {
-                  if (!ref.read(authControllerProvider).isAuthenticated) {
-                    await context.push(
-                      '/login?next=${Uri.encodeComponent('/checkout')}',
-                    );
-                  }
-                  if (!context.mounted) return;
-                  if (!ref.read(authControllerProvider).isAuthenticated) {
-                    return;
-                  }
-                  context.push('/checkout');
-                },
+                onPressed: () => context.push('/checkout'),
                 child: Text(l10n.proceedToCheckout),
               ),
             ],

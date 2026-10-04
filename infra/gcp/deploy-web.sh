@@ -42,6 +42,12 @@ fi
 if [[ -z "${APPLE_WEB_CLIENT_ID:-}" ]]; then
   APPLE_WEB_CLIENT_ID="$(run_env "$SERVICE" APPLE_WEB_CLIENT_ID || true)"
 fi
+if [[ -z "${GA_MEASUREMENT_ID:-}" ]]; then
+  GA_MEASUREMENT_ID="$(run_env "$SERVICE" GA_MEASUREMENT_ID || true)"
+fi
+if [[ -z "${META_PIXEL_ID:-}" ]]; then
+  META_PIXEL_ID="$(run_env "$SERVICE" META_PIXEL_ID || true)"
+fi
 
 gcloud builds submit apps/web \
   --account="$ACCOUNT" \
@@ -61,7 +67,7 @@ gcloud run deploy "$SERVICE" \
   --max-instances=3 \
   --timeout=300 \
   --allow-unauthenticated \
-  --set-env-vars="NODE_ENV=production,API_BASE_URL=${API_BASE},NEXT_PUBLIC_API_BASE_URL=${API_BASE},NEXT_PUBLIC_SITE_URL=${SITE_URL},NEXT_PUBLIC_ALLOW_MOCK_PAYMENTS=false,GOOGLE_WEB_CLIENT_ID=${GOOGLE_WEB_CLIENT_ID:-},APPLE_WEB_CLIENT_ID=${APPLE_WEB_CLIENT_ID:-}"
+  --set-env-vars="NODE_ENV=production,API_BASE_URL=${API_BASE},NEXT_PUBLIC_API_BASE_URL=${API_BASE},NEXT_PUBLIC_SITE_URL=${SITE_URL},NEXT_PUBLIC_ALLOW_MOCK_PAYMENTS=false,GOOGLE_WEB_CLIENT_ID=${GOOGLE_WEB_CLIENT_ID:-},APPLE_WEB_CLIENT_ID=${APPLE_WEB_CLIENT_ID:-},GA_MEASUREMENT_ID=${GA_MEASUREMENT_ID:-},META_PIXEL_ID=${META_PIXEL_ID:-}"
 
 URL="$(gcloud run services describe "$SERVICE" \
   --account="$ACCOUNT" \

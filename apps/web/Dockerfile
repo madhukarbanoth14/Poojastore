@@ -28,6 +28,8 @@ ENV HOSTNAME=0.0.0.0
 # GIS client ID is read at request time by /login and /signup (not baked into the JS bundle).
 ENV GOOGLE_WEB_CLIENT_ID=""
 ENV APPLE_WEB_CLIENT_ID=""
+ENV GA_MEASUREMENT_ID=""
+ENV META_PIXEL_ID=""
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public

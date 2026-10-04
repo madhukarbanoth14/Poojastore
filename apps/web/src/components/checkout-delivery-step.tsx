@@ -28,7 +28,7 @@ export function familyFormComplete(form: FamilyFormState) {
 
 export function checkoutOrderMath(cart: Cart | null, includeFamily: boolean) {
   const currency = cart?.currency ?? "INR";
-  const market = cart?.items[0]?.product.market ?? (currency === "INR" ? "IN" : "US");
+  const market = cart?.items[0]?.product?.market ?? (currency === "INR" ? "IN" : "US");
   const baseSubtotal = cart?.subtotalMinor ?? 0;
   const copies = includeFamily ? 2 : 1;
   const subtotalMinor = baseSubtotal * copies;
@@ -68,7 +68,7 @@ export function CheckoutOrderSummary({
 }) {
   const math = checkoutOrderMath(cart, includeFamily);
   const kitLabel =
-    cart?.items.map((item) => item.product.name).join(", ") || "Pooja Kit";
+    cart?.items.map((item) => item.product?.name || "Pooja kit").join(", ") || "Pooja Kit";
 
   return (
     <aside
@@ -333,7 +333,7 @@ export function CheckoutDeliveryStep({
               />
               <input
                 className="input-ps"
-                placeholder="City"
+                placeholder="City (Hyderabad)"
                 value={family.city}
                 onChange={(e) => onFamilyChange({ city: e.target.value })}
               />
@@ -345,7 +345,7 @@ export function CheckoutDeliveryStep({
               />
               <input
                 className="input-ps sm:col-span-2"
-                placeholder="PIN"
+                placeholder="PIN (500xxx)"
                 value={family.postal}
                 onChange={(e) => onFamilyChange({ postal: e.target.value })}
               />

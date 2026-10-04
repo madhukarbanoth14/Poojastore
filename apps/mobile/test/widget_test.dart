@@ -54,6 +54,10 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout() async {}
+
+  @override
+  Future<AuthSession> applyTokenPayload(Map<String, dynamic> data) async =>
+      throw UnimplementedError();
 }
 
 void main() {

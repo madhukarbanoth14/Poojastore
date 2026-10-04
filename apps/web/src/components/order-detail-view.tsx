@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { kitImage } from "@/lib/catalog-images";
 import { formatMoney, formatOrderStamp, formatWhen } from "@/lib/format";
@@ -257,7 +256,6 @@ export function OrderDetailView({
   busy: ActionKind | null;
   onAct: (kind: ActionKind) => Promise<boolean>;
 }) {
-  const router = useRouter();
   const summary = summarizeOrder(order);
   const tracking = order.tracking;
   const address = order.shippingAddress;
@@ -344,7 +342,7 @@ export function OrderDetailView({
                 Paid status appears after we verify the bank credit — usually within a few hours during the
                 business day, not instantly.
               </p>
-              <button type="button" className="btn-orange btn-order" onClick={() => router.push("/checkout?resume=1")}>
+              <button type="button" className="btn-orange btn-order" onClick={() => window.location.assign("/checkout?resume=1")}>
                 Continue to pay
               </button>
             </div>
@@ -367,7 +365,7 @@ export function OrderDetailView({
               currentCode={currentCode}
               pulseCode={pulseCode}
               unpaid={unpaid}
-              onPay={() => router.push("/checkout?resume=1")}
+              onPay={() => window.location.assign("/checkout?resume=1")}
             />
           ) : (
             <p className="mt-4 text-sm text-muted">Tracking will appear once this order is confirmed.</p>

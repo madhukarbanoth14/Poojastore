@@ -114,6 +114,9 @@ export function GaneshSamagriTabs({
           {product ? (
             <AddToCartButton
               productId={product.id}
+              itemName={product.name}
+              priceMinor={product.priceMinor}
+              currency={product.currency}
               selectedItemKeys={selectedKeys}
               label={
                 locale === "te"

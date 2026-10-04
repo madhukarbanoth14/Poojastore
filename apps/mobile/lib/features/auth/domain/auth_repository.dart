@@ -46,4 +46,6 @@ abstract class AuthRepository {
   Future<void> logout();
 
   Future<AuthUser?> restoreSession();
+
+  Future<AuthSession> applyTokenPayload(Map<String, dynamic> data);
 }

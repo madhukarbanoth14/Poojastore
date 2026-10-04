@@ -985,7 +985,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get birthPlaceCity => 'పుట్టిన స్థలం (నగరం)';
 
   @override
-  String get birthPlaceHint => 'హైదరాబాద్, బెంగళూరు, …';
+  String get birthPlaceHint => 'హైదరాబాద్, …';
 
   @override
   String get cityForDailyPanchang => 'రోజువారీ పంచాంగానికి నగరం';

@@ -95,6 +95,8 @@ export function KitItemPicker({
         <p className="font-display text-2xl price">{formatMoney(totalMinor, currency)}</p>
         <AddToCartButton
           productId={productId}
+          priceMinor={totalMinor}
+          currency={currency}
           selectedItemKeys={selectedKeys}
           label={
             locale === "te"

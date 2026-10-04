@@ -91,7 +91,7 @@ const ganeshMiniHomeItems: SamagriItem[] = [
   { nameEn: "Sandal paste (Gandham)", nameTe: "గంధం", quantity: 1, packEn: "25g", packTe: "25 గ్రా" },
   { nameEn: "Incense sticks", nameTe: "అగరబత్తులు", quantity: 1, packEn: "1 pack", packTe: "1 ప్యాక్" },
   { nameEn: "Camphor", nameTe: "కర్పూరం", quantity: 1, packEn: "1 pack", packTe: "1 ప్యాక్" },
-  { nameEn: "Rice", nameTe: "బియ్యం", quantity: 1, packEn: "2000g", packTe: "2000 గ్రా" },
+  { nameEn: "Rice", nameTe: "బియ్యం", quantity: 1, packEn: "250g", packTe: "250 గ్రా" },
   { nameEn: "Betel nuts (Vakkalu)", nameTe: "వక్కలు", quantity: 1 },
   { nameEn: "Turmeric roots", nameTe: "పసుపు కొమ్ములు", quantity: 1 },
   { nameEn: "Red cloth", nameTe: "ఎర్రని బట్ట", quantity: 1 },

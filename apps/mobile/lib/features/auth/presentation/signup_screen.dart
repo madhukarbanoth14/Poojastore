@@ -256,6 +256,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                   child: Text(l10n.continueWithGoogle, style: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
+                if (showAppleSignInButton) ...[
+                  const SizedBox(height: 12),
+                  AppleSignInButton(
+                    label: l10n.continueWithApple,
+                    enabled: !auth.loading,
+                    onPressed: () => continueWithApple(ref, context),
+                  ),
+                ],
               ],
             ),
           ),

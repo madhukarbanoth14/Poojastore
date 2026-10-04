@@ -13,6 +13,7 @@ import {
 } from '../../auth/domain/phone';
 import { PaymentOrchestratorService } from '../../payments/application/payment-orchestrator.service';
 import { PromoService } from '../../promos/application/promo.service';
+import { HYDERABAD_DELIVERY_MESSAGE, isHyderabadDelivery } from '../domain/delivery-zone';
 
 /** India: ₹49 under ₹1,000, free at ₹1,000+. Other markets: $4.99. */
 export function checkoutDeliveryFeeMinor(baseSubtotal: number, market: string) {
@@ -47,6 +48,9 @@ export class CheckoutService {
       where: { id: shippingAddressId, userId },
     });
     if (!address) throw new NotFoundException('Shipping address not found');
+    if (!isHyderabadDelivery(address)) {
+      throw new BadRequestException(HYDERABAD_DELIVERY_MESSAGE);
+    }
 
     const selected = extra?.intents?.length
       ? extra.intents
@@ -68,6 +72,9 @@ export class CheckoutService {
       });
       if (!familyAddress) {
         throw new NotFoundException('Family address not found');
+      }
+      if (!isHyderabadDelivery(familyAddress)) {
+        throw new BadRequestException(HYDERABAD_DELIVERY_MESSAGE);
       }
     }
 

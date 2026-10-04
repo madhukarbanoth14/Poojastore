@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { InAppBrowserNotice } from "@/components/in-app-browser-notice";
 import { SocialAuthButtons } from "@/components/social-auth-buttons";
 import { LotusDivider } from "@/components/ornaments";
 import { Kicker } from "@/components/ui";
+import { goAfterAuth } from "@/lib/pending-cart";
 
 export function LoginForm({
   googleClientId,
@@ -32,7 +34,7 @@ export function LoginForm({
         signedIn.role === "ADMIN" && (next === "/" || next.startsWith("/admin"))
           ? "/admin"
           : next;
-      router.replace(dest);
+      goAfterAuth(dest, (url) => router.replace(url));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not sign in");
     } finally {
@@ -48,6 +50,9 @@ export function LoginForm({
           <h1 className="font-display mt-2 text-4xl text-maroon">Namaste</h1>
         </div>
         <LotusDivider className="mx-auto mt-4" />
+        <div className="mt-4">
+          <InAppBrowserNotice />
+        </div>
         <p className="mt-3 text-center text-sm text-muted">Sign in with your email and password</p>
         <form
           className="mt-8 space-y-3"

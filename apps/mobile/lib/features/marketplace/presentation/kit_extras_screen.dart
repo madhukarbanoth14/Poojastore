@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/auth/ensure_logged_in.dart';
 import '../../../core/catalog/catalog_images.dart';
 import '../../../core/catalog/catalog_l10n.dart';
 import '../../../core/catalog/kit_item_taxonomy.dart';
 import '../../../core/catalog/samagri_catalog.dart';
 import '../../../core/network/fallback_dns.dart';
+import '../../../core/pending_cart.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/pp_ui.dart';
 import '../../../core/widgets/ps_format.dart';
 import '../../../core/widgets/ps_widgets.dart';
-import '../../../l10n/l10n.dart';
+import '../../auth/presentation/auth_controller.dart';
 import 'kits_screen.dart';
 
 class KitExtrasScreen extends ConsumerStatefulWidget {
@@ -135,20 +135,28 @@ class _KitExtrasScreenState extends ConsumerState<KitExtrasScreen> {
     final product = _product;
     final id = product?['id'] as String?;
     if (id == null) return;
-    final ok = await ensureLoggedIn(
-      context,
-      ref,
-      message: context.l10n.signInToAddCart,
-    );
-    if (!ok || !mounted) return;
+    final keys = _chosen.isEmpty ? null : [..._requiredKeys, ..._chosen];
+    if (!ref.read(authControllerProvider).isAuthenticated) {
+      final te = context.isTelugu;
+      await stashPendingCart(
+        PendingCartAdd(
+          productId: id,
+          selectedItemKeys: keys,
+          itemName: product?['name'] as String? ??
+              samagriListByKitSlug(widget.slug)?.title(te) ??
+              'Pooja kit',
+          priceMinor: _total,
+        ),
+      );
+      if (mounted) context.push('/checkout');
+      return;
+    }
     setState(() => _adding = true);
     try {
       await ref.read(marketplaceApiProvider).addToCart(
             id,
             qty: widget.qty,
-            selectedItemKeys: _chosen.isEmpty
-                ? null
-                : [..._requiredKeys, ..._chosen],
+            selectedItemKeys: keys,
             replace: widget.buyNow,
           );
       if (mounted) {

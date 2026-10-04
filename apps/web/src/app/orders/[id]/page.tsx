@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { OrderDetailView } from "@/components/order-detail-view";
 import { useAuth } from "@/components/auth-provider";
 import { clientFetch } from "@/lib/client";
+import { isPaidOrderStatus, trackPurchase } from "@/lib/analytics";
 import type { Order } from "@/lib/types";
 
 export default function OrderDetailPage() {
@@ -29,6 +30,23 @@ export default function OrderDetailPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!order || !isPaidOrderStatus(order.status, order.payments)) return;
+    trackPurchase({
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      valueMinor: order.totalMinor,
+      currency: order.currency,
+      items: (order.items ?? []).map((item, index) => ({
+        id: `${order.id}-${index}`,
+        name: item.productName || item.name || "Pooja kit",
+        priceMinor: item.unitPriceMinor ?? item.totalMinor ?? 0,
+        currency: order.currency,
+        quantity: item.quantity,
+      })),
+    });
+  }, [order]);
 
   useEffect(() => {
     if (!order) return;

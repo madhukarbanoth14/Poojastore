@@ -17,6 +17,8 @@ import {
   getRefreshToken,
   saveTokens,
 } from "@/lib/client";
+import { trackSignUp } from "@/lib/analytics";
+import { takePendingCart } from "@/lib/pending-cart";
 import type { AuthUser, Cart } from "@/lib/types";
 
 type SessionPayload = {
@@ -56,6 +58,7 @@ type AuthState = {
   }) => Promise<void>;
   logout: () => Promise<void>;
   refreshCart: () => Promise<void>;
+  applySession: (data: SessionPayload) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -111,10 +114,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void bootstrap();
   }, [bootstrap]);
 
+  const applySession = useCallback(
+    async (data: SessionPayload) => {
+      saveTokens(data.tokens.accessToken, data.tokens.refreshToken);
+      setUser(data.user);
+      await refreshCart();
+    },
+    [refreshCart],
+  );
+
   const persist = useCallback(
     async (data: SessionPayload) => {
       saveTokens(data.tokens.accessToken, data.tokens.refreshToken);
       setUser(data.user);
+      const pending = takePendingCart();
+      if (pending?.productId) {
+        try {
+          await clientFetch("/cart/items", {
+            method: "POST",
+            body: JSON.stringify({
+              productId: pending.productId,
+              quantity: 1,
+              ...(pending.selectedItemKeys?.length ? { selectedItemKeys: pending.selectedItemKeys } : {}),
+              ...(pending.buyNow ? { replace: true } : {}),
+            }),
+          });
+        } catch {
+          /* checkout can still open */
+        }
+      }
       await refreshCart();
     },
     [refreshCart],
@@ -145,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ ...params, deviceId: deviceId() }),
       });
       await persist(data);
+      trackSignUp("email");
     },
     [persist],
   );
@@ -162,6 +191,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ ...params, deviceId: deviceId() }),
       });
       await persist(data);
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/signup")) {
+        trackSignUp(params.provider.toLowerCase());
+      }
     },
     [persist],
   );
@@ -223,6 +255,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       changePassword,
       logout,
       refreshCart,
+      applySession,
     }),
     [
       user,
@@ -235,6 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       changePassword,
       logout,
       refreshCart,
+      applySession,
     ],
   );
 

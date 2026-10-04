@@ -103,9 +103,9 @@ describe('Commerce bookings (e2e)', () => {
       .send({
         label: 'Home',
         line1: '12 Temple Road',
-        city: 'Bengaluru',
-        state: 'KA',
-        postalCode: '560001',
+        city: 'Hyderabad',
+        state: 'Telangana',
+        postalCode: '500033',
         country: 'IN',
         isDefault: true,
       })

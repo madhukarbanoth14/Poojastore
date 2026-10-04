@@ -56,6 +56,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  String? _routeNext(BuildContext context) {
+    if (GoRouter.maybeOf(context) == null) return null;
+    return GoRouterState.of(context).uri.queryParameters['next'];
+  }
+
+  bool _checkoutNext(BuildContext context) {
+    return (_routeNext(context) ?? '').startsWith('/checkout');
+  }
+
   Future<void> _signIn() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -251,6 +260,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
                 ),
+                if (showAppleSignInButton) ...[
+                  const SizedBox(height: 12),
+                  AppleSignInButton(
+                    label: l10n.continueWithApple,
+                    enabled: !auth.loading,
+                    onPressed: () => continueWithApple(ref, context),
+                  ),
+                ],
+                if (_checkoutNext(context)) ...[
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => context.go('/checkout'),
+                    child: const Text(
+                      'Book with name and mobile — no Google needed',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.maroonDeep,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => context.push('/poojari/apply'),

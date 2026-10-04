@@ -101,6 +101,36 @@ class MarketplaceApi {
     return res.data['data'] as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> guestCheckout({
+    required String productId,
+    List<String>? selectedItemKeys,
+    required String fullName,
+    required String phone,
+    required String line1,
+    required String city,
+    required String state,
+    required String postalCode,
+    String deliverySlot = 'Within 6 hours',
+  }) async {
+    final res = await _api.dio.post(
+      '/orders/guest-checkout',
+      data: {
+        'productId': productId,
+        if (selectedItemKeys != null && selectedItemKeys.isNotEmpty)
+          'selectedItemKeys': selectedItemKeys,
+        'fullName': fullName,
+        'phone': phone,
+        'line1': line1,
+        'city': city,
+        'state': state,
+        'postalCode': postalCode,
+        'deliverySlot': deliverySlot,
+        'deviceId': 'flutter-mobile',
+      },
+    );
+    return res.data['data'] as Map<String, dynamic>;
+  }
+
   Future<void> mockConfirmPayment(String paymentId) async {
     if (!AppConfig.allowMockPayments) {
       throw StateError(
